@@ -5,7 +5,7 @@ weitere Migration. **Ein Auftrag bearbeitet jeweils nur ein Arbeitspaket.**
 Zum Abschluss werden Ergebnis, Tests, Commit und verbleibende Grenzen
 eingetragen. Anschließend endet der Auftrag; das nächste Paket startet mit
 frischem Kontext. Der [fertige nächste Agentenauftrag](NEXT_AGENT_TASK.md)
-begrenzt die nächste Sitzung auf Paket 4b-II (Runden-/Zahlungsauflösung).
+begrenzt die nächste Sitzung auf Paket 5-I (Kartendatentabellen).
 
 ## Ziel und feste Entscheidungen
 
@@ -20,8 +20,8 @@ begrenzt die nächste Sitzung auf Paket 4b-II (Runden-/Zahlungsauflösung).
   eingefroren und Paket 2 die Legacy-Exporte repariert. Paket 3 hat den
   Laufzeitumbau mit optimaler Wissenschaftswertung im Entwicklungs-Regelstand
   begonnen. Paket 4a spezifiziert zusätzliche Entscheidungen und simultane
-  Auflösung. Paket 4b-I sichert die interne Ablageentnahme; die vollständige
-  Entscheidungs-/Zahlungsauflösung bleibt für 4b-II.
+  Auflösung. Paket 4b-I sichert die interne Ablageentnahme; Paket 4b-II
+  implementiert gemeinsame Auflösung, Pflichtentscheidungen und Transport 3.
   Karten und Wunder verwenden weiter Legacy-Daten; neue Kosten, Fähigkeiten
   und Grafik werden getrennt umgesetzt.
 - Jeder Commit muss klar benennen, welchen Regelstand er abbildet. Eine
@@ -44,6 +44,7 @@ Git-Arbeitsstände prüfen. Die RL-Arbeit liegt auf
 | `docs/SCIENCE_SCORING.md`, `docs/science-validation.json` | Korrigierte Wissenschaftswertung, Testnachweis und getrennte Kopier-/Python-Vorschaugrenzen aus Paket 3 |
 | `docs/DECISION_PROTOCOL_DRAFT.md`, `docs/decision-protocol-examples.json`, `docs/decision-protocol-validation.json` | Entscheidungsvertrag aus Paket 4a; Quellen, Nachrichten und Abnahmefälle. RQ-1/RQ-2 sind inzwischen durch Nutzervorgabe entschieden; vollständiger Automat noch nicht implementiert. |
 | `docs/DISCARD_SAFETY.md`, `docs/discard-safety-validation.json` | Interne Ablagesicherheit, drei rote Fehlerfälle, Transaktions-/Instanznachweis und verbleibende V2-Grenzen aus 4b-I |
+| `docs/SIMULTANEOUS_RESOLUTION.md`, `docs/resolution-validation.json` | Implementierter Protokoll-3-Auflösungskern, Tests, aktuelle Client-/Fähigkeitsgrenzen aus 4b-II |
 | `data/bga-second-edition/README.md`, `targets.json`, `provenance.json` | Eigenständiger geprüfter Zielvertrag, Schema, Zuordnungen und Eingabe-Prüfsummen aus Paket 1 |
 | `../docs/reference/edition-comparison/comparison.json` | Bereits abgeglichene 80 Karten-/Zeitalterzeilen und 14 Wunderseiten; Felder `new`, `bga_id`, `new_sprite` |
 | `../docs/reference/edition-comparison/COMPARISON.md` | Lesbare vollständige Gegenüberstellung |
@@ -76,8 +77,9 @@ lokalen Ordner verwendbar.
 | 3 – Wissenschaftswertung | Erledigt, Abnahme unten | Gierige Jokervergabe durch optimale Endwertung ersetzen | Dokumentierte Gegenbeispiele und Kombinationen mit mehreren Jokern/Quellen bestehen; keine Kartendaten-/GUI-Änderung |
 | 4a – Entscheidungsvertrag | Erledigt als Spezifikation, Abnahme unten | Ablagewahl und simultane Auflösung als Protokollzustände spezifizieren | Eingaben, sichtbare Optionen, Sitzreihenfolge, Timing, Abbruch und Terminalzustand beschrieben; die beiden ursprünglichen Regelfragen inzwischen durch Nutzer entschieden |
 | 4b-I – Sichere Ablageentnahme | Erledigt, Abnahme unten | Internen Ablagebau mit stabiler Instanz, atomarer Entnahme und korrektem Rechtverbrauch absichern | Keine Handentnahme über Ablageindex; zentrale Ablage genau einmal geändert; Fehler, Wiederholung und leere Auswahl geprüft; kein neuer interaktiver Transport |
-| **4b-II – Runden-/Zahlungsauflösung** | **Als Nächstes** | Gemeinsamen Anfangszustand, Zahlungen, Folgeentscheidungen und Nachrichtenvertrag implementieren | Gleichzeitigkeit, Restkarten, siebte Karte, Abschlussbarrieren und Nachrichtenledger geprüft; RQ-1/RQ-2 gemäß ausdrücklicher Nutzervorgabe umgesetzt |
-| 5 – Neue Karten | Offen | Kosten, Punkte, Ketten, Deckmengen und neue Karteneffekte migrieren | Alle 80 Zeitalterzeilen gegen Ziel geprüft; Ludus und Decorators Guild funktionieren; Drei-Spieler-Decks stimmen |
+| 4b-II – Runden-/Zahlungsauflösung | Erledigt, Abnahme unten | Gemeinsamen Anfangszustand, Zahlungen, Folgeentscheidungen und Nachrichtenvertrag implementieren | Gleichzeitigkeit, Restkarten, siebte Karte, Abschlussbarrieren und Nachrichtenledger geprüft; RQ-1/RQ-2 gemäß ausdrücklicher Nutzervorgabe umgesetzt |
+| **5-I – Kartendatentabellen** | **Als Nächstes** | Geprüfte Kartendaten deterministisch in Engine-Tabellen übernehmen | Alle 80 Zeitalterzeilen, Kosten/Punkte/Ketten, Mengen und feste Effekte gegen Ziele geprüft; IDs erhalten; neue Sondereffekte getrennt und ausdrücklich offen |
+| 5-II – Neue Kartensondereffekte | Offen, eigener Folgeauftrag | Ludus und Decorators Guild einzeln umsetzen und abnehmen | Neue Zähl-/Wertungseffekte mit gezielten Gegenbeispielen geprüft; keine bloße Datenmigration als vollständige neue Edition ausgegeben |
 | 6 – Neue Wunder | Offen | Die 14 Seiten familienweise umstellen | Jede Stufe: Kosten, Ertrag, Verfügbarkeit und richtige Anzahl geprüft; Sonderfähigkeiten mit gezielten Fällen abgenommen |
 | 7 – GUI der neuen Edition | Offen | Neue Entscheidungsansichten, Bilder und Layout einbinden | Alle neuen Fähigkeiten menschlich bedienbar; korrekte Bilder/Namen/Stufen; vollständige Partien und fehlende Bilder getestet |
 | 8 – RL-Anbindung | Offen | Neue Engine bewusst im RL-Projekt übernehmen | Exportdaten, Beobachtungen, Aktionen, Merkmale und Checkpoint-Verträge passen; Protokoll-/Kurztrainingsprüfungen bestehen |
@@ -361,4 +363,69 @@ oder Trainingsdateien geändert. Die spätere Übernahme der Entwicklungs-Engine
 benötigt einen bewussten Exportweg für den ausgelagerten Gebäudeeffektcode.
 Aktiver Vertrag weiter `v0.2.0-dev`, `second_edition_implemented=false`,
 Transportversion **2**. Kein Push/Release und kein RL-Pin-/Lock-Update.
-Paket 4b-II ist vorbereitet, nicht begonnen; dieses Paket endet hier.
+Der damalige Folgeauftrag war Paket 4b-II zur vollständigen Runden-/
+Zahlungsauflösung; die oben beschriebenen V2-Grenzen sind der historische
+Abnahmestand von 4b-I.
+
+## Abnahme Paket 4b-II – 5. November 2026
+
+Implementierungscommit: `6ad395332da5535f3cdc7f7699fea6fd12c07e9f`
+(`Resolve frozen turns and mandatory discard decisions in development protocol 3`).
+Der anschließende Dokumentationscommit hält diese Abnahme und ausschließlich
+Paket 5-I als nächsten Auftrag fest.
+
+Ergebnis: `DecisionEngine` besitzt den tief kopierten Spieler-/Wunder-/Karten-
+zustand und plant alle regulären Aktionen gegen denselben Rundenanfang.
+Minimal festgelegte Zahlungen und unabhängige Käuferbelegungen verhindern
+vorzeitige Nutzung neuer Münzen/Produktion/Rabatte. Erst nach allen Annahmen
+werden reguläre Bauten gemeinsam übernommen und ihre Sofortmünzen gezählt;
+Lighthouse zählt sich selbst. Tatsächliche Quellstufen erzeugen Grants, die
+sichtbare Pflichtwahl benutzt aktuelle physische Ablageinstanzen. Restkarten,
+Handweitergabe, neuer Babylon-Zug, Konflikte und Endwertung warten auf ihre
+Barrieren. Beide ausdrücklichen Nutzerentscheidungen RQ-1/RQ-2 sind umgesetzt.
+
+Aktiver Transport jetzt **3**, Vertrag **`decision-v1`**, weiterhin
+`v0.2.0-dev`, `bga-second-edition-development`,
+`second_edition_implemented=false`. Eingabe-/Entscheidungs-/Bundlekennungen,
+Quittierungen, Wiederholung und Konflikte, angebotene Revisionen, optionale
+Fristen sowie kontrollierter Abbruch sind implementiert. Keine stille
+Ersatzaktion. Nur vollständiger Normalabschluss schreibt das Ergebnis einmal.
+Der eigenständige Standardbibliotheksclient ist der aktuelle Testweg:
+
+```sh
+python3 scripts/smoke_protocol.py --engine build/7Wonders --seed 8
+```
+
+Prüfungen: vier rote Ökonomie-/Abschlussfälle gegen `da93178`; sauberer
+Release-Build; **neun CTests grün**. Python-Sammlung: **26 Tests**, davon
+**21 bestanden und fünf historische V2-GUI-Prozesstests ausdrücklich
+ausgelassen**. Die reale Ablehnung von Protokoll 3 durch die unveränderte
+GUI ist separat grün. Die sechs neuen Prozessprüfungen umfassen vollständige
+Partien, Teilannahmen, identische und widersprüchliche Zustellung, alte Partie
+bei gleichem Seed, veraltete Angebote, ungültige Kostenüberschreibung,
+fehlerhafte Dateien, ignorierte V2-Dateien, Timeout und Abbruch ohne Resultat.
+C++ prüft unter anderem geteilte Minimalzahlungen, simultane Zähler,
+Freibaumodi, Pflichtwahl, letzte reguläre/siebte Karte, synthetische Queue,
+Leerfälle, neu aktiviertes Babylon und vollständiges Rückrollen nach einem
+bewusst erst nach der Stufenmutation ausgelösten Fehler. Ein expliziter Abbruch
+während der Schluss-Ablagewahl erhält den vorherigen regulären Commit.
+
+Fünf protokollierte reale Partien mit Seeds 0, 7, 8, 19, 42 prüfen über alle
+Zustände Kartenerhaltung, legale tatsächlich angewandte Optionen und konsistente
+Ergebnisdateien. Seed 8 enthält eine reale Ablageentscheidung; Seeds 0/8
+enthalten Babylon-Züge. Wiederholter Seed bleibt reproduzierbar, die
+Partiekennung ist unabhängig davon neu. Terminalwiederholung verändert
+weder Wertung/Ereignisse noch den Änderungszeitpunkt der Ergebnisdatei.
+Herkunftsaudit für **55** Dateien und eigenständiger BGA-Zielaudit grün.
+Details: [SIMULTANEOUS_RESOLUTION.md](SIMULTANEOUS_RESOLUTION.md),
+[PROTOCOL.md](PROTOCOL.md), [resolution-validation.json](resolution-validation.json).
+
+Grenzen: Alle Karten-Deklarationen und Wunderstufendefinitionen bleiben
+unverändert, ebenso Wissenschaftsformel und alte Gildenkopie-Kandidatenwahl.
+Babylon/Olympia verwenden noch ihre bisherigen Fähigkeiten und Stufen;
+`legacy_olympia_once` wird ausdrücklich ausgewiesen, keine künftigen ersten/
+sechsten Freibaurechte. Noch keine fertige BGA-Edition. GUI und RL sind nicht
+auf Version 3 migriert; GUI verwirft das neue Binary, der alte GUI-Tag bleibt
+reproduzierbar. Keine GUI-/RL-Laufzeit-, Export-/Feature-/Trainingsänderung,
+kein Push/Release und kein Parent-Submodule-/Lock-Update. Paket 5-I ist
+vorbereitet, nicht begonnen; dieses Paket endet hier.

@@ -321,5 +321,54 @@
   ],
   "historical_workspace_audit_note": "As in package 4b-I, --workspace .. binds frozen package-1 C++ source hashes and is not a comparison with changed current source. Original target/provenance data are unchanged; the independent current target audit is green.",
   "targeted_atomic_failure": "A cloned BrokenStage successfully mutates the temporary wonder/player and then throws; original player/card/payment state and events are retained, accepted inputs cancel, no normal result is produced.",
-  "explicit_abort_after_commit": "Pending final discard grant is cancelled_abort while the completed ordinary wonder stage and its applied receipt remain intact."
+  "explicit_abort_after_commit": "Pending final discard grant is cancelled_abort while the completed ordinary wonder stage and its applied receipt remain intact.",
+  "implementation_commit": "6ad395332da5535f3cdc7f7699fea6fd12c07e9f",
+  "committed_binary_check": {
+    "source_commit": "6ad395332da5535f3cdc7f7699fea6fd12c07e9f",
+    "source_dirty": false,
+    "contract_id": "decision-v1",
+    "protocol_version": 3,
+    "build_command": "cmake -S . -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build --target 7Wonders --parallel 2",
+    "exit_code": 0,
+    "headless_match": {
+      "seed": 8,
+      "decisions": 57,
+      "discard_decisions": 1,
+      "turn_slots": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ],
+      "scores": [
+        43,
+        50,
+        47
+      ]
+    },
+    "terminal_replay_verified": true
+  },
+  "closure_checks": {
+    "artifact_hashes_match": true,
+    "plan_links_checked": 17,
+    "parent_pin_and_lock_unchanged": true,
+    "next_task": "5-I only; card data tables; not started"
+  }
 }
