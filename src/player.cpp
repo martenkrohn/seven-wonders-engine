@@ -4,11 +4,14 @@
 #include <algorithm>
 #include <iostream>
 #include <math.h>
+#include <type_traits>
+#include <utility>
 
 namespace DMAG {
 Player::Player()
 {
     this->id = 0;
+    this->board = nullptr;
     this->victory_tokens = 0;
     this->defeat_tokens = 0;
     this->victory_points = 0;
@@ -81,24 +84,25 @@ bool Player::CanBuildWonder() {
     return this->can_build_wonder;
 }
 
-// Play a card.
-// * arg cards is necessary for any special situation? it is equal to this->cards_hand
-// P: Yes, in case we want to build a free card from the discard pile.
+// The vector parameter is retained for legacy callers. Only the actual hand
+// owns a normal build; an index into another vector can never remove a card.
 bool Player::BuildStructure(DMAG::Card c, std::vector<DMAG::Card> cards, bool free_card){
     // Returns false if the card has already been played (cannot play the same card twice).
     if (this->HasPlayedCard(c)) return false;
 
-    // Checks if card is in hand.
-    size_t i = 0;
-    for (i = 0; i < cards.size(); i++) {
-        //std::cout << cards[i].GetName() << std::endl;
-        if (cards[i].Equal(c)) break;
-    }
-    if (i == cards.size()) {
-        // ERROR: Card played was not found in the vector
-        std::cout << " -> FAILURE: Card not found in vector." << std::endl;
+    if (std::none_of(cards.begin(), cards.end(), [&](Card supplied) { return supplied.Equal(c); }))
         return false;
+    size_t i = cards_hand.size();
+    for (size_t n = 0; n < cards_hand.size(); ++n) {
+        const bool matches = c.GetInstanceId()
+            ? cards_hand[n].GetInstanceId() == c.GetInstanceId()
+            : cards_hand[n].Equal(c);
+        if (!matches) continue;
+        if (i != cards_hand.size()) return false; // Ambiguous legacy definition.
+        i = n;
     }
+    if (i == cards_hand.size()) return false;
+    c = cards_hand[i];
 
     if (!free_card) {
         // If there are not enough resources.
@@ -134,6 +138,13 @@ bool Player::BuildStructure(DMAG::Card c, std::vector<DMAG::Card> cards, bool fr
         }
     }
 
+    ApplyBuilding(c, free_card);
+    cards_hand.erase(cards_hand.begin() + i);
+    std::cout << this->id << " -> SUCCESS -> " << "builds " << c.GetName() << std::endl;
+    return true;
+}
+
+void Player::ApplyBuilding(DMAG::Card c, bool free_card) {
     int cost = 0;
     int card = c.GetId();
     switch (c.GetType()) {
@@ -245,13 +256,9 @@ bool Player::BuildStructure(DMAG::Card c, std::vector<DMAG::Card> cards, bool fr
             break;
     }
 
-    cards_hand.erase(cards_hand.begin()+i);
     cards_played.push_back(c);
 
     if (!free_card) this->resources[RESOURCE::coins] -= cost;
-    std::cout << this->id << " -> SUCCESS -> " << "builds " << c.GetName() << std::endl;
-
-    return true;
 }
 
 // Checks if the player has a card that permits him to play card 'c' for free.
@@ -1023,9 +1030,22 @@ void Player::FreeCardOnce(bool flag) {
     this->free_card_once = flag;
 }
 
-// Similar as above but for building a free structure from the discard list.
+// Called by successful legacy Halikarnassos stages, never by a state read.
+// A consumed/expired stage cannot create the same right a second time.
 void Player::DiscardFree(bool flag) {
-    this->discard_free = flag;
+    if (!flag) {
+        discard_free = false;
+        return;
+    }
+    if (!board) return;
+    const int stage = board->GetStage();
+    const int id = board->GetId();
+    const bool source = (id == WONDER_ID::halikarnassos_a && stage == 2)
+                     || (id == WONDER_ID::halikarnassos_b && stage >= 1 && stage <= 3);
+    if (source && stage > discard_grant_stage) {
+        discard_grant_stage = stage;
+        discard_free = true;
+    }
 }
 
 // The player can buy resources for 1 coin instead of 2 from neighbors.
@@ -1034,21 +1054,41 @@ void Player::CanBuyRawCheap(){
     this->wonder_raw_cheap = true;
 }
 
-// Builds a card from the discard pile for free.
-// - will be changed depending on which type discard_pile will be.
-// - called at the end of the turn after the stage was built.
-bool Player::BuildDiscardFree(DMAG::Card c, std::vector<DMAG::Card> discard_pile){
-    int id = this->board->GetId();
-    int stage = this->board->GetStage();
+bool Player::HasDiscardFree() const {
+    return discard_free && board && board->GetStage() == discard_grant_stage;
+}
 
-    if ((id == WONDER_ID::halikarnassos_a && stage == 2) ||
-        (id == WONDER_ID::halikarnassos_b && stage >= 1)) {
-        if (this->discard_free) {
-            this->discard_free = false;
-            return this->BuildStructure(c, discard_pile, true);
-        }
+bool Player::CloseDiscardIfNoOptions(const std::vector<DMAG::Card>& pile) {
+    if (!HasDiscardFree()) return false;
+    for (const Card& card : pile)
+        if (!HasPlayedCard(card)) return false;
+    discard_free = false;
+    return true;
+}
+
+// Atomically move one central physical instance into the city. All potentially
+// throwing copies/effects precede a no-throw commit; no hand operation occurs.
+bool Player::BuildDiscardFree(DMAG::Card c, std::vector<DMAG::Card>& pile) {
+    if (!HasDiscardFree() || !c.GetInstanceId()) return false;
+    size_t index = pile.size();
+    for (size_t n = 0; n < pile.size(); ++n) {
+        if (pile[n].GetInstanceId() != c.GetInstanceId()) continue;
+        if (index != pile.size()) return false; // Corrupt/ambiguous identity.
+        index = n;
     }
-    return false;
+    if (index == pile.size() || HasPlayedCard(pile[index])) return false;
+    // The central card is authoritative, including its age, costs and effects.
+    Player staged = *this;
+    std::vector<Card> remaining = pile;
+    staged.ApplyBuilding(pile[index], true);
+    staged.discard_free = false;
+    remaining.erase(remaining.begin() + index);
+    static_assert(std::is_nothrow_swappable<Player>::value, "Discard commit must not throw");
+    static_assert(std::is_nothrow_move_assignable<Card>::value, "Card movement must not throw");
+    using std::swap;
+    swap(*this, staged);
+    pile.swap(remaining);
+    return true;
 }
 
 // Builds a card from the hand for free, once per Age, if the player has the requirements.
@@ -1192,6 +1232,10 @@ void Player::SetNeighbors(DMAG::Player* east, DMAG::Player* west){
 }
 
 void Player::SetWonder(DMAG::Wonder *_board){
+    if (board != _board) {
+        discard_free = false;
+        discard_grant_stage = 0;
+    }
     this->board = _board;
     // Wonders provide specific initial resources
     this->resources[this->board->GetProduction()] += 1;

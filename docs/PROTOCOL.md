@@ -24,8 +24,13 @@ match logging writes to `../logs/`. The smoke client demonstrates this layout.
    Commands are `build_structure`, `build_wonder`, `build_hand_free` and
    `discard`. The argument is the exact card name from `cards_hand`.
    `cards_playable` and the `can_build_*` flags describe available actions.
-   `extra` is the inherited discard-pile selection string for Halikarnassos;
-   that path has known limitations and is not exercised by the smoke client.
+   `extra` is the inherited discard-pile preselection string for Halikarnassos.
+   It belongs only to that submitting seat and must name exactly one current
+   pile instance; missing, ambiguous or illegal choices do not construct a
+   building. Internal construction now removes that central instance exactly
+   once without touching the hand. An unfulfilled V2 right expires at turn end.
+   This preselection is not an interactive choice and cannot enforce mandatory
+   selection; that complete path remains 4b-II. The smoke client leaves it empty.
 3. After all action files are closed, publish `io/ready.txt` with exactly
    three lines `ready\n`. The engine consumes and empties this signal.
 4. Wait for a strictly larger `game.turn` before sending the next actions.
@@ -48,3 +53,7 @@ This protocol exposes all hands to the coordinating client. It is not an
 access-control boundary for competitive remote bots. There is no saved-game
 restore API. Version 2 identifies the transport schema, not a board-game
 edition; use `engine-contract.json` and the exact source commit as well.
+Physical instance identities are internal in this V2 safety step; the existing
+wire fields remain unchanged. See [DISCARD_SAFETY.md](DISCARD_SAFETY.md) for
+the tested boundary and [the draft](DECISION_PROTOCOL_DRAFT.md) for the future
+mandatory-choice contract.

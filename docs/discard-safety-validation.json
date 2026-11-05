@@ -1,0 +1,202 @@
+{
+  "format_version": 1,
+  "package": "4b-I",
+  "checked_on": "2026-11-05",
+  "status": "accepted_internal_safety_only",
+  "engine_baseline_commit": "915e35eb24ecaf5295301fdb036a369947d5167a",
+  "rl_commit": "a283d5897d01b8edd32021562271698f1d41a3ee",
+  "rl_pin": "f39c1d7ead271df437269b7f555a2c7a0d4b9ad1",
+  "engine_contract": {
+    "format_version": 1,
+    "release": "v0.2.0-dev",
+    "ruleset": "bga-second-edition-development",
+    "protocol_version": 2,
+    "players": 3,
+    "second_edition_implemented": false,
+    "upstream_repository": "https://github.com/dmag-ufsm/7Wonders",
+    "upstream_commit": "a0bc333a7a7f21f83156de8a2d522e7baa913f0a"
+  },
+  "user_rule_decisions": [
+    {
+      "id": "RQ-1",
+      "answer": false,
+      "effect": "Ordinary coin payouts are fixed before later discard construction; no retroactive payout."
+    },
+    {
+      "id": "RQ-2",
+      "answer": false,
+      "effect": "Mandatory legal discard selection; no voluntary skip. Full enforcement awaits interactive 4b-II."
+    }
+  ],
+  "rule_decision_source": "Explicit user answers on 2026-11-05; no further approval or BGA-server verification inferred.",
+  "red_regressions": [
+    {
+      "case": "pile",
+      "exit_code": 1,
+      "failure": "Successful build left selected card in the central discard pile"
+    },
+    {
+      "case": "hand",
+      "exit_code": 1,
+      "failure": "Discard index erased an unrelated hand card"
+    },
+    {
+      "case": "right",
+      "exit_code": 1,
+      "failure": "Invalid selection consumed the right before a valid retry"
+    }
+  ],
+  "red_regression_context": "All three cases executed separately against baseline runtime before edits; legacy by-value API, valid hand/pile indices, no physical identity API yet.",
+  "coverage": {
+    "physical_deck_cards": 63,
+    "allocation_failure_points": 63,
+    "allocation_rollback_and_valid_retry": true,
+    "cases": [
+      "central pile by-reference removal",
+      "hand isolation at different indices",
+      "invalid then valid attempt",
+      "exact selection of two physical copies",
+      "duplicate type across grey ages",
+      "no costs for free construction",
+      "one-time immediate effects",
+      "no duplicate source-stage grant",
+      "wrong owner/no right",
+      "missing/zero/ambiguous instance",
+      "empty and all-duplicate auto-completion",
+      "no silent auto-close of legal option",
+      "real legacy Halikarnassos A/B source stages",
+      "capability reads do not grant",
+      "expired rights do not re-arm",
+      "stage replacement clears grant",
+      "no foreign-source hand removal",
+      "all 63 physical deck IDs unique; dealing/passing preserve IDs",
+      "real V2 final-turn file flow with own vs foreign seat extra",
+      "ambiguous V2 names rejected",
+      "late brown discard build does not retroactively pay ordinary Vineyard"
+    ]
+  },
+  "checks": [
+    {
+      "command": "cmake -S . -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build --parallel 2",
+      "exit_code": 0
+    },
+    {
+      "command": "ctest --test-dir build --output-on-failure",
+      "exit_code": 0,
+      "passed": 7
+    },
+    {
+      "command": "python3 -m unittest discover -s tests -p test_*.py -v",
+      "exit_code": 0,
+      "passed": 19
+    },
+    {
+      "command": "python3 scripts/audit_bga_targets.py --check",
+      "exit_code": 0
+    },
+    {
+      "command": "python3 scripts/audit_simulator.py && python3 scripts/audit_simulator.py --check",
+      "exit_code": 0,
+      "scoped_files": 51
+    },
+    {
+      "command": "One-off message/link/identity assertions",
+      "exit_code": 0,
+      "messages": 34,
+      "acceptance_cases": 36,
+      "remaining_open_rule_questions": 0
+    },
+    {
+      "command": "git diff --check -- :!docs/simulator/upstream.patch",
+      "exit_code": 0,
+      "note": "Generated upstream patch includes inherited context whitespace; artifact integrity checked by simulator audit."
+    }
+  ],
+  "historical_workspace_audit": {
+    "current_workspace": {
+      "command": "python3 scripts/audit_bga_targets.py --check --workspace ..",
+      "exit_code": 1,
+      "reason": "Historical package-1 source checksum changed as intended: engine/include/card.h. Frozen provenance preserved."
+    },
+    "frozen_source_workspace": {
+      "exit_code": 0,
+      "method": "Temporary workspace: original external comparison/BGA files, engine source files read from frozen f39c1d7 Git objects; no source hashes rewritten.",
+      "baseline": "f39c1d7ead271df437269b7f555a2c7a0d4b9ad1",
+      "summary": {
+        "card_rows": 80,
+        "card_types": 77,
+        "wonder_sides": 14,
+        "chain_edges": 25,
+        "deck_sizes": {
+          "3": [
+            21,
+            21,
+            21
+          ],
+          "4": [
+            28,
+            28,
+            28
+          ],
+          "5": [
+            35,
+            35,
+            35
+          ],
+          "6": [
+            42,
+            42,
+            42
+          ],
+          "7": [
+            49,
+            49,
+            49
+          ]
+        },
+        "second_edition_implemented": false
+      }
+    }
+  },
+  "invariants": {
+    "card_declarations_byte_equal": true,
+    "legacy_building_effect_switch_byte_equal": true,
+    "science_functions_unchanged": true,
+    "unchanged_paths": [
+      "src/wonder.cpp",
+      "include/wonder.h",
+      "engine-contract.json",
+      "data",
+      "gui",
+      "scripts",
+      "Game.py"
+    ],
+    "parent_worktree_changes": [
+      "engine (advanced local submodule HEAD only)"
+    ]
+  },
+  "artifacts_sha256": {
+    "include/card.h": "42ba14b5c8b6415698f2b6c1ed3ea66e6e48a752a925666ce6261b36a98e5f97",
+    "src/card.cpp": "5fc3fcc99d145bf9d1572445006c0f46efca92982c555fc5efb4f9ce190f9bdd",
+    "include/player.h": "9451df8822b8936b94485c81419f0447d7d9b4e3dabcad991b8c76a17bcaa450",
+    "src/player.cpp": "34820018af762faf1fc9a6ebef91268aa16294febc2a5dde4a04aedb3dbe1c22",
+    "main.cpp": "d666252126f12930b388dc1555928f142be6f8bcee4b4178cf0c3ca0c84bf6fc",
+    "CMakeLists.txt": "295885efe89d46aaeab040b38b643943c9eccb5e512d6bff9ac9a0451d5952de",
+    "tests/test_discard_safety.cpp": "017b554688ab017660f2718736348593d621c3861cbc13037dbb9dafe37051e3",
+    "docs/DISCARD_SAFETY.md": "bc79cfaeb27bb996f2c45653df2580ba364e151a6c5a1c4e37cee5c2ca9bbd5f",
+    "docs/DECISION_PROTOCOL_DRAFT.md": "0bfa833a195c6ac9730ba5a44c704407fe61923e72dec8ad192c45f014d7898a",
+    "docs/decision-protocol-examples.json": "9958987727467830209da431830b96941fb86c5d53d9bce3f8c5e722297d0ff1",
+    "docs/simulator/manifest.json": "1dd5f384b0caba932fa640e2edbe98eac422a162d407d65a6f36ff8b1bb81b17",
+    "docs/simulator/upstream.patch": "0083cdc3d85e9999db4dcfc4e954306f50e2c8ee534798433e7e1aed37e58220"
+  },
+  "rl_lock_sha256": "ccdc338dba3b39de6aa9694f4504cf61dd4eea80db741d7dfd856097369009d6",
+  "limits": [
+    "Internal discard safety only; no new decision state machine or protocol 3.",
+    "V2 preselection cannot enforce mandatory visible selection; missing/ambiguous/invalid extras build nothing and expire at turn boundary.",
+    "Regular simultaneous resources, payments, effect counts, leftover cards, seventh-card and age-end barriers remain 4b-II.",
+    "No target-data/card/wonder/science/GUI/RL/feature/export/training modifications.",
+    "No push/release, parent pin or lock update; development edition flag remains false.",
+    "Existing legacy exporters are not adapted for the extracted development ApplyBuilding function; later adoption requires an explicit exporter contract.",
+    "Only the 4b-II follow-up is prepared, not begun."
+  ]
+}

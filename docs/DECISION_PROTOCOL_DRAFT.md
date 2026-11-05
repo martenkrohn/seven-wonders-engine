@@ -6,8 +6,10 @@ Das aktuelle Binary bleibt bei [Protokoll 2](PROTOCOL.md) und dem unveränderten
 [Entwicklungskontrakt](../engine-contract.json) aus Paket 3. Die folgenden
 Nachrichten sind Beispiele für die spätere Implementierung, keine Befehle für
 das heutige Binary. Ein Client darf Version 3 nicht als Version 2 behandeln.
+Paket 4b-I implementiert inzwischen die [interne sichere Ablageentnahme](DISCARD_SAFETY.md),
+jedoch keine der neuen Nachrichten oder den vollständigen Entscheidungsautomaten.
 
-## 1. Geltung, Quellen und offene Fachfragen
+## 1. Geltung, Quellen und entschiedene Fachfragen
 
 Ziel ist das BGA-Grundspiel mit drei Sitzen, ohne Erweiterungen. Maßgeblich sind
 die [eingefrorenen Ziele](../data/bga-second-edition/README.md). Der Vertrag
@@ -20,21 +22,21 @@ erfindet keine Regeln aus BGA-IDs und enthält keinen BGA-Servercode.
 | EFFECTS | [Offizielle Effektübersicht](https://cdn.svc.asmodee.net/production-rprod/storage/downloads/games/7wonders/en/sev-en02-effects-description-1716388911mLqDj.pdf), S. 1–2: gleichzeitige Nachbarkarten beim Münzeffekt, Ablagewahl am Zugende, Babylon als neuer Zug |
 | FAQ | [Offizielle FAQ](https://www.rprod.com/en/7-wonders/faq), geprüft am 5. November 2026: Einnahmen erst im nächsten Zug verwenden; Olympia bezieht sich auf den ersten/sechsten regulären Zug; Ablagebau erlaubt keinen Wunderbau |
 | CODE | `main.cpp::Loop/NextTurn/GiveWonders`, `src/player.cpp::BuildDiscardFree/BuildStructure`, `gui/session.py`; aktuelle Zustände und nachgewiesene Grenzen, kein Beleg für BGA-Regeln |
+| USER | Verbindliche Nutzervorgabe vom 5. November 2026 nach Paket 4a: RQ-1 **nein**, RQ-2 **nein**. Projektregelentscheidung, kein zusätzlicher Nachweis aus BGA-Servercode. |
 
 Technische Festlegungen dieses Entwurfs (Kennungen, Quittierungen, atomare
 Änderungen, synthetische Reihenfolge) sind bewusste Entwurfsentscheidungen.
-Die folgenden zwei Fachfragen sind davon getrennt und noch offen:
+Die folgenden ursprünglich offenen Fachfragen sind durch USER entschieden:
 
-| Frage | Evidenz, Entwurfsstand und Freigabebedingung |
+| Frage | Verbindliche Entscheidung und Herkunft |
 | --- | --- |
-| **RQ-1**: Zählt ein regulär gebauter Vineyard/Bazar auch eine erst in der nachgelagerten Halikarnassos-Wahl errichtete Nachbarkarte desselben Zugs? | EFFECTS nennt gleichzeitige Nachbarkarten und unterscheidet unmittelbaren Effekt vom Ablagebau am Zugende; BGA-Zieldaten enthalten kein Ausführungstiming. Der Arbeitsentwurf wertet reguläre Effekte nach den regulären Konstruktionen, Ablageeffekte anschließend aus. Diese Auslegung ist **kein nachgewiesenes BGA-Verhalten**. Vor Freigabe der betroffenen Münzauflösung in 4b-II Quelle/gezielten BGA-Fall bestätigen und den gewählten Zählzustand festschreiben. |
-| **RQ-2**: Darf Halikarnassos bei mindestens einer legalen Option freiwillig verzichten? | EFFECTS verlangt eine Wahl; die eingefrorene BGA-Fähigkeit ist nur `pickDiscarded=true`. Die genaue BGA-Verzichtsregel folgt daraus nicht sicher. Das Nachrichtenformat unterstützt `can_skip`, ohne dessen Fachwert zu erraten. Vor interaktiver Freischaltung von `discard_choice_v1` die Regel bestätigen. Beispiele verwenden ausdrücklich das Profil `require_choice`: kein freiwilliges Überspringen, leere Auswahl automatisch erledigt. |
+| **RQ-1**: Zählt ein regulär gebauter Vineyard/Bazar auch eine erst in der nachgelagerten Halikarnassos-Wahl errichtete Nachbarkarte desselben Zugs? | **Nein (USER).** Reguläre Soforteffekte werden nach allen regulären Konstruktionen und vor der Ablagewahl gezählt. Spätere Ablagekonstruktionen ändern deren Auszahlung nicht rückwirkend. EFFECTS/BGA begründeten die ursprüngliche Frage; die Nutzervorgabe legt den Projektvertrag fest. |
+| **RQ-2**: Darf Halikarnassos bei mindestens einer legalen Option freiwillig verzichten? | **Nein (USER).** Bei mindestens einer legalen Option muss gewählt werden; `can_skip=false`, keine angebotene Skip-Option. Gibt es keine legale Option, schließt die Engine automatisch ohne Ersatzaktion. EFFECTS/BGA begründeten die ursprüngliche Frage; die Nutzervorgabe entscheidet sie. |
 
-Keine Frage blockiert die interne sichere Ablageentnahme in **4b-I**. Der
-vollständige interaktive BGA-Pfad darf erst freigegeben werden, wenn RQ-2
-geklärt ist; betroffene Münzeffekte benötigen zusätzlich RQ-1. Ein vorläufiges
-Profil muss diese Einschränkung ausdrücklich tragen und darf keine geprüfte
-BGA-Kompatibilität behaupten. Änderungen der Entscheidungen werden versioniert.
+Beide Fachfragen sind für die Implementierung geschlossen. Der vollständige
+Entscheidungsautomat, simultane Auflösung und passende Clients müssen dennoch
+separat implementiert und abgenommen werden. Die Nutzervorgabe ist ausdrücklich
+von einer unabhängigen Überprüfung des BGA-Servers getrennt.
 
 ## 2. Identitäten, Zustandsstand und Sichtbarkeit
 
@@ -155,8 +157,8 @@ gespeichert. Die übrigen Angebote behalten ihre ursprüngliche Kennung und Revi
    passende Nachbarkarten derselben regulären Auflösung zählen mit; eine
    Lighthouse zählt sich selbst mit (EFFECTS). Einnahmen werden gespeichert,
    aber erst im nächsten Zug ausgebbar. Neue Ablage-/Zusatzzugrechte entstehen
-   aus genau einem erfolgreich angewandten Quelleffekt. Der Randfall späterer
-   Ablagekonstruktionen für reguläre Münzzähler bleibt RQ-1.
+   aus genau einem erfolgreich angewandten Quelleffekt. Spätere
+   Ablagekonstruktionen ändern diese regulären Münzzähler nicht (RQ-1/USER).
 
 Eine sortierte Schleife darf intern Änderungen übernehmen, aber nicht die
 Zahlbarkeit oder Zähler mit einem bereits teilweise veränderten Zustand
@@ -199,8 +201,9 @@ Stadt, Geld und Grant unverändert; interne Fehler brechen kontrolliert ab.
 
 Bei null legalen Optionen schließt die Engine den Grant automatisch als
 `consumed_no_options`; die Ablage bleibt gleich. Es gibt weder Münzen noch eine
-Ersatzaktion. Bei legalen Optionen ist freiwilliges `skip` nur erlaubt, wenn
-`can_skip=true` und eine entsprechende Option angeboten wird (RQ-2).
+Ersatzaktion. Bei legalen Optionen ist freiwilliges `skip` im hier definierten
+Grundspiel ausgeschlossen: `can_skip=false`, keine Skip-Option (RQ-2/USER).
+Das allgemeine Hüllenfeld bleibt vorhanden, erweitert aber nicht diese Regel.
 Ein ungültiges oder veraltetes Gesuch verbraucht nichts. Ein Abbruch markiert
 offene Grants als `cancelled_abort`, nicht als verbaut oder für später verfügbar.
 
@@ -209,7 +212,7 @@ dann konsistenten Zustand ausgewertet; neue Produktion wird erst in einem
 folgenden Zug benutzt. Weitere Grants würden hinten gemäß derselben festen
 Ordnung eingereiht; im hier definierten Kartenbestand erzeugt eine solche
 Karte keinen rekursiven Ablagebau. Vorherige reguläre Zähler werden unter der
-Arbeitsauslegung aus RQ-1 nicht rückwirkend ausgezahlt.
+Entscheidung aus RQ-1/USER nicht rückwirkend ausgezahlt.
 
 ## 6. Sechster Zug, siebte Karte und Ärenende
 
@@ -380,7 +383,7 @@ Zusatzwahl darf er warten, ohne eine eigene Lernaktion zu erzeugen.
 _send_action_impl/_wait_next_impl` und `ObservationHistory::observe/acknowledge`
 erfüllen diesen Entwurf heute ausdrücklich nicht. Ihre Anpassung gehört in
 die jeweiligen späteren Pakete. Fähigkeiten werden erst beworben, wenn die
-zugehörigen Engine-Pfade und die Fachfragen abgenommen sind.
+zugehörigen Engine-Pfade und Clients abgenommen sind.
 
 ## 9. Getrennte Implementierungsaufträge
 
@@ -390,7 +393,7 @@ Fehler-/Wiederholungsfälle direkt in C++ prüfen. Keine neue interaktive
 Protokollfreigabe und keine Runden-/Zahlungsneufassung in diesem Auftrag.
 
 **4b-II – Auflösung und Veröffentlichung:** Gemeinsamer Anfangszustand,
-Zahlungspläne, Münzeffekte nach geklärtem RQ-1, Warteschlange, Restkarten,
+Zahlungspläne, Münzeffekte gemäß RQ-1/USER, Warteschlange, Restkarten,
 Babylon-/Ärenbarrieren, Nachrichtenledger und Protokollzustände. Erst mit
-geklärtem RQ-2 und passenden Clients den interaktiven Ablagepfad freigeben.
+passenden Clients den interaktiven Ablagepfad gemäß RQ-2/USER freigeben.
 Weitere Karten-/Wunderfähigkeiten, GUI und RL-Integration behalten ihre Pakete.

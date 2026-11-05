@@ -168,5 +168,13 @@
     "specification_commit_exists": true,
     "additional_plan_local_links_checked": 12,
     "next_task": "4b-I only; internal safe discard removal; not started"
+  },
+  "historical_evidence_note": "Hashes, 34-message/36-case checks and open questions describe the original package-4a specification commit. Current rule decisions and implementation evidence are recorded in discard-safety-validation.json.",
+  "subsequent_user_rule_decisions": {
+    "decided_on": "2026-11-05",
+    "RQ-1": false,
+    "RQ-2": false,
+    "remaining_open_questions": [],
+    "source": "User message following the explanations: Erste Frage, nein, Zweite Frage auch nein."
   }
 }

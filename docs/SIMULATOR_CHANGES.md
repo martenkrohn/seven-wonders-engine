@@ -175,6 +175,51 @@ Python-Diagnose und feste Symbolformel stimmen mit der Veröffentlichung
 abgegrenzt. Keine RL-Übernahme, Pin-/Lock-Änderung, Veröffentlichung oder
 Trainingsänderung. Details: [SCIENCE_SCORING.md](SCIENCE_SCORING.md).
 
+## ENG-013 – Sichere interne Ablageentnahme
+
+5. November 2026, Paket 4b-I, unverändert `v0.2.0-dev`,
+`ruleset=bga-second-edition-development`, `second_edition_implemented=false`,
+Transportversion 2. Dateien: `include/card.h`, `src/card.cpp`,
+`include/player.h`, `src/player.cpp`, `main.cpp`, `CMakeLists.txt` und
+`tests/test_discard_safety.cpp`.
+
+Drei getrennte rote C++-Fälle weisen die geerbten Fehler nach: erfolgreiche
+Konstruktion ohne zentrale Ablageentnahme, Löschen einer fremden Handposition
+über den Ablageindex und Rechtverbrauch bereits bei ungültiger Auswahl.
+Physische Deckkopien erhalten jetzt eine nichtnullige, parteilokale
+Instanzkennung. `Card::Equal()` bleibt der logische Typvergleich. Mischen,
+Austeilen, Weiterreichen und Ortswechsel erhalten die physische Kennung.
+Namensbasierte V2-Handaktionen werden an die tatsächliche Hand gebunden,
+nicht an eine möglicherweise gleichnamige Karte eines anderen Zeitalters.
+Eine fehlende Namenssuche liefert eine sicher initialisierte leere Karte.
+
+`ApplyBuilding()` trennt die unveränderte Gebäudeanwendung von der
+Quellentnahme. `BuildDiscardFree()` nimmt den zentralen Ablagevektor per
+Referenz und bindet genau eine physische Instanz. Ein vorbereiteter Spieler-
+und Ablagezustand übernimmt Gebäudeeffekt, Stadtzugang, einmalige Entnahme
+und Rechtverbrauch gemeinsam über nicht werfende Swaps. Fehler davor lassen
+den Originalzustand unverändert. Kein Ablageindex wird in der Hand verwendet.
+Vorhandene Halikarnassos-Stufen erteilen ein Recht höchstens einmal je
+Quellstufe; null legale Optionen schließen es automatisch ohne Ersatz.
+
+V2 `extra` wird pro Sitz gespeichert und auf eine eindeutige Namensvorwahl
+in der tatsächlichen Ablage begrenzt. Eine unerfüllte Vorwahl baut nichts;
+das alte Zugfenster endet ohne Verschleppung des Rechts. Die vollständige
+sichtbare Pflichtauswahl und die simultane Auflösung bleiben 4b-II. Die
+Nutzervorgaben zu RQ-1/RQ-2 sind im Entwurf übernommen: kein nachträglicher
+regulärer Münzertrag durch späteren Ablagebau, kein freiwilliger Verzicht
+bei legaler Option. V2 erzwingt diese Wahlpflicht noch nicht.
+
+Prüfungen: `discard_safety` mit physischer Kopienwahl, Altersduplikaten,
+Handisolation, falscher/verbrauchter Berechtigung, ungültigem und anschließend
+gültigem Versuch, realen Halikarnassos-Stufen, leerer Auswahl, Sitzbindung im
+echten Schlussrunden-Dateipfad, mehrdeutigen Namen und 63 erzwungenen
+Allokationsfehlern vor dem Commit. Alle sieben CTests und die 19 bestehenden
+Python-/Sessiontests bestehen. Eigenständiger Zielaudit grün; historischer
+Workspace-Abgleich benötigt seine eingefrorenen C++-Quelldateien, deren
+Prüfsummen nicht überschrieben werden. Patch/Inventar sind aktualisiert.
+Details und verbleibende Grenzen: [DISCARD_SAFETY.md](DISCARD_SAFETY.md).
+
 ## Abgrenzung
 
 Es findet keine pauschale Behauptung vollständiger Regelkorrektheit statt. Insbesondere werden die Wunder-Ausbauschritte nicht zur neuen Edition migriert. Auch Kartenwerte werden durch den aktuellen Self-Play-Umbau nicht geändert. Falls frühere Kartenänderungen nicht im exakten Unterschied zu diesem Upstream-Commit erscheinen, werden sie nicht ohne Nachweis als Änderungen dieser C++-Fassung behauptet. Für jede zukünftige Änderung ist ein neuer Eintrag mit Anlass, genauer Funktion, Wirkung, Test und Grenzen anzulegen und der exakte Nachweis neu zu erzeugen.

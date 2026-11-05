@@ -1,10 +1,12 @@
 #include <card.h>
 #include <string>
 #include <utility>
+#include <stdexcept>
 
 namespace DMAG {
 
-Card::Card(){}
+Card::Card() : id(CARD_ID::none), type(CARD_TYPE::materials), era(0),
+               freeWithId(CARD_ID::none), amountPerPlayers{} {}
 
 Card::Card(int id, std::string name, int type, int era, int freeWithId, std::vector<int> cost, std::vector<int> amountPerPlayers){
     this->id = id;
@@ -32,6 +34,18 @@ Card::Card(int id, std::string name, int type, int era, int freeWithId, std::vec
 
 int Card::GetId() const{
     return this->id;
+}
+
+std::uint64_t Card::GetInstanceId() const {
+    return instance_id;
+}
+
+Card Card::CreateInstance(std::uint64_t identity) const {
+    if (!identity || instance_id)
+        throw std::invalid_argument("Only a definition can create a nonzero physical card identity");
+    Card result = *this;
+    result.instance_id = identity;
+    return result;
 }
 
 std::string Card::GetName() const{

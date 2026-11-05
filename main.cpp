@@ -38,6 +38,7 @@ class Game{
         vector<Wonder*> wonders;
         vector<Card> deck[3]; // need to change to Deck deck[3];
         vector<Card> discard_pile; // need to change to Deck discard_pile;
+        uint64_t next_card_instance = 1;
 
         Filer fp;
         std::mt19937_64 rng;
@@ -45,6 +46,38 @@ class Game{
         unsigned int poll_us;
         bool quiet;
         json last_actions = json::object();
+
+        static const Card* UniqueNamedCard(const vector<Card>& cards, const string& name) {
+            const Card* found = nullptr;
+            for (const Card& card : cards) {
+                if (card.GetName() != name) continue;
+                if (found) return nullptr;
+                found = &card;
+            }
+            return found;
+        }
+
+        // V2 still preselects by name. Bind it only to the submitting seat and
+        // one real pile instance; the interactive decision queue belongs to 4b-II.
+        void ResolveDiscardExtras(const vector<string>& extras) {
+            if (extras.size() != player_list.size())
+                throw std::invalid_argument("Discard extras must belong to individual seats");
+            try {
+                for (size_t seat = 0; seat < player_list.size(); ++seat) {
+                    Player* player = player_list[seat];
+                    if (player->HasDiscardFree() && !player->CloseDiscardIfNoOptions(discard_pile)) {
+                        const Card* selected = UniqueNamedCard(discard_pile, extras[seat]);
+                        if (selected) player->BuildDiscardFree(*selected, discard_pile);
+                    }
+                    // Invalid/absent V2 preselection is not a successful build.
+                    // Its unfulfilled right expires at this turn boundary.
+                    player->DiscardFree(false);
+                }
+            } catch (...) {
+                for (Player* player : player_list) player->DiscardFree(false);
+                throw;
+            }
+        }
 
     public:
 
@@ -60,7 +93,7 @@ class Game{
                     }
                 }
             }
-            return Card(0, "not found", 0, 0, 0, std::vector<int>(), std::vector<int>());
+            return Card();
         }
 
         /*
@@ -325,14 +358,14 @@ class Game{
             for (DMAG::Card const& card : cards) {
                 int amount = card.GetAmount(this->number_of_players);
                 for (int i = 0; i < amount; i++) {
-                    deck[card.GetEra()-1].push_back(card);
+                    deck[card.GetEra()-1].push_back(card.CreateInstance(next_card_instance++));
                 }
             }
 
             // add guild cards to deck (5 cards to 3 players, 6 cards to 4 players, ...)
             std::shuffle(guild_cards.begin(), guild_cards.end(), rng);
             for (int i = 0; i < this->number_of_players + 2; i++) {
-                deck[2].push_back(guild_cards[i]);
+                deck[2].push_back(guild_cards[i].CreateInstance(next_card_instance++));
             }
         }
 
@@ -482,7 +515,7 @@ class Game{
 
         void Loop(){
             json json_object;
-            std::string command, argument, extra;
+            std::string command, argument;
             std::vector<DMAG::Card> hand_cards_bkp;
             // fp.StartLog(time(0));
 
@@ -510,6 +543,7 @@ class Game{
                     if (poll_us) std::this_thread::sleep_for(std::chrono::microseconds(poll_us));
                 }
                 last_actions = json::object();
+                vector<string> extras(number_of_players);
 
                 for(int i = 0; i < number_of_players; i++){
                     json_object = fp.ReadMessages(i);
@@ -519,8 +553,7 @@ class Game{
                     command = json_object["command"]["subcommand"];
                     argument = json_object["command"]["argument"];
 
-                    // Only the player with Halikarnassos will have something written on extra.
-                    extra = json_object["command"]["extra"];
+                    extras[i] = json_object["command"]["extra"];
                     last_actions[to_string(i)] = {{"requested", command}, {"executed", command},
                                                    {"status", "applied"}, {"turn", turn}};
 
@@ -540,8 +573,10 @@ class Game{
                     // buy the same production independently. See ENG-006 in
                     // docs/SIMULATOR_CHANGES.md and joint_action_resources test.
                     for (Player* player : player_list) player->ResetUsed();
-                    Card card_played = GetCardByName(argument);
                     hand_cards_bkp = player_list[i]->GetHandCards();
+                    const Card* selected = UniqueNamedCard(hand_cards_bkp, argument);
+                    if (!selected) throw std::runtime_error("Action must name exactly one card in this seat's hand");
+                    Card card_played = *selected;
 
                     if (command == "build_structure"){
                         if(player_list[i]->BuildStructure(card_played, player_list[i]->GetHandCards(), false)) {
@@ -584,15 +619,8 @@ class Game{
                 // VERY IMPORTANT: call player->ResetUsed() for each player at the end of a turn!
                 for (int i = 0; i < player_list.size(); i++) {
                     player_list[i]->ResetUsed();
-                    // If extra is not empty, try to build a card from the discard pile for free.
-                    // (will only work if the player has the required stage for Halikarnassos)
-                    if (!extra.empty()) {
-                        Card c = GetCardByName(extra);
-                        if (player_list[i]->BuildDiscardFree(c, discard_pile)) {
-                            cout << "<BuildDiscardFree OK>" << endl;
-                        }
-                    }
                 }
+                ResolveDiscardExtras(extras);
 
                 NextTurn();
 

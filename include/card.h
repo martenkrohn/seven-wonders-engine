@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <cstdint>
 #include <resources.h>
 
 namespace CARD_ID{
@@ -120,6 +121,8 @@ namespace DMAG {
 class Card
 {
 private:
+    // Zero identifies a definition/legacy fixture, not a physical deck card.
+    std::uint64_t instance_id = 0;
     int id;
     std::string name;
     int type;
@@ -146,6 +149,8 @@ public:
     int GetEra() const;
     int GetFreeWith() const;
     int GetAmount(int) const;
+    std::uint64_t GetInstanceId() const;
+    Card CreateInstance(std::uint64_t identity) const;
     bool Equal(Card c);
     bool CanBePlayed(std::map<int, int> resources);
     std::map<int, int> MissingCards(std::map<int, int> resources);

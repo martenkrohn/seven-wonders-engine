@@ -31,6 +31,7 @@ private:
     bool manuf_cheap;          // Can the player buy manufactured resources from neighbors for 1 coin? (Marketplace)
     bool free_card_once;       // EXTRA check whether the player can build a card for free once per Age or not.
     bool discard_free;         // Checks if the player can build an extra card from the discard pile.
+    int discard_grant_stage = 0; // Last source event; closing a right never re-arms this stage.
     bool can_build_wonder;     // Checks if the player can build the next stage of a Wonder each round.
 
 
@@ -67,6 +68,9 @@ private:
 
     DMAG::Player* player_east;
     DMAG::Player* player_west;
+
+    // Applies a building to this player without taking a card from any source.
+    void ApplyBuilding(DMAG::Card c, bool free_card);
 
 public:
     Player();
@@ -122,7 +126,9 @@ public:
     bool ChooseExtraRaw(int resource);     // Once per turn.
     void CanPlaySeventh();
     void CanBuyRawCheap();
-    bool BuildDiscardFree(DMAG::Card c, std::vector<DMAG::Card> discard_pile); // At the end of the turn after the stage was built.
+    bool BuildDiscardFree(DMAG::Card c, std::vector<DMAG::Card>& discard_pile);
+    bool HasDiscardFree() const;
+    bool CloseDiscardIfNoOptions(const std::vector<DMAG::Card>& discard_pile);
     bool BuildHandFree(DMAG::Card c); // Once per Age.
     bool CopyGuild(); // At the end of the game.
     bool PlaySeventh();

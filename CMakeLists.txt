@@ -76,6 +76,13 @@ add_test(NAME science_scoring COMMAND test_science_scoring)
 set_tests_properties(science_scoring PROPERTIES
     WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/science_scoring_runtime" TIMEOUT 10)
 
+add_executable(test_discard_safety tests/test_discard_safety.cpp
+    src/card.cpp src/player.cpp src/wonder.cpp src/filer.cpp)
+file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/discard_safety_runtime")
+add_test(NAME discard_safety COMMAND test_discard_safety)
+set_tests_properties(discard_safety PROPERTIES
+    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/discard_safety_runtime" TIMEOUT 15)
+
 # The regression programs use assert(), including when the engine is built Release.
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(test_choice_simple PRIVATE -UNDEBUG)

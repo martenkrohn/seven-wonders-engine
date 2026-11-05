@@ -6,10 +6,11 @@
   "checked_on": "2026-11-05",
   "implemented_protocol_version": 2,
   "example_profile": {
-    "name": "technical-require-choice",
+    "name": "base-game-no-decline",
     "bga_verified": false,
     "discard_can_skip": false,
-    "regular_coin_counting": "regular_cohort_before_end_turn_discard; conditional RQ-1"
+    "regular_coin_counting": "regular_cohort_before_end_turn_discard; no retroactive payout",
+    "rule_basis": "user_decisions_2026-11-05"
   },
   "scope": "Message envelopes with reduced economic player payloads and abbreviated unrelated action options. They are not complete playable state fixtures. Alternative branches are independent. Terminal envelope omits intervening play. No examples are runtime tests.",
   "scenario_preconditions": [
@@ -22,7 +23,8 @@
     "RULES",
     "EFFECTS",
     "FAQ",
-    "CODE"
+    "CODE",
+    "USER"
   ],
   "main_trace": [
     "S-collect",
@@ -2760,18 +2762,19 @@
     },
     {
       "id": "D14",
-      "title": "Optional decline",
+      "title": "No voluntary decline",
       "preconditions": [
         "legal options exist"
       ],
       "event": "request skip",
       "expected": [
-        "allowed only if explicitly offered with can_skip=true",
-        "otherwise rejected; no consumed grant"
+        "can_skip=false and no skip option in base game",
+        "skip rejected; no grant consumption"
       ],
       "message_refs": [],
-      "status": "conditional_on_rule_question",
-      "rule_question": "RQ-2"
+      "status": "specified",
+      "rule_question": null,
+      "rule_decision": "RQ-2"
     },
     {
       "id": "D15",
@@ -2959,12 +2962,13 @@
       ],
       "event": "settle the two cohorts",
       "expected": [
-        "no release of the affected BGA counting rule until RQ-1 is resolved",
-        "working interpretation is explicitly provisional"
+        "ordinary coin counts fixed before end-of-turn discard choices",
+        "later brown/grey discard construction causes no retroactive payout"
       ],
       "message_refs": [],
-      "status": "conditional_on_rule_question",
-      "rule_question": "RQ-1"
+      "status": "specified",
+      "rule_question": null,
+      "rule_decision": "RQ-1"
     },
     {
       "id": "D27",
@@ -3147,6 +3151,20 @@
       ],
       "status": "specified",
       "rule_question": null
+    }
+  ],
+  "rule_decisions": [
+    {
+      "id": "RQ-1",
+      "answer": false,
+      "source": "USER",
+      "decided_on": "2026-11-05"
+    },
+    {
+      "id": "RQ-2",
+      "answer": false,
+      "source": "USER",
+      "decided_on": "2026-11-05"
     }
   ]
 }

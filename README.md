@@ -12,6 +12,9 @@ still use the legacy data; the full second-edition/BGA rules are not implemented
 separately from transport protocol 2. See the [science validation](docs/SCIENCE_SCORING.md).
 Package 4a adds a [decision/resolution specification](docs/DECISION_PROTOCOL_DRAFT.md)
 for later implementation; its proposed transport 3 is not active.
+Package 4b-I secures [internal discard construction](docs/DISCARD_SAFETY.md)
+with stable physical identities and atomic removal. Interactive discard choices
+and simultaneous settlement are still separate work.
 
 The tagged `v0.1.1-legacy` release preserves the restored original Tk GUI and
 the simulator used by [Seven Wonders RL](https://github.com/martenkrohn/seven-wonders-rl).

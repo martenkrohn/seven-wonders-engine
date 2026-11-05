@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index add0c31aea13d74f44b3e843977cf13e0ca4eec2..912fa8d94f79ce0f67a4d995a32256dd5022942a 100644
+index add0c31aea13d74f44b3e843977cf13e0ca4eec2..61d99037078f0f04dc9ee574e8be0cc524708551 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -1,3 +1,4 @@
@@ -16,7 +16,7 @@ index add0c31aea13d74f44b3e843977cf13e0ca4eec2..912fa8d94f79ce0f67a4d995a32256dd
  
  set(SOURCES
      main.cpp
-@@ -29,4 +30,63 @@ set(HEADERS
+@@ -29,4 +30,70 @@ set(HEADERS
  
  add_executable(7Wonders ${SOURCES} ${HEADERS})
  
@@ -67,6 +67,13 @@ index add0c31aea13d74f44b3e843977cf13e0ca4eec2..912fa8d94f79ce0f67a4d995a32256dd
 +set_tests_properties(science_scoring PROPERTIES
 +    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/science_scoring_runtime" TIMEOUT 10)
 +
++add_executable(test_discard_safety tests/test_discard_safety.cpp
++    src/card.cpp src/player.cpp src/wonder.cpp src/filer.cpp)
++file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/discard_safety_runtime")
++add_test(NAME discard_safety COMMAND test_discard_safety)
++set_tests_properties(discard_safety PROPERTIES
++    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/discard_safety_runtime" TIMEOUT 15)
++
 +# The regression programs use assert(), including when the engine is built Release.
 +if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 +    target_compile_options(test_choice_simple PRIVATE -UNDEBUG)
@@ -81,8 +88,38 @@ index add0c31aea13d74f44b3e843977cf13e0ca4eec2..912fa8d94f79ce0f67a4d995a32256dd
 +        --engine "$<TARGET_FILE:7Wonders>")
 +    set_tests_properties(protocol_smoke PROPERTIES TIMEOUT 60)
 +endif()
+diff --git a/include/card.h b/include/card.h
+index 607ae4d0676afce74abea6e42479f732b4409ec6..d344ff2c822a2ecddc0e06ba3b1e8d524ca9392b 100644
+--- a/include/card.h
++++ b/include/card.h
+@@ -4,6 +4,7 @@
+ #include <string>
+ #include <vector>
+ #include <map>
++#include <cstdint>
+ #include <resources.h>
+ 
+ namespace CARD_ID{
+@@ -120,6 +121,8 @@ namespace DMAG {
+ class Card
+ {
+ private:
++    // Zero identifies a definition/legacy fixture, not a physical deck card.
++    std::uint64_t instance_id = 0;
+     int id;
+     std::string name;
+     int type;
+@@ -146,6 +149,8 @@ public:
+     int GetEra() const;
+     int GetFreeWith() const;
+     int GetAmount(int) const;
++    std::uint64_t GetInstanceId() const;
++    Card CreateInstance(std::uint64_t identity) const;
+     bool Equal(Card c);
+     bool CanBePlayed(std::map<int, int> resources);
+     std::map<int, int> MissingCards(std::map<int, int> resources);
 diff --git a/include/player.h b/include/player.h
-index 3118d29d0e816f39ae1fafd5932b1b2dba5bb47f..03769ad395ea4337466ce75d3d0c7c7d8f34c643 100644
+index 3118d29d0e816f39ae1fafd5932b1b2dba5bb47f..5593310d506165bee69f428de8992fba201e9787 100644
 --- a/include/player.h
 +++ b/include/player.h
 @@ -1,5 +1,8 @@
@@ -94,8 +131,11 @@ index 3118d29d0e816f39ae1fafd5932b1b2dba5bb47f..03769ad395ea4337466ce75d3d0c7c7d
  
  #include <card.h>
  #include <wonder.h>
-@@ -30,8 +33,6 @@ private:
+@@ -28,10 +31,9 @@ private:
+     bool manuf_cheap;          // Can the player buy manufactured resources from neighbors for 1 coin? (Marketplace)
+     bool free_card_once;       // EXTRA check whether the player can build a card for free once per Age or not.
      bool discard_free;         // Checks if the player can build an extra card from the discard pile.
++    int discard_grant_stage = 0; // Last source event; closing a right never re-arms this stage.
      bool can_build_wonder;     // Checks if the player can build the next stage of a Wonder each round.
  
 -    bool raw_extra;            // The player has an additional raw material. (Caravansery and Alexandria A)
@@ -103,7 +143,7 @@ index 3118d29d0e816f39ae1fafd5932b1b2dba5bb47f..03769ad395ea4337466ce75d3d0c7c7d
  
      // Possible values:
      // -> -1 (not used)
-@@ -45,6 +46,9 @@ private:
+@@ -45,6 +47,9 @@ private:
      int used_forum;
      int used_caravansery;
  
@@ -113,7 +153,17 @@ index 3118d29d0e816f39ae1fafd5932b1b2dba5bb47f..03769ad395ea4337466ce75d3d0c7c7d
      // Key needs to be int because the underlying type in enums is int
      std::map<int, int> resources{
          { RESOURCE::wood, 0 },
-@@ -101,6 +105,7 @@ public:
+@@ -64,6 +69,9 @@ private:
+     DMAG::Player* player_east;
+     DMAG::Player* player_west;
+ 
++    // Applies a building to this player without taking a card from any source.
++    void ApplyBuilding(DMAG::Card c, bool free_card);
++
+ public:
+     Player();
+ 
+@@ -101,6 +109,7 @@ public:
      int CalculateScientificScore();
      int CalculateWonderScore();
      int CalculateScore();
@@ -121,8 +171,19 @@ index 3118d29d0e816f39ae1fafd5932b1b2dba5bb47f..03769ad395ea4337466ce75d3d0c7c7d
  
      // Amount resources related
      int CalculateAmountCivilianCards();
+@@ -117,7 +126,9 @@ public:
+     bool ChooseExtraRaw(int resource);     // Once per turn.
+     void CanPlaySeventh();
+     void CanBuyRawCheap();
+-    bool BuildDiscardFree(DMAG::Card c, std::vector<DMAG::Card> discard_pile); // At the end of the turn after the stage was built.
++    bool BuildDiscardFree(DMAG::Card c, std::vector<DMAG::Card>& discard_pile);
++    bool HasDiscardFree() const;
++    bool CloseDiscardIfNoOptions(const std::vector<DMAG::Card>& discard_pile);
+     bool BuildHandFree(DMAG::Card c); // Once per Age.
+     bool CopyGuild(); // At the end of the game.
+     bool PlaySeventh();
 diff --git a/main.cpp b/main.cpp
-index 81c519daf5454fb08161015c17463be4137f5e97..ce541f4cfe4d45b2c15f8fa8fe8f9ad349b43b9d 100644
+index 81c519daf5454fb08161015c17463be4137f5e97..be691fdbad6de3f1826d1fa9e018925c60c9cdd0 100644
 --- a/main.cpp
 +++ b/main.cpp
 @@ -1,6 +1,13 @@
@@ -147,8 +208,11 @@ index 81c519daf5454fb08161015c17463be4137f5e97..ce541f4cfe4d45b2c15f8fa8fe8f9ad3
      private:
          vector<Player*> player_list;
          unsigned char number_of_players;
-@@ -32,6 +40,11 @@ class Game{
+@@ -30,8 +38,46 @@ class Game{
+         vector<Wonder*> wonders;
+         vector<Card> deck[3]; // need to change to Deck deck[3];
          vector<Card> discard_pile; // need to change to Deck discard_pile;
++        uint64_t next_card_instance = 1;
  
          Filer fp;
 +        std::mt19937_64 rng;
@@ -156,10 +220,51 @@ index 81c519daf5454fb08161015c17463be4137f5e97..ce541f4cfe4d45b2c15f8fa8fe8f9ad3
 +        unsigned int poll_us;
 +        bool quiet;
 +        json last_actions = json::object();
++
++        static const Card* UniqueNamedCard(const vector<Card>& cards, const string& name) {
++            const Card* found = nullptr;
++            for (const Card& card : cards) {
++                if (card.GetName() != name) continue;
++                if (found) return nullptr;
++                found = &card;
++            }
++            return found;
++        }
++
++        // V2 still preselects by name. Bind it only to the submitting seat and
++        // one real pile instance; the interactive decision queue belongs to 4b-II.
++        void ResolveDiscardExtras(const vector<string>& extras) {
++            if (extras.size() != player_list.size())
++                throw std::invalid_argument("Discard extras must belong to individual seats");
++            try {
++                for (size_t seat = 0; seat < player_list.size(); ++seat) {
++                    Player* player = player_list[seat];
++                    if (player->HasDiscardFree() && !player->CloseDiscardIfNoOptions(discard_pile)) {
++                        const Card* selected = UniqueNamedCard(discard_pile, extras[seat]);
++                        if (selected) player->BuildDiscardFree(*selected, discard_pile);
++                    }
++                    // Invalid/absent V2 preselection is not a successful build.
++                    // Its unfulfilled right expires at this turn boundary.
++                    player->DiscardFree(false);
++                }
++            } catch (...) {
++                for (Player* player : player_list) player->DiscardFree(false);
++                throw;
++            }
++        }
  
      public:
  
-@@ -70,7 +83,8 @@ class Game{
+@@ -47,7 +93,7 @@ class Game{
+                     }
+                 }
+             }
+-            return Card(0, "not found", 0, 0, 0, std::vector<int>(), std::vector<int>());
++            return Card();
+         }
+ 
+         /*
+@@ -70,7 +116,8 @@ class Game{
          /*
           * Initializes the game variables.
           */
@@ -169,7 +274,7 @@ index 81c519daf5454fb08161015c17463be4137f5e97..ce541f4cfe4d45b2c15f8fa8fe8f9ad3
              this->number_of_players = NUM_PLAYERS;
              this->era = 1;
              this->turn = 0;
-@@ -160,7 +174,7 @@ class Game{
+@@ -160,7 +207,7 @@ class Game{
              vector<Card> cards;
              int card_idx = 0;
  
@@ -178,7 +283,7 @@ index 81c519daf5454fb08161015c17463be4137f5e97..ce541f4cfe4d45b2c15f8fa8fe8f9ad3
  
              for (Player* & player : player_list) {
                  cards.clear();
-@@ -181,7 +195,7 @@ class Game{
+@@ -181,7 +228,7 @@ class Game{
  
              for (Player* & player : player_list) {
                  while (true) {
@@ -187,7 +292,13 @@ index 81c519daf5454fb08161015c17463be4137f5e97..ce541f4cfe4d45b2c15f8fa8fe8f9ad3
                      if (wonder_availability[n % 7]) {
                          player->SetWonder(wonders[n]);
                          wonder_availability[n % 7] = false;
-@@ -316,8 +330,7 @@ class Game{
+@@ -311,15 +358,14 @@ class Game{
+             for (DMAG::Card const& card : cards) {
+                 int amount = card.GetAmount(this->number_of_players);
+                 for (int i = 0; i < amount; i++) {
+-                    deck[card.GetEra()-1].push_back(card);
++                    deck[card.GetEra()-1].push_back(card.CreateInstance(next_card_instance++));
+                 }
              }
  
              // add guild cards to deck (5 cards to 3 players, 6 cards to 4 players, ...)
@@ -195,9 +306,12 @@ index 81c519daf5454fb08161015c17463be4137f5e97..ce541f4cfe4d45b2c15f8fa8fe8f9ad3
 -            random_shuffle(guild_cards.begin(), guild_cards.end());
 +            std::shuffle(guild_cards.begin(), guild_cards.end(), rng);
              for (int i = 0; i < this->number_of_players + 2; i++) {
-                 deck[2].push_back(guild_cards[i]);
+-                deck[2].push_back(guild_cards[i]);
++                deck[2].push_back(guild_cards[i].CreateInstance(next_card_instance++));
              }
-@@ -378,6 +391,11 @@ class Game{
+         }
+ 
+@@ -378,6 +424,11 @@ class Game{
              std::map<int, int> resources;
              DMAG::Wonder* wonder;
  
@@ -209,7 +323,7 @@ index 81c519daf5454fb08161015c17463be4137f5e97..ce541f4cfe4d45b2c15f8fa8fe8f9ad3
              status["game"]["era"] = era;
              status["game"]["turn"] = turn;
              status["game"]["clockwise"] = (era == 1 || era == 3);
-@@ -443,13 +461,11 @@ class Game{
+@@ -443,13 +494,11 @@ class Game{
                  status["players"][to_string(i)]["resources"]["shields"] = resources[RESOURCE::shields];
  
                  // victory points
@@ -228,7 +342,16 @@ index 81c519daf5454fb08161015c17463be4137f5e97..ce541f4cfe4d45b2c15f8fa8fe8f9ad3
  
                  // Amount resources by type
                  status["players"][to_string(i)]["amount"]["civilian"] = player_list[i]->CalculateAmountCivilianCards();
-@@ -474,6 +490,7 @@ class Game{
+@@ -466,7 +515,7 @@ class Game{
+ 
+         void Loop(){
+             json json_object;
+-            std::string command, argument, extra;
++            std::string command, argument;
+             std::vector<DMAG::Card> hand_cards_bkp;
+             // fp.StartLog(time(0));
+ 
+@@ -474,6 +523,7 @@ class Game{
  
                  WriteGameStatus();
  
@@ -236,7 +359,7 @@ index 81c519daf5454fb08161015c17463be4137f5e97..ce541f4cfe4d45b2c15f8fa8fe8f9ad3
                  cout << "\n:::TURN " << (short)this->turn << ":::" << endl;
  
                  // Print Playable Cards for each player.
-@@ -488,24 +505,41 @@ class Game{
+@@ -488,26 +538,45 @@ class Game{
                  }
  
                  cout << "<Waiting players...>" << endl;
@@ -246,6 +369,7 @@ index 81c519daf5454fb08161015c17463be4137f5e97..ce541f4cfe4d45b2c15f8fa8fe8f9ad3
 +                    if (poll_us) std::this_thread::sleep_for(std::chrono::microseconds(poll_us));
 +                }
 +                last_actions = json::object();
++                vector<string> extras(number_of_players);
  
                  for(int i = 0; i < number_of_players; i++){
                      json_object = fp.ReadMessages(i);
@@ -255,8 +379,9 @@ index 81c519daf5454fb08161015c17463be4137f5e97..ce541f4cfe4d45b2c15f8fa8fe8f9ad3
                      command = json_object["command"]["subcommand"];
                      argument = json_object["command"]["argument"];
  
-                     // Only the player with Halikarnassos will have something written on extra.
-                     extra = json_object["command"]["extra"];
+-                    // Only the player with Halikarnassos will have something written on extra.
+-                    extra = json_object["command"]["extra"];
++                    extras[i] = json_object["command"]["extra"];
 +                    last_actions[to_string(i)] = {{"requested", command}, {"executed", command},
 +                                                   {"status", "applied"}, {"turn", turn}};
  
@@ -272,15 +397,20 @@ index 81c519daf5454fb08161015c17463be4137f5e97..ce541f4cfe4d45b2c15f8fa8fe8f9ad3
 +                        }
                      }
  
+-                    Card card_played = GetCardByName(argument);
 +                    // Choice allocations belong to one player's purchase, not
 +                    // the entire simultaneous turn. Another player may use or
 +                    // buy the same production independently. See ENG-006 in
 +                    // docs/SIMULATOR_CHANGES.md and joint_action_resources test.
 +                    for (Player* player : player_list) player->ResetUsed();
-                     Card card_played = GetCardByName(argument);
                      hand_cards_bkp = player_list[i]->GetHandCards();
++                    const Card* selected = UniqueNamedCard(hand_cards_bkp, argument);
++                    if (!selected) throw std::runtime_error("Action must name exactly one card in this seat's hand");
++                    Card card_played = *selected;
  
-@@ -539,6 +573,9 @@ class Game{
+                     if (command == "build_structure"){
+                         if(player_list[i]->BuildStructure(card_played, player_list[i]->GetHandCards(), false)) {
+@@ -539,6 +608,9 @@ class Game{
                          cout << "<Discard OK>" << endl;
                          discard_pile.push_back(card_played);
                      }
@@ -290,7 +420,24 @@ index 81c519daf5454fb08161015c17463be4137f5e97..ce541f4cfe4d45b2c15f8fa8fe8f9ad3
  
                      // fp.WriteLog(era, turn, player_list[i]->GetId(), hand_cards_bkp, command, argument);
                  }
-@@ -575,9 +612,10 @@ class Game{
+@@ -547,15 +619,8 @@ class Game{
+                 // VERY IMPORTANT: call player->ResetUsed() for each player at the end of a turn!
+                 for (int i = 0; i < player_list.size(); i++) {
+                     player_list[i]->ResetUsed();
+-                    // If extra is not empty, try to build a card from the discard pile for free.
+-                    // (will only work if the player has the required stage for Halikarnassos)
+-                    if (!extra.empty()) {
+-                        Card c = GetCardByName(extra);
+-                        if (player_list[i]->BuildDiscardFree(c, discard_pile)) {
+-                            cout << "<BuildDiscardFree OK>" << endl;
+-                        }
+-                    }
+                 }
++                ResolveDiscardExtras(extras);
+ 
+                 NextTurn();
+ 
+@@ -575,9 +640,10 @@ class Game{
              std::ofstream results;
              results.open("results.txt");
  
@@ -303,7 +450,7 @@ index 81c519daf5454fb08161015c17463be4137f5e97..ce541f4cfe4d45b2c15f8fa8fe8f9ad3
                  results << "Player " << i+1 << " score: " << player_list[i]->CalculateScore() << std::endl;
              }
  
-@@ -601,7 +639,27 @@ class Game{
+@@ -601,7 +667,27 @@ class Game{
      */
  int main(int argc, char **argv)
  {
@@ -332,7 +479,7 @@ index 81c519daf5454fb08161015c17463be4137f5e97..ce541f4cfe4d45b2c15f8fa8fe8f9ad3
  
      g.Init();
      g.NewGame(NUM_PLAYERS);
-@@ -611,4 +669,8 @@ int main(int argc, char **argv)
+@@ -611,4 +697,8 @@ int main(int argc, char **argv)
      g.Close();
  
      return 0;
@@ -340,6 +487,43 @@ index 81c519daf5454fb08161015c17463be4137f5e97..ce541f4cfe4d45b2c15f8fa8fe8f9ad3
 +        std::cerr << error.what() << std::endl;
 +        return 1;
 +    }
+ }
+diff --git a/src/card.cpp b/src/card.cpp
+index 1b4b3aaf79754b900cf62605d34244f8ddda11a4..658b191de84e46c3afcd3e038c6e3316a2da0a2e 100644
+--- a/src/card.cpp
++++ b/src/card.cpp
+@@ -1,10 +1,12 @@
+ #include <card.h>
+ #include <string>
+ #include <utility>
++#include <stdexcept>
+ 
+ namespace DMAG {
+ 
+-Card::Card(){}
++Card::Card() : id(CARD_ID::none), type(CARD_TYPE::materials), era(0),
++               freeWithId(CARD_ID::none), amountPerPlayers{} {}
+ 
+ Card::Card(int id, std::string name, int type, int era, int freeWithId, std::vector<int> cost, std::vector<int> amountPerPlayers){
+     this->id = id;
+@@ -34,6 +36,18 @@ int Card::GetId() const{
+     return this->id;
+ }
+ 
++std::uint64_t Card::GetInstanceId() const {
++    return instance_id;
++}
++
++Card Card::CreateInstance(std::uint64_t identity) const {
++    if (!identity || instance_id)
++        throw std::invalid_argument("Only a definition can create a nonzero physical card identity");
++    Card result = *this;
++    result.instance_id = identity;
++    return result;
++}
++
+ std::string Card::GetName() const{
+     return this->name;
  }
 diff --git a/src/filer.cpp b/src/filer.cpp
 index dd219de7df0af977f508326df94c0f86f49c69d5..f9c9874a27ddd2e53b48de9c8a3d6c3cd53b5836 100644
@@ -377,16 +561,28 @@ index dd219de7df0af977f508326df94c0f86f49c69d5..f9c9874a27ddd2e53b48de9c8a3d6c3c
  }
  
 diff --git a/src/player.cpp b/src/player.cpp
-index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..65cee67069029d0b13b47156aec21663cbfba1ca 100644
+index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..863d8c3ac96b97bbf830438a118f91f6238a3dab 100644
 --- a/src/player.cpp
 +++ b/src/player.cpp
-@@ -1,3 +1,5 @@
+@@ -1,12 +1,17 @@
 +// Downstream modifications for Seven Wonders RL; documented 2026-10-19.
 +// Derived from DMAG/UFSM 7Wonders. See NOTICE and docs/ORIGIN.md (GPLv3).
  #include <player.h>
  #include <algorithm>
  #include <iostream>
-@@ -29,8 +31,9 @@ Player::Player()
+ #include <math.h>
++#include <type_traits>
++#include <utility>
+ 
+ namespace DMAG {
+ Player::Player()
+ {
+     this->id = 0;
++    this->board = nullptr;
+     this->victory_tokens = 0;
+     this->defeat_tokens = 0;
+     this->victory_points = 0;
+@@ -29,8 +34,9 @@ Player::Player()
      this->used_forum = -1;
      this->used_caravansery = -1;
  
@@ -398,7 +594,59 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..65cee67069029d0b13b47156aec21663
  
      this->player_east = NULL;
      this->player_west = NULL;
-@@ -196,9 +199,9 @@ bool Player::BuildStructure(DMAG::Card c, std::vector<DMAG::Card> cards, bool fr
+@@ -78,24 +84,25 @@ bool Player::CanBuildWonder() {
+     return this->can_build_wonder;
+ }
+ 
+-// Play a card.
+-// * arg cards is necessary for any special situation? it is equal to this->cards_hand
+-// P: Yes, in case we want to build a free card from the discard pile.
++// The vector parameter is retained for legacy callers. Only the actual hand
++// owns a normal build; an index into another vector can never remove a card.
+ bool Player::BuildStructure(DMAG::Card c, std::vector<DMAG::Card> cards, bool free_card){
+     // Returns false if the card has already been played (cannot play the same card twice).
+     if (this->HasPlayedCard(c)) return false;
+ 
+-    // Checks if card is in hand.
+-    size_t i = 0;
+-    for (i = 0; i < cards.size(); i++) {
+-        //std::cout << cards[i].GetName() << std::endl;
+-        if (cards[i].Equal(c)) break;
+-    }
+-    if (i == cards.size()) {
+-        // ERROR: Card played was not found in the vector
+-        std::cout << " -> FAILURE: Card not found in vector." << std::endl;
++    if (std::none_of(cards.begin(), cards.end(), [&](Card supplied) { return supplied.Equal(c); }))
+         return false;
++    size_t i = cards_hand.size();
++    for (size_t n = 0; n < cards_hand.size(); ++n) {
++        const bool matches = c.GetInstanceId()
++            ? cards_hand[n].GetInstanceId() == c.GetInstanceId()
++            : cards_hand[n].Equal(c);
++        if (!matches) continue;
++        if (i != cards_hand.size()) return false; // Ambiguous legacy definition.
++        i = n;
+     }
++    if (i == cards_hand.size()) return false;
++    c = cards_hand[i];
+ 
+     if (!free_card) {
+         // If there are not enough resources.
+@@ -131,6 +138,13 @@ bool Player::BuildStructure(DMAG::Card c, std::vector<DMAG::Card> cards, bool fr
+         }
+     }
+ 
++    ApplyBuilding(c, free_card);
++    cards_hand.erase(cards_hand.begin() + i);
++    std::cout << this->id << " -> SUCCESS -> " << "builds " << c.GetName() << std::endl;
++    return true;
++}
++
++void Player::ApplyBuilding(DMAG::Card c, bool free_card) {
+     int cost = 0;
+     int card = c.GetId();
+     switch (c.GetType()) {
+@@ -196,9 +210,9 @@ bool Player::BuildStructure(DMAG::Card c, std::vector<DMAG::Card> cards, bool fr
              } else if (card == CARD_ID::marketplace) {
                  this->manuf_cheap = true;
              } else if (card == CARD_ID::forum) {
@@ -410,7 +658,21 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..65cee67069029d0b13b47156aec21663
              } else if (card == CARD_ID::vineyard) {
                  int brown_cards = player_east->AmountOfType(CARD_TYPE::materials)
                                  + player_west->AmountOfType(CARD_TYPE::materials)
-@@ -417,6 +420,9 @@ void Player::ResetUsed() {
+@@ -242,13 +256,9 @@ bool Player::BuildStructure(DMAG::Card c, std::vector<DMAG::Card> cards, bool fr
+             break;
+     }
+ 
+-    cards_hand.erase(cards_hand.begin()+i);
+     cards_played.push_back(c);
+ 
+     if (!free_card) this->resources[RESOURCE::coins] -= cost;
+-    std::cout << this->id << " -> SUCCESS -> " << "builds " << c.GetName() << std::endl;
+-
+-    return true;
+ }
+ 
+ // Checks if the player has a card that permits him to play card 'c' for free.
+@@ -417,6 +427,9 @@ void Player::ResetUsed() {
      this->used_clay_pit     = -1;
      this->used_forum        = -1;
      this->used_caravansery  = -1;
@@ -420,7 +682,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..65cee67069029d0b13b47156aec21663
  }
  
  
-@@ -471,7 +477,7 @@ int Player::IncrementOnDemand(int resource, int needed, bool is_neighbor){
+@@ -471,7 +484,7 @@ int Player::IncrementOnDemand(int resource, int needed, bool is_neighbor){
              cont++;
          } if (this->AvailableCard(CARD_ID::timber_yard, resource)) {
              cont++;
@@ -429,7 +691,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..65cee67069029d0b13b47156aec21663
              cont++;
          }
      } else if (resource == RESOURCE::clay) {
-@@ -481,7 +487,7 @@ int Player::IncrementOnDemand(int resource, int needed, bool is_neighbor){
+@@ -481,7 +494,7 @@ int Player::IncrementOnDemand(int resource, int needed, bool is_neighbor){
              cont++;
          } if (this->AvailableCard(CARD_ID::clay_pit, resource)) {
              cont++;
@@ -438,7 +700,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..65cee67069029d0b13b47156aec21663
              cont++;
          }
      } else if (resource == RESOURCE::stone) {
-@@ -491,7 +497,7 @@ int Player::IncrementOnDemand(int resource, int needed, bool is_neighbor){
+@@ -491,7 +504,7 @@ int Player::IncrementOnDemand(int resource, int needed, bool is_neighbor){
              cont++;
          } if (this->AvailableCard(CARD_ID::mine, resource)) {
              cont++;
@@ -447,7 +709,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..65cee67069029d0b13b47156aec21663
              cont++;
          }
      } else if (resource == RESOURCE::ore) {
-@@ -514,7 +520,6 @@ int Player::IncrementOnDemand(int resource, int needed, bool is_neighbor){
+@@ -514,7 +527,6 @@ int Player::IncrementOnDemand(int resource, int needed, bool is_neighbor){
  
      if (resource <= 3 && !is_neighbor) { // resource <= 3 is a raw
          if (this->ChooseExtraRaw(resource)) cont++;
@@ -455,7 +717,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..65cee67069029d0b13b47156aec21663
      }
  
      curr_resource += cont;
-@@ -855,46 +860,20 @@ int Player::CalculateScientificScore(){
+@@ -855,46 +867,20 @@ int Player::CalculateScientificScore(){
          sci_extra++;
      }
  
@@ -469,7 +731,18 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..65cee67069029d0b13b47156aec21663
 -            compass += remaining_compasses;
 -            gear += remaining_gears;
 -            extra -= remaining_compasses + remaining_gears;
--        }
++    // Enumerate every allocation of all jokers without changing fixed symbols.
++    // Greedy concentration misses e.g. (2 gears, 1 compass, 1 joker): 13 > 10.
++    int best_score = 0;
++    for (int extra_gears = 0; extra_gears <= sci_extra; ++extra_gears) {
++        for (int extra_compasses = 0; extra_compasses <= sci_extra - extra_gears; ++extra_compasses) {
++            const int gears = gear + extra_gears;
++            const int compasses = compass + extra_compasses;
++            const int tablets = tablet + sci_extra - extra_gears - extra_compasses;
++            const int sets = std::min({gears, compasses, tablets});
++            best_score = std::max(best_score, gears * gears + compasses * compasses
++                                             + tablets * tablets + 7 * sets);
+         }
 -        tablet += extra;
 -    } else if (compass >= tablet && compass >= gear) {
 -        remaining_tablets = compass - tablet;
@@ -487,18 +760,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..65cee67069029d0b13b47156aec21663
 -            compass += remaining_compasses;
 -            tablet += remaining_tablets;
 -            extra -= remaining_compasses + remaining_tablets;
-+    // Enumerate every allocation of all jokers without changing fixed symbols.
-+    // Greedy concentration misses e.g. (2 gears, 1 compass, 1 joker): 13 > 10.
-+    int best_score = 0;
-+    for (int extra_gears = 0; extra_gears <= sci_extra; ++extra_gears) {
-+        for (int extra_compasses = 0; extra_compasses <= sci_extra - extra_gears; ++extra_compasses) {
-+            const int gears = gear + extra_gears;
-+            const int compasses = compass + extra_compasses;
-+            const int tablets = tablet + sci_extra - extra_gears - extra_compasses;
-+            const int sets = std::min({gears, compasses, tablets});
-+            best_score = std::max(best_score, gears * gears + compasses * compasses
-+                                             + tablets * tablets + 7 * sets);
-         }
+-        }
 -        gear += extra;
      }
 -
@@ -514,7 +776,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..65cee67069029d0b13b47156aec21663
  }
  
  int Player::CalculateWonderScore(){
-@@ -905,6 +884,10 @@ int Player::CalculateWonderScore(){
+@@ -905,6 +891,10 @@ int Player::CalculateWonderScore(){
  
  // Calculates the player's TOTAL score using the methods defined above.
  int Player::CalculateScore(){
@@ -525,7 +787,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..65cee67069029d0b13b47156aec21663
      int civil_score = this->CalculateCivilianScore();
      int commercial_score = this->CalculateCommercialScore();
      int guild_score = this->CalculateGuildScore();
-@@ -917,7 +900,8 @@ int Player::CalculateScore(){
+@@ -917,7 +907,8 @@ int Player::CalculateScore(){
  
      this->victory_points = total_score;
  
@@ -535,7 +797,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..65cee67069029d0b13b47156aec21663
  }
  
  //////////////////////////////////
-@@ -995,8 +979,10 @@ int Player::CalculateAmountManufacturedGood(){
+@@ -995,8 +986,10 @@ int Player::CalculateAmountManufacturedGood(){
  bool Player::ChooseExtraManuf(int resource){
      if (resource == RESOURCE::loom || resource == RESOURCE::glass || resource == RESOURCE::papyrus) {
          if (this->board->GetId() == WONDER_ID::alexandria_b && this->board->GetStage() >= 2) {
@@ -548,7 +810,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..65cee67069029d0b13b47156aec21663
          }
      }
      return false;
-@@ -1010,9 +996,10 @@ bool Player::ChooseExtraRaw(int resource){
+@@ -1010,9 +1003,10 @@ bool Player::ChooseExtraRaw(int resource){
          resource == RESOURCE::clay || resource == RESOURCE::stone) {
          int id = this->board->GetId();
          int stage = this->board->GetStage();
@@ -562,6 +824,97 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..65cee67069029d0b13b47156aec21663
              return true;
          }
      }
+@@ -1036,9 +1030,22 @@ void Player::FreeCardOnce(bool flag) {
+     this->free_card_once = flag;
+ }
+ 
+-// Similar as above but for building a free structure from the discard list.
++// Called by successful legacy Halikarnassos stages, never by a state read.
++// A consumed/expired stage cannot create the same right a second time.
+ void Player::DiscardFree(bool flag) {
+-    this->discard_free = flag;
++    if (!flag) {
++        discard_free = false;
++        return;
++    }
++    if (!board) return;
++    const int stage = board->GetStage();
++    const int id = board->GetId();
++    const bool source = (id == WONDER_ID::halikarnassos_a && stage == 2)
++                     || (id == WONDER_ID::halikarnassos_b && stage >= 1 && stage <= 3);
++    if (source && stage > discard_grant_stage) {
++        discard_grant_stage = stage;
++        discard_free = true;
++    }
+ }
+ 
+ // The player can buy resources for 1 coin instead of 2 from neighbors.
+@@ -1047,21 +1054,41 @@ void Player::CanBuyRawCheap(){
+     this->wonder_raw_cheap = true;
+ }
+ 
+-// Builds a card from the discard pile for free.
+-// - will be changed depending on which type discard_pile will be.
+-// - called at the end of the turn after the stage was built.
+-bool Player::BuildDiscardFree(DMAG::Card c, std::vector<DMAG::Card> discard_pile){
+-    int id = this->board->GetId();
+-    int stage = this->board->GetStage();
++bool Player::HasDiscardFree() const {
++    return discard_free && board && board->GetStage() == discard_grant_stage;
++}
+ 
+-    if ((id == WONDER_ID::halikarnassos_a && stage == 2) ||
+-        (id == WONDER_ID::halikarnassos_b && stage >= 1)) {
+-        if (this->discard_free) {
+-            this->discard_free = false;
+-            return this->BuildStructure(c, discard_pile, true);
+-        }
++bool Player::CloseDiscardIfNoOptions(const std::vector<DMAG::Card>& pile) {
++    if (!HasDiscardFree()) return false;
++    for (const Card& card : pile)
++        if (!HasPlayedCard(card)) return false;
++    discard_free = false;
++    return true;
++}
++
++// Atomically move one central physical instance into the city. All potentially
++// throwing copies/effects precede a no-throw commit; no hand operation occurs.
++bool Player::BuildDiscardFree(DMAG::Card c, std::vector<DMAG::Card>& pile) {
++    if (!HasDiscardFree() || !c.GetInstanceId()) return false;
++    size_t index = pile.size();
++    for (size_t n = 0; n < pile.size(); ++n) {
++        if (pile[n].GetInstanceId() != c.GetInstanceId()) continue;
++        if (index != pile.size()) return false; // Corrupt/ambiguous identity.
++        index = n;
+     }
+-    return false;
++    if (index == pile.size() || HasPlayedCard(pile[index])) return false;
++    // The central card is authoritative, including its age, costs and effects.
++    Player staged = *this;
++    std::vector<Card> remaining = pile;
++    staged.ApplyBuilding(pile[index], true);
++    staged.discard_free = false;
++    remaining.erase(remaining.begin() + index);
++    static_assert(std::is_nothrow_swappable<Player>::value, "Discard commit must not throw");
++    static_assert(std::is_nothrow_move_assignable<Card>::value, "Card movement must not throw");
++    using std::swap;
++    swap(*this, staged);
++    pile.swap(remaining);
++    return true;
+ }
+ 
+ // Builds a card from the hand for free, once per Age, if the player has the requirements.
+@@ -1205,6 +1232,10 @@ void Player::SetNeighbors(DMAG::Player* east, DMAG::Player* west){
+ }
+ 
+ void Player::SetWonder(DMAG::Wonder *_board){
++    if (board != _board) {
++        discard_free = false;
++        discard_grant_stage = 0;
++    }
+     this->board = _board;
+     // Wonders provide specific initial resources
+     this->resources[this->board->GetProduction()] += 1;
 diff --git a/src/wonder.cpp b/src/wonder.cpp
 index 8f39d8c67df22d512b816c37952fd830a0e93da3..ee636c13941d7529587652d9c72cd3c0327b0e64 100644
 --- a/src/wonder.cpp
@@ -1566,6 +1919,397 @@ index 0000000000000000000000000000000000000000..3502da680111f546046a247bac6912f7
 +        }
 +        copied_joker();
 +        final_publication();
++        return 0;
++    } catch (const std::exception& error) {
++        std::cerr << error.what() << std::endl;
++        return 1;
++    }
++}
+diff --git a/tests/test_discard_safety.cpp b/tests/test_discard_safety.cpp
+new file mode 100644
+index 0000000000000000000000000000000000000000..1924470a93b060dd629d58975e234c791ffcdd03
+--- /dev/null
++++ b/tests/test_discard_safety.cpp
+@@ -0,0 +1,385 @@
++// Discard ownership, source isolation and free-build right regressions.
++#define main sevenwonders_engine_main
++#include "../main.cpp"
++#undef main
++#include <filesystem>
++#include <set>
++#include <cstdlib>
++#include <new>
++
++// Fail every allocation point in the transaction, including the city append
++// after a staged immediate effect. No production-only test hook is needed.
++thread_local long allocations_before_failure = -1;
++void* operator new(std::size_t size) {
++    if (allocations_before_failure == 0) throw std::bad_alloc();
++    if (allocations_before_failure > 0) --allocations_before_failure;
++    if (void* p = std::malloc(size ? size : 1)) return p;
++    throw std::bad_alloc();
++}
++void* operator new[](std::size_t size) { return ::operator new(size); }
++void operator delete(void* p) noexcept { std::free(p); }
++void operator delete[](void* p) noexcept { std::free(p); }
++void operator delete(void* p, std::size_t) noexcept { std::free(p); }
++void operator delete[](void* p, std::size_t) noexcept { std::free(p); }
++
++struct GameTestAccess {
++    static std::vector<Player*>& players(Game& game) { return game.player_list; }
++    static std::vector<Card>& pile(Game& game) { return game.discard_pile; }
++    static std::vector<Card>& deck(Game& game, int age) { return game.deck[age-1]; }
++    static void final_turn(Game& game) { game.turn = 20; game.era = 3; }
++    static void extras(Game& game, const std::vector<std::string>& values) { game.ResolveDiscardExtras(values); }
++};
++
++void require(bool condition, const std::string& message) {
++    if (!condition) throw std::runtime_error(message);
++}
++
++template<class Board>
++class AtStage : public Board {
++public:
++    explicit AtStage(int value) { this->stage = value; }
++    void stage_for_test(int value) { this->stage = value; }
++};
++
++Card fixture_card(int id, int type = CARD_TYPE::civilian, int age = 1) {
++    static std::uint64_t next = 10000;
++    return Card(id, "Fixture " + std::to_string(id), type, age, CARD_ID::none,
++                std::vector<int>(8, 0), std::vector<int>(5, 1)).CreateInstance(next++);
++}
++
++std::vector<std::uint64_t> identities(const std::vector<Card>& cards) {
++    std::vector<std::uint64_t> result;
++    for (const Card& card : cards) result.push_back(card.GetInstanceId());
++    return result;
++}
++
++struct Fixture {
++    AtStage<Halikarnassos_b> board{1};
++    Gizah_a plain;
++    Player player, east, west;
++    Fixture() {
++        player.SetWonder(&board);
++        east.SetWonder(&plain);
++        west.SetWonder(&plain);
++        player.SetNeighbors(&east, &west);
++        east.SetNeighbors(&west, &player);
++        west.SetNeighbors(&player, &east);
++        player.DiscardFree(true);
++    }
++};
++
++void central_pile() {
++    Fixture f;
++    Card selected = fixture_card(CARD_ID::altar);
++    std::vector<Card> pile{selected};
++    f.player.ReceiveCards({fixture_card(CARD_ID::baths)});
++    require(f.player.BuildDiscardFree(selected, pile), "Discard build did not succeed");
++    require(pile.empty(), "Successful build left selected card in the central discard pile");
++}
++
++void hand_isolation() {
++    Fixture f;
++    Card selected = fixture_card(CARD_ID::altar);
++    std::vector<Card> pile{fixture_card(CARD_ID::temple), selected};
++    f.player.ReceiveCards({fixture_card(CARD_ID::baths), fixture_card(CARD_ID::theater)});
++    const auto before = f.player.GetHandCards();
++    require(f.player.BuildDiscardFree(selected, pile), "Discard build did not succeed");
++    const auto after = f.player.GetHandCards();
++    require(after.size() == before.size(), "Discard index erased an unrelated hand card");
++    for (size_t i = 0; i < before.size(); ++i)
++        require(after[i].GetId() == before[i].GetId(), "Discard build changed the hand");
++}
++
++void invalid_preserves_right() {
++    Fixture f;
++    Card selected = fixture_card(CARD_ID::altar);
++    std::vector<Card> pile{selected};
++    f.player.ReceiveCards({fixture_card(CARD_ID::baths)});
++    require(!f.player.BuildDiscardFree(fixture_card(CARD_ID::temple), pile),
++            "Missing discard card was accepted");
++    require(f.player.BuildDiscardFree(selected, pile),
++            "Invalid selection consumed the right before a valid retry");
++}
++
++void instances_and_effects() {
++    Fixture f;
++    const Card a = fixture_card(CARD_ID::tavern, CARD_TYPE::commercial);
++    const Card b = fixture_card(CARD_ID::tavern, CARD_TYPE::commercial);
++    std::vector<Card> pile{a, fixture_card(CARD_ID::temple), b};
++    const auto remaining = std::vector<std::uint64_t>{a.GetInstanceId(), pile[1].GetInstanceId()};
++    f.player.ReceiveCards({fixture_card(CARD_ID::baths)});
++    const auto hand = identities(f.player.GetHandCards());
++    const int coins = f.player.GetResources()[RESOURCE::coins];
++    require(a.GetInstanceId() != b.GetInstanceId() && Card(a).Equal(b),
++            "Physical identity and duplicate building type must be distinct concepts");
++    require(f.player.BuildDiscardFree(b, pile), "Selected physical copy failed");
++    require(identities(pile) == remaining,
++            "Another physical copy was removed");
++    require(identities(f.player.GetPlayedCards()) == std::vector<std::uint64_t>{b.GetInstanceId()},
++            "City received wrong physical card");
++    require(identities(f.player.GetHandCards()) == hand, "Free building erased a hand card");
++    require(f.player.GetResources()[RESOURCE::coins] == coins+5, "Tavern effect missing or duplicated");
++    require(!f.player.HasDiscardFree(), "Successful build did not close right");
++    require(!f.player.BuildDiscardFree(b, pile) && !f.player.BuildDiscardFree(a, pile),
++            "Consumed right built another card");
++    f.player.DiscardFree(true);
++    require(!f.player.HasDiscardFree(), "Consumed source stage re-created its right");
++    require(f.player.GetResources()[RESOURCE::coins] == coins+5, "Retry repeated coin effect");
++    f.board.stage_for_test(2);
++    f.player.DiscardFree(true);
++    const auto before = f.player.GetResources();
++    require(!f.player.BuildDiscardFree(a, pile), "Duplicate city type accepted by a new grant");
++    require(f.player.HasDiscardFree() && f.player.GetResources() == before,
++            "Duplicate selection changed grant/effects");
++}
++
++void free_costs_and_duplicate_ages() {
++    Fixture f;
++    Card first = fixture_card(CARD_ID::press, CARD_TYPE::manufactured, 1);
++    f.player.ReceiveCards({first});
++    require(f.player.BuildStructure(first, {first}, true), "Press fixture failed");
++    Card second = fixture_card(CARD_ID::press, CARD_TYPE::manufactured, 2);
++    std::vector<Card> pile{second};
++    const auto state = f.player.GetResources();
++    require(!f.player.BuildDiscardFree(second, pile), "Age II duplicated own age I Press");
++    require(f.player.HasDiscardFree() && f.player.GetResources() == state && pile.size() == 1,
++            "Age duplicate rejection changed state");
++    Card expensive = Card(CARD_ID::sawmill, "Expensive sawmill", CARD_TYPE::materials, 2,
++                          CARD_ID::none, std::vector<int>(8, 99), std::vector<int>(5, 1)).CreateInstance(90001);
++    pile.push_back(expensive);
++    require(f.player.BuildDiscardFree(expensive, pile), "Free discard build tried to pay costs");
++    require(f.player.GetResources()[RESOURCE::coins] == state.at(RESOURCE::coins), "Free sawmill charged coins");
++    require(f.player.GetResources()[RESOURCE::wood] == state.at(RESOURCE::wood)+2, "Sawmill effect missing");
++}
++
++void no_options_and_expiry() {
++    Fixture empty;
++    std::vector<Card> pile;
++    const auto resources = empty.player.GetResources();
++    require(empty.player.CloseDiscardIfNoOptions(pile), "Empty pile left an open right");
++    require(!empty.player.HasDiscardFree() && !empty.player.CloseDiscardIfNoOptions(pile),
++            "Automatic empty completion repeated");
++    require(empty.player.GetResources() == resources && empty.player.GetHandCards().empty(),
++            "Empty completion invented coins/hand action");
++    empty.player.DiscardFree(true);
++    require(!empty.player.HasDiscardFree(), "Empty completion re-created old right");
++
++    Fixture duplicates;
++    Card own = fixture_card(CARD_ID::altar);
++    duplicates.player.ReceiveCards({own});
++    require(duplicates.player.BuildStructure(own, {own}, true), "Duplicate setup failed");
++    pile = {fixture_card(CARD_ID::altar)};
++    const auto ids = identities(pile);
++    require(duplicates.player.CloseDiscardIfNoOptions(pile), "All-duplicate pile not auto-closed");
++    require(identities(pile) == ids && !duplicates.player.HasDiscardFree(), "All-duplicate completion changed pile");
++
++    Fixture offered;
++    pile = {fixture_card(CARD_ID::theater)};
++    require(!offered.player.CloseDiscardIfNoOptions(pile) && offered.player.HasDiscardFree(),
++            "A legal card was silently skipped");
++    offered.player.DiscardFree(false); // Explicit end of turn window, not a player decline.
++    offered.player.DiscardFree(true);
++    require(!offered.player.HasDiscardFree(), "Expired stage right was retained/re-armed");
++    offered.board.stage_for_test(2);
++    offered.player.DiscardFree(true);
++    require(offered.player.HasDiscardFree(), "New successful stage cannot grant a new right");
++    offered.player.SetWonder(&offered.plain);
++    require(!offered.player.HasDiscardFree(), "Right survived replacement of its source");
++}
++
++template<class Board>
++void actual_source_stages(bool side_b) {
++    Fixture f;
++    Board source;
++    f.player.SetWonder(&source);
++    auto resources = f.player.GetResources();
++    for (auto& entry : resources) entry.second = 50;
++    f.player.SetResources(resources);
++    for (int stage = 1; stage <= 3; ++stage) {
++        Card buried = fixture_card(CARD_ID::theater);
++        f.player.ReceiveCards({buried});
++        require(f.player.CanBuildWonder() && f.player.BuildWonder(buried), "Real Halikarnassos stage failed");
++        require(source.GetStage() == stage && f.player.GetHandCards().empty(), "Source stage did not bury the hand card");
++        const bool expected = side_b || stage == 2;
++        require(f.player.HasDiscardFree() == expected, "Legacy grant activation stage changed");
++        std::vector<Card> pile;
++        if (expected) {
++            require(f.player.CloseDiscardIfNoOptions(pile), "Source event did not allow automatic completion");
++            f.player.DiscardFree(true);
++            require(!f.player.HasDiscardFree(), "Real stage generated the same grant twice");
++        }
++        f.player.CanBuildWonder(); // Capability reads never recreate the event.
++        require(!f.player.HasDiscardFree(), "Status/capability read regenerated a source grant");
++    }
++}
++
++void settled_coin_timing() {
++    Fixture f;
++    Card vineyard = fixture_card(CARD_ID::vineyard, CARD_TYPE::commercial, 2);
++    f.east.ReceiveCards({vineyard});
++    require(f.east.BuildStructure(vineyard, {vineyard}, true), "Vineyard fixture failed");
++    const auto neighbor = f.east.GetResources();
++    std::vector<Card> pile{fixture_card(CARD_ID::lumber_yard, CARD_TYPE::materials)};
++    require(f.player.BuildDiscardFree(pile.front(), pile), "Late brown discard construction failed");
++    require(f.east.GetResources() == neighbor, "Late discard build retroactively paid ordinary Vineyard");
++}
++
++void invalid_identity_and_owner() {
++    Fixture f;
++    Card present = fixture_card(CARD_ID::altar);
++    std::vector<Card> pile{present};
++    Card wrong = fixture_card(CARD_ID::altar); // Same type, different physical card.
++    require(!f.player.BuildDiscardFree(wrong, pile) && f.player.HasDiscardFree(),
++            "Missing instance matched a different copy by type");
++    f.east.DiscardFree(true);
++    require(!f.east.BuildDiscardFree(present, pile) && !f.east.HasDiscardFree(),
++            "Wrong owner used another player's right");
++    const Card definition = Card(CARD_ID::altar, "Definition", CARD_TYPE::civilian, 1,
++                                 CARD_ID::none, std::vector<int>(8, 0), std::vector<int>(5, 1));
++    require(!f.player.BuildDiscardFree(definition, pile), "Uninstantiated definition selected a pile copy");
++    pile.push_back(present); // Deliberately corrupt identity, fail closed.
++    require(!f.player.BuildDiscardFree(present, pile) && pile.size() == 2 && f.player.HasDiscardFree(),
++            "Ambiguous physical identity mutated state");
++    pile.pop_back();
++    require(f.player.BuildDiscardFree(present, pile), "Valid retry after malformed selection failed");
++}
++
++void hand_source_guard() {
++    Fixture f;
++    Card source = fixture_card(CARD_ID::tavern, CARD_TYPE::commercial);
++    Card own = fixture_card(CARD_ID::altar);
++    f.player.ReceiveCards({own});
++    const auto resources = f.player.GetResources();
++    require(!f.player.BuildStructure(source, {source}, true), "Foreign source masqueraded as hand");
++    require(identities(f.player.GetHandCards()) == std::vector<std::uint64_t>{own.GetInstanceId()}
++            && f.player.GetResources() == resources, "Rejected hand build changed state");
++    require(f.player.BuildStructure(own, {source, own}, true), "Hand build used foreign vector index");
++    require(f.player.GetHandCards().empty(), "Hand build failed to erase actual hand card");
++}
++
++void allocation_rollback() {
++    int failed_points = 0;
++    bool completed = false;
++    for (int point = 0; point < 512; ++point) {
++        Fixture f;
++        Card card = fixture_card(CARD_ID::tavern, CARD_TYPE::commercial);
++        std::vector<Card> pile{card};
++        f.player.ReceiveCards({fixture_card(CARD_ID::baths)});
++        const auto resources = f.player.GetResources();
++        const auto hand = identities(f.player.GetHandCards());
++        const auto discarded = identities(pile);
++        allocations_before_failure = point;
++        bool result = false, failed = false;
++        try { result = f.player.BuildDiscardFree(card, pile); }
++        catch (const std::bad_alloc&) { failed = true; }
++        allocations_before_failure = -1;
++        if (failed) {
++            ++failed_points;
++            require(f.player.GetResources() == resources && identities(pile) == discarded
++                    && identities(f.player.GetHandCards()) == hand && f.player.GetPlayedCards().empty()
++                    && f.player.HasDiscardFree(), "Allocation failure published a partial discard build");
++            require(f.player.BuildDiscardFree(card, pile), "Rollback lost valid retry");
++            require(pile.empty() && f.player.GetPlayedCards().size() == 1
++                    && f.player.GetResources()[RESOURCE::coins] == resources.at(RESOURCE::coins)+5,
++                    "Retry after allocation failure did not apply exactly once");
++        } else {
++            require(result && pile.empty() && !f.player.HasDiscardFree(), "Transaction failed without exception");
++            completed = true;
++            break;
++        }
++    }
++    require(completed && failed_points > 0, "Allocation failure sweep did not reach commit");
++    std::cerr << "Verified " << failed_points << " allocation failure points before no-throw commit\n";
++}
++
++void real_deck_identities() {
++    Game game(7, 0, true);
++    game.Init(); game.NewGame(3);
++    std::set<std::uint64_t> seen;
++    for (int age = 1; age <= 3; ++age) {
++        const auto& cards = GameTestAccess::deck(game, age);
++        require(cards.size() == 21, "Physical IDs changed legacy deck counts");
++        for (const Card& card : cards)
++            require(card.GetInstanceId() && seen.insert(card.GetInstanceId()).second, "Duplicate/missing physical deck identity");
++    }
++    for (Player* player : GameTestAccess::players(game))
++        for (const Card& card : player->GetHandCards())
++            require(seen.count(card.GetInstanceId()), "Dealing changed physical identity");
++    const auto before = identities(GameTestAccess::players(game)[0]->GetHandCards());
++    game.NextTurn();
++    require(identities(GameTestAccess::players(game)[0]->GetWestNeighbor()->GetHandCards()) == before,
++            "Passing changed physical identity");
++}
++
++void legacy_seat_loop(bool own_extra) {
++    std::filesystem::create_directories("io");
++    Game game(0, 0, true);
++    game.Init(); game.NewGame(3);
++    auto& players = GameTestAccess::players(game);
++    players[0]->SetWonder(new AtStage<Halikarnassos_b>(1));
++    players[1]->SetWonder(new Gizah_a());
++    players[2]->SetWonder(new Gizah_a());
++    players[0]->DiscardFree(true);
++    Card picked = fixture_card(CARD_ID::tavern, CARD_TYPE::commercial);
++    GameTestAccess::pile(game) = {picked};
++    GameTestAccess::final_turn(game);
++    for (int seat = 0; seat < 3; ++seat) {
++        Card hand = fixture_card(CARD_ID::altar);
++        players[seat]->ReceiveCards({hand}); players[seat]->CanPlaySeventh();
++        const std::string extra = seat == (own_extra ? 0 : 2) ? picked.GetName() : "";
++        json action = {{"turn", 20}, {"command", {{"subcommand", "discard"},
++                       {"argument", hand.GetName()}, {"extra", extra}}}};
++        std::ofstream("io/player_"+std::to_string(seat+1)+".json") << action;
++    }
++    std::ofstream("io/ready.txt") << "ready\nready\nready\n";
++    game.Loop();
++    require(players[0]->HasPlayedCard(picked) == own_extra, "V2 extra belonged to a different seat");
++    require(!players[0]->HasDiscardFree(), "V2 left an unfulfilled right for the next turn");
++    require(players[0]->GetHandCards().empty(), "V2 discard build damaged hand removal");
++    require(GameTestAccess::pile(game).size() == (own_extra ? 3 : 4), "Loop did not update central discard pile exactly once");
++}
++
++void legacy_ambiguity() {
++    Game game(0, 0, true);
++    game.Init(); game.NewGame(3);
++    auto& players = GameTestAccess::players(game);
++    players[0]->SetWonder(new AtStage<Halikarnassos_b>(1));
++    players[1]->SetWonder(new Gizah_a()); players[2]->SetWonder(new Gizah_a());
++    players[0]->DiscardFree(true);
++    Card a = fixture_card(CARD_ID::altar), b = fixture_card(CARD_ID::altar);
++    GameTestAccess::pile(game) = {a, b};
++    GameTestAccess::extras(game, {a.GetName(), "", ""});
++    require(!players[0]->HasPlayedCard(a) && GameTestAccess::pile(game).size() == 2,
++            "Ambiguous V2 name silently picked a physical copy");
++    players[0]->DiscardFree(true);
++    require(!players[0]->HasDiscardFree(), "V2 preselection expiration re-armed old stage");
++}
++
++int main(int argc, char** argv) {
++    try {
++        std::cout.setstate(std::ios_base::failbit);
++        const std::string mode = argc > 1 ? argv[1] : "all";
++        if (mode == "all" || mode == "pile") central_pile();
++        if (mode == "all" || mode == "hand") hand_isolation();
++        if (mode == "all" || mode == "right") invalid_preserves_right();
++        if (mode == "all") {
++            instances_and_effects();
++            free_costs_and_duplicate_ages();
++            no_options_and_expiry();
++            actual_source_stages<Halikarnassos_a>(false);
++            actual_source_stages<Halikarnassos_b>(true);
++            settled_coin_timing();
++            invalid_identity_and_owner();
++            hand_source_guard();
++            allocation_rollback();
++            real_deck_identities();
++            legacy_seat_loop(true);
++            legacy_seat_loop(false);
++            legacy_ambiguity();
++        }
 +        return 0;
 +    } catch (const std::exception& error) {
 +        std::cerr << error.what() << std::endl;
