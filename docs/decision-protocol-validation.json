@@ -161,5 +161,12 @@
     "Two specific BGA rule questions remain explicit release gates; no unverified BGA server behavior is asserted.",
     "No push/release, parent submodule pin update, engine.lock update or checkpoint migration.",
     "Only package 4b-I safe discard removal is prepared next; no implementation package started."
-  ]
+  ],
+  "specification_commit": "0aaea3651915b071b95f2ae0f87d243b1845c126",
+  "closure_checks": {
+    "artifact_and_frozen_source_hashes_match": true,
+    "specification_commit_exists": true,
+    "additional_plan_local_links_checked": 12,
+    "next_task": "4b-I only; internal safe discard removal; not started"
+  }
 }

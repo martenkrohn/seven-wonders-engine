@@ -5,7 +5,7 @@ weitere Migration. **Ein Auftrag bearbeitet jeweils nur ein Arbeitspaket.**
 Zum Abschluss werden Ergebnis, Tests, Commit und verbleibende Grenzen
 eingetragen. Anschließend endet der Auftrag; das nächste Paket startet mit
 frischem Kontext. Der [fertige nächste Agentenauftrag](NEXT_AGENT_TASK.md)
-begrenzt die nächste Sitzung auf Paket 4a.
+begrenzt die nächste Sitzung auf Paket 4b-I (sichere Ablageentnahme).
 
 ## Ziel und feste Entscheidungen
 
@@ -17,8 +17,10 @@ begrenzt die nächste Sitzung auf Paket 4a.
 - Die alte Implementierung bleibt über Tags reproduzierbar. Ein paralleler
   umschaltbarer Betrieb beider Editionen ist derzeit nicht erforderlich.
 - Paket 0 hat die alte GUI wiederhergestellt, Paket 1 die BGA-Ziele und IDs
-  eingefroren und Paket 2 die Legacy-Exporte repariert. Paket 3 startet den
-  Laufzeitumbau mit optimaler Wissenschaftswertung im Entwicklungs-Regelstand.
+  eingefroren und Paket 2 die Legacy-Exporte repariert. Paket 3 hat den
+  Laufzeitumbau mit optimaler Wissenschaftswertung im Entwicklungs-Regelstand
+  begonnen. Paket 4a spezifiziert zusätzliche Entscheidungen und simultane
+  Auflösung; dieser Entwurf ändert noch keine Laufzeitlogik.
   Karten und Wunder verwenden weiter Legacy-Daten; neue Kosten, Fähigkeiten
   und Grafik werden getrennt umgesetzt.
 - Jeder Commit muss klar benennen, welchen Regelstand er abbildet. Eine
@@ -39,6 +41,7 @@ Git-Arbeitsstände prüfen. Die RL-Arbeit liegt auf
 | `docs/GUI.md`, `docs/GUI_AUDIT.md` | Gegenwärtiger GUI-Stand und konkrete offene Punkte |
 | `docs/KNOWN_ISSUES.md`, `docs/PROTOCOL.md` | Bestehende Regelgrenzen und Transportvertrag |
 | `docs/SCIENCE_SCORING.md`, `docs/science-validation.json` | Korrigierte Wissenschaftswertung, Testnachweis und getrennte Kopier-/Python-Vorschaugrenzen aus Paket 3 |
+| `docs/DECISION_PROTOCOL_DRAFT.md`, `docs/decision-protocol-examples.json`, `docs/decision-protocol-validation.json` | Nicht implementierter Entscheidungsvertrag aus Paket 4a; Quellen, Nachrichten, Abnahmefälle und zwei gezielte offene BGA-Fragen |
 | `data/bga-second-edition/README.md`, `targets.json`, `provenance.json` | Eigenständiger geprüfter Zielvertrag, Schema, Zuordnungen und Eingabe-Prüfsummen aus Paket 1 |
 | `../docs/reference/edition-comparison/comparison.json` | Bereits abgeglichene 80 Karten-/Zeitalterzeilen und 14 Wunderseiten; Felder `new`, `bga_id`, `new_sprite` |
 | `../docs/reference/edition-comparison/COMPARISON.md` | Lesbare vollständige Gegenüberstellung |
@@ -69,8 +72,9 @@ lokalen Ordner verwendbar.
 | 1 – Zielvertrag und Zuordnung | Erledigt, Abnahme unten | Vorhandene BGA-Ziele versioniert festhalten und IDs/Schema zuordnen | 80 Kartenzeilen und 14 Seiten vollständig; Prüfsummen/Quelle dokumentiert; alle Zielkarten und Ketten eindeutig zugeordnet; kein Laufzeitumbau |
 | 2 – Exporter reproduzierbar machen | Erledigt, Abnahme unten | Im RL-Projekt die alten Exportfehler beheben | Wunder-ID 0, Produktionsmengen und Mehrfach-Zeitalter korrekt; deterministischer Export mit geprüftem JSON-Diff und Regressionen |
 | 3 – Wissenschaftswertung | Erledigt, Abnahme unten | Gierige Jokervergabe durch optimale Endwertung ersetzen | Dokumentierte Gegenbeispiele und Kombinationen mit mehreren Jokern/Quellen bestehen; keine Kartendaten-/GUI-Änderung |
-| **4a – Entscheidungsvertrag** | **Als Nächstes** | Ablagewahl und simultane Auflösung als Protokollzustände spezifizieren | Eingaben, sichtbare Optionen, Sitzreihenfolge, Timing, Abbruch und Terminalzustand sind für GUI und RL eindeutig beschrieben; Implementierung folgt separat |
-| 4b – Sichere Auflösung | Offen | Vertrag aus 4a in der Engine implementieren | Ablagekarten genau einmal entnommen, keine Handentnahme mit Ablageindex, Berechtigung korrekt verbraucht, relevante Gleichzeitigkeit getestet |
+| 4a – Entscheidungsvertrag | Erledigt als Spezifikation, Abnahme unten | Ablagewahl und simultane Auflösung als Protokollzustände spezifizieren | Eingaben, sichtbare Optionen, Sitzreihenfolge, Timing, Abbruch und Terminalzustand beschrieben; zwei konkrete Regelfragen als Freigabebedingungen gekennzeichnet; keine Laufzeitimplementierung |
+| **4b-I – Sichere Ablageentnahme** | **Als Nächstes** | Internen Ablagebau mit stabiler Instanz, atomarer Entnahme und korrektem Rechtverbrauch absichern | Keine Handentnahme über Ablageindex; zentrale Ablage genau einmal geändert; Fehler, Wiederholung und leere Auswahl geprüft; kein neuer interaktiver Transport |
+| 4b-II – Runden-/Zahlungsauflösung | Offen, eigener Folgeauftrag | Gemeinsamen Anfangszustand, Zahlungen, Folgeentscheidungen und Nachrichtenvertrag implementieren | Relevante Gleichzeitigkeit, Restkarten, siebte Karte und Abschlussbarrieren getestet; RQ-1 vor betroffener Münzfreigabe und RQ-2 vor interaktiver Ablagefreigabe geklärt |
 | 5 – Neue Karten | Offen | Kosten, Punkte, Ketten, Deckmengen und neue Karteneffekte migrieren | Alle 80 Zeitalterzeilen gegen Ziel geprüft; Ludus und Decorators Guild funktionieren; Drei-Spieler-Decks stimmen |
 | 6 – Neue Wunder | Offen | Die 14 Seiten familienweise umstellen | Jede Stufe: Kosten, Ertrag, Verfügbarkeit und richtige Anzahl geprüft; Sonderfähigkeiten mit gezielten Fällen abgenommen |
 | 7 – GUI der neuen Edition | Offen | Neue Entscheidungsansichten, Bilder und Layout einbinden | Alle neuen Fähigkeiten menschlich bedienbar; korrekte Bilder/Namen/Stufen; vollständige Partien und fehlende Bilder getestet |
@@ -247,4 +251,51 @@ Marginalvorschau ohne vorhandene Joker liefert bei einem dokumentierten
 Fall 8 statt 5 optimale Zusatzpunkte; das bleibt für Paket 8 abgegrenzt.
 Keine Karten-/Wunderdaten, Fähigkeiten, GUI, RL-Features oder Trainingsstände
 verändert. Keine Freischaltung vollständiger BGA-Regeln, kein Push/Release,
-kein RL-Submodule-/Lock-Update. Paket 4a ist vorbereitet, nicht implementiert.
+kein RL-Submodule-/Lock-Update. Der damalige Folgeauftrag war Paket 4a zur
+Spezifikation zusätzlicher Entscheidungen und simultaner Auflösung.
+
+## Abnahme Paket 4a – 5. November 2026
+
+Spezifikationscommit: `0aaea3651915b071b95f2ae0f87d243b1845c126`
+(`Specify BGA development decision protocol without changing runtime`).
+Der anschließende Dokumentationscommit hält diese Abnahme und ausschließlich
+Paket 4b-I als nächsten Auftrag fest.
+
+Ergebnis: [Entscheidungs- und Auflösungsvertrag](DECISION_PROTOCOL_DRAFT.md)
+`decision-v1-draft` mit vorgeschlagener, **nicht implementierter** Transportversion 3.
+Beschrieben sind Anfangszustand und gemeinsame Zahlungen, der getrennte
+Zählzustand gleichzeitiger Soforteffekte, reguläre Sammlung und Auflösung,
+nachgelagerte Ablagewahl, stabile physische Karten-/Entscheidungskennungen,
+Quellberechtigungen und deren einmaliger Verbrauch. Die Warteschlange öffnet
+erst nach regulärem Commit und fälligen Restkarten; neue Babylon-Züge und
+Ären-/Schlusswertung warten auf ihre Abschlussbarrieren. Quittierungen,
+Wiederholung, ungültige Eingaben, Timeout und Abbruch sowie Sichtbarkeits- und
+GUI-/RL-Anforderungen sind festgehalten.
+
+Prüfungen: [34 Nachrichtenbeispiele und 36 Akzeptanzfälle](decision-protocol-examples.json)
+auf JSON-Syntax, eindeutige Kennungen, Querverweise, Statusbedingungen,
+Karten-/Alterszuordnung gegen die eingefrorenen Ziele, Grant-/Ereignisverweise,
+Eingabe-/Optionsbindung, Wiederholung, Bundlekennung und Endresultatkonsistenz
+geprüft. 23 lokale Dokumentationsverweise gültig. Zwei Fälle sind ausdrücklich
+von offenen Regelfragen abhängig. Die Fälle sind **künftige Abnahmeanforderungen**,
+keine ausgeführten Protokoll-3-Laufzeittests. Herkunftsaudit unverändert grün
+für 50 C++-/Build-/Testdateien; BGA-Zielaudit einschließlich Workspace-Abgleich
+grün; `git diff --check` grün. Keine neuen Build-/CTest-/GUI-/RL-Läufe, da
+ausschließlich Dokumentation geändert wurde. Quellen, Umfang und Prüfsummen:
+[decision-protocol-validation.json](decision-protocol-validation.json).
+
+Grenzen: **RQ-1** betrifft reguläre Vineyard-/Bazar-Zähler bei späterem
+Nachbar-Ablagebau; die getrennte Auszählung ist eine gekennzeichnete
+Arbeitsauslegung. Vor Freigabe der betroffenen Münzauflösung in 4b-II bestätigen.
+**RQ-2** betrifft freiwilligen Verzicht auf eine vorhandene legale Ablageoption;
+vor interaktiver Freischaltung bestätigen. Statische BGA-Daten sind kein
+Serverregelcode. Beide Fragen blockieren die interne sichere Entnahme in
+4b-I nicht. Technische Mehrfach-Grant-Fälle behaupten keine Erweiterungsregeln.
+
+Der aktive Vertrag bleibt `v0.2.0-dev`,
+`ruleset=bga-second-edition-development`, `second_edition_implemented=false`,
+Transportversion **2**. Kein C++-/GUI-/RL-, Karten-/Wunder-, Wissenschafts-,
+Export-/Feature-/Trainingseingriff. Keine Veröffentlichung und kein Release;
+RL-Pin und `engine.lock.json` bleiben bei `f39c1d7`. Der nächste Auftrag ist
+ausschließlich **4b-I – sichere Ablageentnahme**; er ist vorbereitet und hier
+nicht begonnen. Runden-/Zahlungsauflösung bleibt ein eigener Folgeauftrag.
