@@ -1,63 +1,74 @@
-# Nächster Agent: ausschließlich Paket 3 – optimale Wissenschaftswertung
+# Nächster Agent: ausschließlich Paket 4a – Entscheidungsvertrag spezifizieren
 
-Arbeite im Workspace `/home/marten/dev/7Wonders`. Die eigenständige Engine
-ist das Git-Submodule `engine/`; das übergeordnete Repository enthält das
-RL-Projekt auf `refactor/separate-engine-20261105`. Prüfe beide Git-Stände
-und erhalte vorhandene Änderungen. Der lokale Engine-HEAD enthält die
-Paket-1-Ziele und die Paket-2-Abnahme; der RL-Pin und `engine.lock.json`
-bleiben bewusst auf `f39c1d7` (`v0.1.1-legacy`). Nicht zurücksetzen oder
-ungeprüft als neuen Pin übernehmen.
+Arbeite im Workspace `/home/marten/dev/7Wonders`. Die Engine ist das
+Git-Submodule `engine/`; das übergeordnete RL-Projekt liegt auf
+`refactor/separate-engine-20261105`. Prüfe beide Git-Stände und erhalte
+vorhandene Änderungen. Der lokale Engine-HEAD enthält die bereits abgenommene
+Wissenschaftskorrektur. Der gespeicherte RL-Pin und `engine.lock.json` bleiben
+bewusst bei `f39c1d7` (`v0.1.1-legacy`); nicht zurücksetzen oder aktualisieren.
 
-Lies zuerst:
+Lies zuerst, relativ zum Engine-Verzeichnis:
 
-1. `docs/MIGRATION_PLAN.md` im Engine-Repository, besonders Paket 3 und die
-   bisherigen Abnahmen, sowie `engine-contract.json` und `docs/KNOWN_ISSUES.md`.
-2. `src/player.cpp`, insbesondere `CalculateScientificScore()`,
-   `CalculateScores()` und die vorhandenen Joker-/Gildenkopierquellen;
-   dazu die relevanten Schnittstellen in `include/player.h` und `src/wonder.cpp`.
-3. Die vorhandenen Engine-C++-Tests, `CMakeLists.txt`,
-   `docs/SIMULATOR_CHANGES.md` und `docs/DEVELOPMENT.md`.
-4. Im RL-Projekt nur die einschlägige Evidenz in
-   `docs/reference/EDITION_AUDIT.md` (P0 Wissenschaftsjoker),
-   `docs/guides/LEGACY_DATA_EXPORT.md` und die vorhandene Wissenschaftsdiagnose.
-   Keine neue Gesamt-Recherche und kein BGA-Datenumbau.
+1. `docs/MIGRATION_PLAN.md`, besonders Paket 4a/4b und die Abnahme von Paket 3,
+   sowie `engine-contract.json`, `docs/PROTOCOL.md`, `docs/KNOWN_ISSUES.md`.
+2. `docs/GUI_AUDIT.md`, `gui/session.py`, die Rundenschleife/Statusveröffentlichung
+   in `main.cpp` und die Ablage-/Freibauberechtigungen in `src/player.cpp`.
+3. Nur die einschlägigen Halikarnassos-/Babylon-/Olympia-Zieldefinitionen und
+   Effekte in `data/bga-second-edition/targets.json` und `reference/wonders.json`.
+   Statische BGA-Definitionen enthalten nicht den vollständigen Serverregelcode.
+4. Die bestehenden Endzustands-/Ressourcenregressionen unter `tests/`;
+   im RL-Projekt `python/src/sevenwonders_rl/envs/sevenwonders_env.py`,
+   `python/src/sevenwonders_rl/features/observation_history.py` und die aufgerufenen Transport-/Collector-
+   Schnittstellen nur zur Klärung des notwendigen Vertrags.
+5. Bei konkreten Regelfragen die einschlägigen Stellen aus
+   `../docs/reference/EDITION_AUDIT.md` und den vorhandenen Quellen.
+   Keine neue Gesamt-Recherche und keine anderen Pakete implementieren.
 
-**Ziel:** Die Wissenschaftsendwertung maximiert
-`gear² + compass² + tablet² + 7 * min(gear, compass, tablet)` über sämtliche
-Verteilungen aller verfügbaren Joker. Jeder Joker zählt genau einmal.
-Feste Symbole und Quellen werden nicht durch eine gierige Zwischenentscheidung
-verändert. Die Korrektur gehört in die Engine.
+**Ziel:** Einen eindeutig prüfbaren Entwurf für zusätzliche Entscheidungen
+und simultane Auflösung dokumentieren, den spätere Engine-, GUI- und RL-
+Implementierungen gemeinsam verwenden können. Dieser Auftrag ändert keine
+Laufzeitlogik. Der aktuell implementierte Transport bleibt Version 2; neue
+Verträge müssen ausdrücklich als Entwurf gekennzeichnet sein.
 
 Lieferumfang:
 
-- Zuerst einen aussagekräftigen C++-Fehlerfall nachweisen: Workshop,
-  Laboratory, Apothecary und Scientists Guild ergeben zwei Zahnräder,
-  einen Zirkel und einen Joker; optimal sind 13 Punkte, die alte Engine
-  erreicht nur 10. Reproduzierbarer roter Test vor der Korrektur.
-- Kleinste vollständige optimale Wertung implementieren. Joker aus
-  Scientists Guild und Babylon sowie relevante Kombinationen/Kopierquellen
-  berücksichtigen; keine davon doppelt zählen. Fälle ohne Joker, mit
-  fehlenden Symbolen, mehreren Jokern und gleichwertigen Optima prüfen.
-  Wiederholte Status-/Endwertungsberechnung darf keinen Zustand verändern.
-- Schlusswertung, veröffentlichte Wissenschaftspunkte und Gesamtpunkte
-  für identische Symbolbestände konsistent prüfen. Vorhandene Python-
-  Diagnose/Punktevorschau nur auf Widersprüche prüfen; keinen RL-Feature-
-  oder Trainingsumbau in dieses Paket hineinziehen. Falls ein weiterer
-  fachlicher Konflikt auftaucht, ihn konkret abgrenzen und dokumentieren.
-- Dem begonnenen Laufzeitumbau einen Entwicklungs-Regelnamen geben und
-  `second_edition_implemented=false` beibehalten. Release-/Regelvertrag
-  darf die korrigierte Entwicklungsversion nicht als unveränderten alten
-  Legacy-Release oder fertige BGA-Edition ausgeben. Transportversion und
-  Regelnamen sind getrennte Verträge.
-- Release-Build, alle betroffenen/neuen CTests und Herkunftsaudit ausführen;
-  `docs/SIMULATOR_CHANGES.md`, `docs/simulator/upstream.patch` und
-  `docs/simulator/manifest.json` gemeinsam aktualisieren. Ergebnis, Tests,
-  konkreten Commit und Grenzen im Plan eintragen und den Engine-Stand
-  lokal committen. Paket 4a als nächsten Auftrag vorbereiten, dann stoppen.
+- Zustandsmodell mit regulärer Aktionssammlung, Auflösung, ausstehenden
+  Ablageentscheidungen, Ärenwechsel und Schlusswertung. Für jeden Zustand:
+  aktiver Sitz, sichtbare Informationen, Eingaben und erlaubte Folgezustände.
+- Sichtbare Ablageauswahl erst nach Abschluss aller regulären Aktionen.
+  Kartenauswahl über eindeutige, stabile Identität statt fremdem Handindex;
+  jede Karte höchstens einmal entnehmen. Fehlende Optionen, doppelte eigene
+  Karten, übersprungene Entscheidungen und Verbrauch der Berechtigung
+  ausdrücklich definieren.
+- Reihenfolge mehrerer gleichzeitiger Sonderentscheidungen, Sichtbarkeit
+  bereits entnommener Karten und Timing weiterer Effekte vollständig festlegen.
+  Entscheidungen dürfen nicht von einem global überschriebenen `extra`
+  oder einer verdeckten Vorauswahl abhängen.
+- Einen Rundenanfangszustand für Legalität, Produktion, Zahlbarkeit und
+  reguläre Aktionen festlegen. Zwischen Zahlungen, verfügbaren Mitteln und
+  Auszählung gleichzeitiger Effekte klar unterscheiden; fremde Einnahmen
+  oder neue Produktionskarten derselben Runde nicht unbeabsichtigt vorziehen.
+- Konkrete Nachrichtenbeispiele für Status, Optionen, Entscheidung, Quittierung,
+  veraltete/ungültige Eingabe, wiederholte Nachricht, Timeout und Abbruch.
+  Runden-/Entscheidungsidentität und genau einmalige Auflösung beschreiben.
+  Kein `finished` oder Schlussresultat veröffentlichen, solange Zusatzentscheidungen
+  ausstehen; auch siebte Karte und letzte Runde ausdrücklich behandeln.
+- Regelnamen, Transportversion und verfügbare Sonderaktionen als getrennte
+  Vertragsfelder spezifizieren. GUI/RL sollen Fähigkeiten aus Engine-Angaben
+  lesen können, statt Wunder-IDs und Stufen selbst zu erraten.
+- Akzeptanzfälle mit erwarteten Übergängen als Grundlage für Paket 4b festhalten.
+  Falls eine benötigte Regel aus den vorhandenen Definitionen nicht eindeutig
+  folgt, die konkrete Frage mit Quelle kennzeichnen und Implementierungsfolgen
+  benennen; kein ungeprüftes BGA-Serververhalten behaupten.
+- Die bestehende Protokolldokumentation auf den neuen Entwurf verweisen lassen,
+  ohne Entwurf und implementierten Stand zu vermischen. Beispiele und Verweise
+  prüfen, Planstatus/Ergebnis/Commit/Grenzen aktualisieren und lokal committen.
+  Danach ausschließlich den ersten Teil von Paket 4b (sichere Ablageentnahme)
+  als nächsten Auftrag vorbereiten und stoppen; Runden-/Zahlungsauflösung
+  bleibt ein weiterer eigener Auftrag.
 
-**Grenzen:** Keine Kartenkosten/-punkte/-mengen, Wunderstufen/-fähigkeiten,
-BGA-Zieldaten, Ablage-/Simultanentscheidungen, GUI oder RL-Datenbanken ändern.
-Die in Paket 2 reparierten Exporter gehören zum gepinnten Legacy-Stand;
-sie sind kein Auftrag, die neue Entwicklungsengine schon ins RL-Projekt
-zu übernehmen. Kein Push/Release, kein Submodule-/Lock-Update, keine
-Checkpointmigration oder Trainingsläufe. Kein weiteres Paket automatisch beginnen.
+**Grenzen:** Keine C++-/GUI-/RL-Implementierung, keine Karten-/Wunderänderung,
+keine neue Wissenschaftskorrektur, keine Export-/Feature-/Trainingsänderung.
+Die getrennten Kopier-/Vorschaugrenzen aus Paket 3 nicht in diesen Auftrag
+hineinziehen. Kein Push/Release, kein Submodule-/Lock-Update und keine
+Checkpointmigration. Paket 4b oder ein anderes Paket nicht automatisch beginnen.

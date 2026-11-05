@@ -163,5 +163,6 @@
     "Python fixed-symbol marginal preview omits existing jokers; RL adaptation is deferred to package 8.",
     "No GUI/feature/training change, RL adoption, pin/lock update, push or release.",
     "Package 4a is prepared separately and not implemented in this package."
-  ]
+  ],
+  "implementation_commit": "11de177935bb001c43044e90a1215a6dc8d1c49e"
 }

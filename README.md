@@ -47,7 +47,8 @@ cross-platform shuffle equivalence is not guaranteed.
 ## Optional graphical client
 
 The original Tk interface is available again. It supports local human seats
-and simple companion bots, using the existing legacy rules:
+and simple companion bots, using the current development engine with legacy
+card/wonder definitions and corrected science scoring:
 
 ```sh
 python3 Game.py 2 --assets-dir /path/to/local/images --seed 42

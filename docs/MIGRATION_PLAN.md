@@ -5,7 +5,7 @@ weitere Migration. **Ein Auftrag bearbeitet jeweils nur ein Arbeitspaket.**
 Zum Abschluss werden Ergebnis, Tests, Commit und verbleibende Grenzen
 eingetragen. Anschließend endet der Auftrag; das nächste Paket startet mit
 frischem Kontext. Der [fertige nächste Agentenauftrag](NEXT_AGENT_TASK.md)
-begrenzt die nächste Sitzung auf Paket 3.
+begrenzt die nächste Sitzung auf Paket 4a.
 
 ## Ziel und feste Entscheidungen
 
@@ -16,9 +16,11 @@ begrenzt die nächste Sitzung auf Paket 3.
   RL, Feature-Engineering, Python-Datenexporte und Training bleiben separat.
 - Die alte Implementierung bleibt über Tags reproduzierbar. Ein paralleler
   umschaltbarer Betrieb beider Editionen ist derzeit nicht erforderlich.
-- Paket 0 hat ausschließlich die alte GUI wiederhergestellt. Paket 1 hat
-  die BGA-Ziele und IDs eingefroren. Die laufenden Regeln bleiben Legacy;
-  neue Kosten, Fähigkeiten und Grafik werden getrennt umgesetzt.
+- Paket 0 hat die alte GUI wiederhergestellt, Paket 1 die BGA-Ziele und IDs
+  eingefroren und Paket 2 die Legacy-Exporte repariert. Paket 3 startet den
+  Laufzeitumbau mit optimaler Wissenschaftswertung im Entwicklungs-Regelstand.
+  Karten und Wunder verwenden weiter Legacy-Daten; neue Kosten, Fähigkeiten
+  und Grafik werden getrennt umgesetzt.
 - Jeder Commit muss klar benennen, welchen Regelstand er abbildet. Eine
   begonnene Migration erhält einen Entwicklungs-Regelnamen und
   `second_edition_implemented=false`; erst die Abnahme erlaubt eine fertige
@@ -36,6 +38,7 @@ Git-Arbeitsstände prüfen. Die RL-Arbeit liegt auf
 | --- | --- |
 | `docs/GUI.md`, `docs/GUI_AUDIT.md` | Gegenwärtiger GUI-Stand und konkrete offene Punkte |
 | `docs/KNOWN_ISSUES.md`, `docs/PROTOCOL.md` | Bestehende Regelgrenzen und Transportvertrag |
+| `docs/SCIENCE_SCORING.md`, `docs/science-validation.json` | Korrigierte Wissenschaftswertung, Testnachweis und getrennte Kopier-/Python-Vorschaugrenzen aus Paket 3 |
 | `data/bga-second-edition/README.md`, `targets.json`, `provenance.json` | Eigenständiger geprüfter Zielvertrag, Schema, Zuordnungen und Eingabe-Prüfsummen aus Paket 1 |
 | `../docs/reference/edition-comparison/comparison.json` | Bereits abgeglichene 80 Karten-/Zeitalterzeilen und 14 Wunderseiten; Felder `new`, `bga_id`, `new_sprite` |
 | `../docs/reference/edition-comparison/COMPARISON.md` | Lesbare vollständige Gegenüberstellung |
@@ -65,8 +68,8 @@ lokalen Ordner verwendbar.
 | 0 – Legacy-GUI | Erledigt, technische Abnahme siehe GUI-Audit | Alte Oberfläche wieder anbinden und kompatibel machen | Alte Partien mit Endwertung, Session-Isolation und Tests funktionieren; Regeln unverändert |
 | 1 – Zielvertrag und Zuordnung | Erledigt, Abnahme unten | Vorhandene BGA-Ziele versioniert festhalten und IDs/Schema zuordnen | 80 Kartenzeilen und 14 Seiten vollständig; Prüfsummen/Quelle dokumentiert; alle Zielkarten und Ketten eindeutig zugeordnet; kein Laufzeitumbau |
 | 2 – Exporter reproduzierbar machen | Erledigt, Abnahme unten | Im RL-Projekt die alten Exportfehler beheben | Wunder-ID 0, Produktionsmengen und Mehrfach-Zeitalter korrekt; deterministischer Export mit geprüftem JSON-Diff und Regressionen |
-| **3 – Wissenschaftswertung** | **Als Nächstes** | Gierige Jokervergabe durch optimale Endwertung ersetzen | Dokumentierte Gegenbeispiele und Kombinationen mit mehreren Jokern/Quellen bestehen; keine Kartendaten-/GUI-Änderung |
-| 4a – Entscheidungsvertrag | Offen | Ablagewahl und simultane Auflösung als Protokollzustände spezifizieren | Eingaben, sichtbare Optionen, Sitzreihenfolge, Timing, Abbruch und Terminalzustand sind für GUI und RL eindeutig beschrieben; Implementierung folgt separat |
+| 3 – Wissenschaftswertung | Erledigt, Abnahme unten | Gierige Jokervergabe durch optimale Endwertung ersetzen | Dokumentierte Gegenbeispiele und Kombinationen mit mehreren Jokern/Quellen bestehen; keine Kartendaten-/GUI-Änderung |
+| **4a – Entscheidungsvertrag** | **Als Nächstes** | Ablagewahl und simultane Auflösung als Protokollzustände spezifizieren | Eingaben, sichtbare Optionen, Sitzreihenfolge, Timing, Abbruch und Terminalzustand sind für GUI und RL eindeutig beschrieben; Implementierung folgt separat |
 | 4b – Sichere Auflösung | Offen | Vertrag aus 4a in der Engine implementieren | Ablagekarten genau einmal entnommen, keine Handentnahme mit Ablageindex, Berechtigung korrekt verbraucht, relevante Gleichzeitigkeit getestet |
 | 5 – Neue Karten | Offen | Kosten, Punkte, Ketten, Deckmengen und neue Karteneffekte migrieren | Alle 80 Zeitalterzeilen gegen Ziel geprüft; Ludus und Decorators Guild funktionieren; Drei-Spieler-Decks stimmen |
 | 6 – Neue Wunder | Offen | Die 14 Seiten familienweise umstellen | Jede Stufe: Kosten, Ertrag, Verfügbarkeit und richtige Anzahl geprüft; Sonderfähigkeiten mit gezielten Fällen abgenommen |
@@ -208,5 +211,40 @@ unverändert. Die Datenkorrektur ändert den bestehenden `public_schema_hash()`;
 keine Kompatibilitätsprüfung wurde umgangen. Die bekannten Legacy-Decklücken
 ab vier Spielern bleiben als C++-Quellstand abgebildet; die Engine unterstützt
 weiter nur drei Spieler. Keine BGA-Aktivierung, kein Push/Release, keine
-Änderung von RL-Submodule-Pin oder `engine.lock.json`. Paket 3 ist ausschließlich
-als nächster Auftrag vorbereitet, nicht begonnen.
+Änderung von RL-Submodule-Pin oder `engine.lock.json`. Der damalige Folgeauftrag
+war Paket 3 zur optimalen Wissenschaftswertung.
+
+## Abnahme Paket 3 – 5. November 2026
+
+Implementierungscommit: `11de177935bb001c43044e90a1215a6dc8d1c49e`
+(`Optimize science jokers and mark the BGA development ruleset`).
+Der anschließende Dokumentationscommit hält die Abnahme und Paket 4a fest.
+
+Ergebnis: `CalculateScientificScore()` bewertet alle vollständigen
+Jokerverteilungen optimal. Workshop, Laboratory, Apothecary und Scientists
+Guild ergeben jetzt 13 statt 10 Punkte. Bisherige Scientists-Guild-/Babylon-
+Quellen und Stufengrenzen bleiben gleich; tatsächlich kopierte Gilden werden
+als eigene Einträge genau einmal gezählt. Wiederholte Wertung und Veröffentlichung
+bleiben stabil. Der aktive Vertrag lautet `v0.2.0-dev` mit
+`ruleset=bga-second-edition-development`, `second_edition_implemented=false`
+und unveränderter Transportversion 2.
+
+Prüfungen: roter C++-Gegenbeispieltest vor der Korrektur; 375 Bestände gegen
+einen unabhängigen rekursiven Prüfer, acht Babylon-Stufengrenzen, Kopierquellen
+und kontrollierte Schlussrundenveröffentlichung mit konsistenten Kategorien,
+Gesamtpunkten und `results.txt`. Release-Build, alle sechs CTests und 19
+Python-Tests sind grün. Der BGA-Zielaudit bleibt grün; C++-Patch und Inventar
+sind aktualisiert, Herkunftsaudit für 50 C++-/Build-/Testdateien grün.
+Die vorhandene Python-Zustandsinterpretation und passive Diagnose stimmen
+mit den tatsächlich veröffentlichten Schluss-Wissenschaftspunkten überein.
+Details: [SCIENCE_SCORING.md](SCIENCE_SCORING.md),
+[science-validation.json](science-validation.json).
+
+Grenzen: Die getrennte alte `CopyGuild()`-Kandidatenwahl schätzt den Wert
+der Scientists Guild weiterhin näherungsweise (nachgewiesen: ohne feste
+Symbole wird eine mögliche Kopie mit einem Punkt abgelehnt). Die Python-
+Marginalvorschau ohne vorhandene Joker liefert bei einem dokumentierten
+Fall 8 statt 5 optimale Zusatzpunkte; das bleibt für Paket 8 abgegrenzt.
+Keine Karten-/Wunderdaten, Fähigkeiten, GUI, RL-Features oder Trainingsstände
+verändert. Keine Freischaltung vollständiger BGA-Regeln, kein Push/Release,
+kein RL-Submodule-/Lock-Update. Paket 4a ist vorbereitet, nicht implementiert.
