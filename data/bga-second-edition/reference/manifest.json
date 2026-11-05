@@ -1,0 +1,149 @@
+{
+  "retrieved_on": "2026-11-05",
+  "tutorial_url": "https://en.boardgamearena.com/tutorial/tutorial/frame.html?game=sevenwonders&tutorial=570",
+  "game_asset_base": "https://x.boardgamearena.net/data/themereleases/current/games/sevenwonders/201016-1401/",
+  "data_edition": "second edition (game_edition=1)",
+  "files": [
+    {
+      "path": "img/boards.jpg",
+      "url": "https://x.boardgamearena.net/data/themereleases/current/games/sevenwonders/201016-1401/img/boards.jpg",
+      "mime_type": "image/jpeg",
+      "dimensions": [
+        450,
+        2772
+      ],
+      "bytes": 1196937,
+      "sha256": "dd6c2a336c13bcccc7f50f62a654090bb087e9f071d6de57ce67369b03823925"
+    },
+    {
+      "path": "img/boards_v2.jpg",
+      "url": "https://x.boardgamearena.net/data/themereleases/current/games/sevenwonders/201016-1401/img/boards_v2.jpg",
+      "mime_type": "image/webp",
+      "dimensions": [
+        450,
+        3122
+      ],
+      "bytes": 205368,
+      "sha256": "310fe2e5d9516a299e972c7a9019605ed64b4d70753b1be183a69879286e9947"
+    },
+    {
+      "path": "img/cardback.png",
+      "url": "https://x.boardgamearena.net/data/themereleases/current/games/sevenwonders/201016-1401/img/cardback.png",
+      "mime_type": "image/png",
+      "dimensions": [
+        354,
+        184
+      ],
+      "bytes": 39022,
+      "sha256": "15f32a68658ece79eb53784eae768153c1c0a2eeea650e39167c7844fe6ef0bf"
+    },
+    {
+      "path": "img/cardback_v2.png",
+      "url": "https://x.boardgamearena.net/data/themereleases/current/games/sevenwonders/201016-1401/img/cardback_v2.png",
+      "mime_type": "image/webp",
+      "dimensions": [
+        354,
+        184
+      ],
+      "bytes": 7998,
+      "sha256": "38a3956c36473874c95d932e59a7357e96802b555cfcc264a6514e8602263c9d"
+    },
+    {
+      "path": "img/cards.jpg",
+      "url": "https://x.boardgamearena.net/data/themereleases/current/games/sevenwonders/201016-1401/img/cards.jpg",
+      "mime_type": "image/jpeg",
+      "dimensions": [
+        1280,
+        1600
+      ],
+      "bytes": 1156295,
+      "sha256": "297a3c52d1b6855c6ff3ba1f5b228d9cb170ea42d9199dec388f8f5d187dc2f5"
+    },
+    {
+      "path": "img/cards_v2.jpg",
+      "url": "https://x.boardgamearena.net/data/themereleases/current/games/sevenwonders/201016-1401/img/cards_v2.jpg",
+      "mime_type": "image/webp",
+      "dimensions": [
+        2550,
+        3144
+      ],
+      "bytes": 1136934,
+      "sha256": "6f303630eb0d1aeb6ad108d21ae441da6623e391097cf0520b3ef4469469fad0"
+    },
+    {
+      "path": "img/icons.png",
+      "url": "https://x.boardgamearena.net/data/themereleases/current/games/sevenwonders/201016-1401/img/icons.png",
+      "mime_type": "image/webp",
+      "dimensions": [
+        220,
+        220
+      ],
+      "bytes": 14534,
+      "sha256": "76fa0740c5e479ad54eebc7d2113ef37b7aa7837c4ce47ce11052f0cf0b0fc14"
+    },
+    {
+      "path": "img/icons_v2.png",
+      "url": "https://x.boardgamearena.net/data/themereleases/current/games/sevenwonders/201016-1401/img/icons_v2.png",
+      "mime_type": "image/webp",
+      "dimensions": [
+        300,
+        220
+      ],
+      "bytes": 18038,
+      "sha256": "09996f6122ffa85a5fca31e0052450276dfcbbe308ca4e47e129307ffef800e4"
+    },
+    {
+      "path": "img/shield_big.png",
+      "url": "https://x.boardgamearena.net/data/themereleases/current/games/sevenwonders/201016-1401/img/shield_big.png",
+      "mime_type": "image/webp",
+      "dimensions": [
+        120,
+        126
+      ],
+      "bytes": 4070,
+      "sha256": "ea2accf1f267280f6f490dc8b1faf8a6aad50d616d07d75ed60992c561346afe"
+    },
+    {
+      "path": "img/tree.jpg",
+      "url": "https://x.boardgamearena.net/data/themereleases/current/games/sevenwonders/201016-1401/img/tree.jpg",
+      "mime_type": "image/webp",
+      "dimensions": [
+        1500,
+        911
+      ],
+      "bytes": 101486,
+      "sha256": "c3cc497b6e56e2085876542c0cfddf42fffad66fc2273621cb649ea3148e4750"
+    },
+    {
+      "path": "img/tree_v2.jpg",
+      "url": "https://x.boardgamearena.net/data/themereleases/current/games/sevenwonders/201016-1401/img/tree_v2.jpg",
+      "mime_type": "image/webp",
+      "dimensions": [
+        1444,
+        1416
+      ],
+      "bytes": 115850,
+      "sha256": "c8aa97f8a57cb200f8c4424c7b6bba07ca5f836b0efffd8a4d338f1fb884935d"
+    }
+  ],
+  "supporting_files": [
+    {
+      "path": "sevenwonders.css",
+      "url": "https://x.boardgamearena.net/data/themereleases/current/games/sevenwonders/201016-1401/sevenwonders.css",
+      "bytes": 17415,
+      "sha256": "bd578161a1423189e77131da224bb4999616a79c618a5170bad82737619e3107"
+    },
+    {
+      "path": "sevenwonders.js",
+      "url": "https://x.boardgamearena.net/data/themereleases/current/games/sevenwonders/201016-1401/sevenwonders.js",
+      "bytes": 50094,
+      "sha256": "a15812802da0cdd030f2dd79ee0efb4e6b65ca0c125e47dbc9b33b4d2eb87237"
+    },
+    {
+      "path": "rules-second-edition-en.pdf",
+      "url": "https://cdn.svc.asmodee.net/production-rprod/storage/downloads/games/7wonders/en/sev-en02-rules-1716388903zBEZx.pdf",
+      "bytes": 15571906,
+      "sha256": "b65a797b0bf8ef586d0d6a7b2f74fbc04ad310cbd28a102ed90ba539f4ba6779"
+    }
+  ]
+}

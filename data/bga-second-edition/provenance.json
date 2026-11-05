@@ -1,0 +1,107 @@
+{
+  "format_version": 1,
+  "checked_on": "2026-11-05",
+  "scope": "7 Wonders Grundspiel, zweite Edition (2020)",
+  "engine_baseline_commit": "f39c1d7ead271df437269b7f555a2c7a0d4b9ad1",
+  "rl_comparison_commit": "7fb80feea6df984a018f617a83fc393a4398cb31",
+  "sources": {
+    "official_cards": "https://cdn.svc.asmodee.net/production-rprod/storage/downloads/games/7wonders/en/sev-en02-chain-list-1598888877Na4yW.pdf",
+    "official_effects": "https://cdn.svc.asmodee.net/production-rprod/storage/downloads/games/7wonders/en/sev-en02-effects-description-1716388911mLqDj.pdf",
+    "official_faq": "https://www.rprod.com/en/7-wonders/faq",
+    "board_photos": "https://assortedmeeples.com/7-wonders-board-game-strategy",
+    "bga_tutorial": "https://en.boardgamearena.com/tutorial/tutorial/frame.html?game=sevenwonders&tutorial=570"
+  },
+  "bga_input_sha256": {
+    "card_types.json": "09c3e02f9c9a5643538bef0856769a34e09a6a65088ac8f26049884c96ae7f69",
+    "wonders.json": "e7c45126492566869c6fd0c9c3a9b02d26cf9b0518cfefcab8cb5e2d81ed3080",
+    "manifest.json": "a324da4e3571a95df031ac03cda786d320ebaacbcec1e5485db2b5a8f2bff654"
+  },
+  "external_input_sha256": {
+    "docs/reference/edition-comparison/comparison.json": "ba826980976dff5d43559433b14cc060bf55703253dfde3e70bb089b7382755e",
+    "docs/reference/edition-comparison/source_discrepancies.json": "a9a99421af8e4a5be2a56c58f158d8e9e1ecd559059d5cccfffcf6f48a719459",
+    "references/bga-sevenwonders/card_types.json": "09c3e02f9c9a5643538bef0856769a34e09a6a65088ac8f26049884c96ae7f69",
+    "references/bga-sevenwonders/wonders.json": "e7c45126492566869c6fd0c9c3a9b02d26cf9b0518cfefcab8cb5e2d81ed3080",
+    "references/bga-sevenwonders/manifest.json": "a324da4e3571a95df031ac03cda786d320ebaacbcec1e5485db2b5a8f2bff654",
+    "engine/include/card.h": "399a5036f828298b664bbec2414cfd057a6380e06268e66fb67d861029f2d3cd",
+    "engine/include/wonder.h": "e8cec6631184b30a2ee1d621f7cc5732ce3b0875278c37b73ede804b44991854",
+    "engine/main.cpp": "1972f8db8909b39fa9086ebce0eebf62d4e1c9694b56cfcf8f425e34b845a4bb"
+  },
+  "comparison_input_sha256": {
+    "references/cards.csv": "d52ec9b855cf7dedd809e8f2ecd1055ebeaa3ed9db6a9b2bfa66ff2376f60a8f",
+    "00_marten/final_cards.csv": "6ca1f35b4e9cb620310afcebf57ad559306870952e342780ff206dafe53c4876",
+    "engine/main.cpp": "1972f8db8909b39fa9086ebce0eebf62d4e1c9694b56cfcf8f425e34b845a4bb",
+    "engine/src/player.cpp": "461568f1e7630cca688c1af667a92b8ea500c5abff3745ac8cafa80a1f48b2b0",
+    "engine/src/wonder.cpp": "e7565a10464a2a629220fefe05ea5e7f78c363149f9d7bda8e9ae9f5a2caafbb",
+    "python/src/sevenwonders_rl/data/card_db.json": "f2607b5400ae1e2c9e5890abd02207df31a44072938a4668ba76cf9e816fd8c8",
+    "python/src/sevenwonders_rl/data/wonder_db.json": "fa5e244feefa98120ebdfb84f31476a4aaef280e715be7dc1010e6791b16fa7f",
+    "docs/reference/edition-comparison/catalog_2020.json": "0d44bf2c1d7b4460757be33ca1cf9efeaa3896c1aa32d5c77e7f30869d9f95a4",
+    "python/scripts/build_edition_comparison.py": "c454649cb24e9ce74fc5d62273f8230226b567583dde4bb432ce88c8d73443b8",
+    "python/scripts/edition_comparison/report.html": "f816da9af8fc310d23acca0ac1fc524e70aa1daddf3300a89b4a87087cc34bed"
+  },
+  "source_discrepancies": [
+    {
+      "key": "town_hall_age3",
+      "name": "Town Hall",
+      "field": "cost",
+      "previous": {
+        "stone": 3,
+        "glass": 1
+      },
+      "bga": {
+        "stone": 2,
+        "ore": 1,
+        "glass": 1
+      },
+      "resolution": "BGA definitions; differing card costs also checked on corresponding v2 sprite artwork"
+    },
+    {
+      "key": "arena_age3",
+      "name": "Arena",
+      "field": "cost",
+      "previous": {
+        "clay": 2,
+        "ore": 1
+      },
+      "bga": {
+        "stone": 2,
+        "ore": 1
+      },
+      "resolution": "BGA definitions; differing card costs also checked on corresponding v2 sprite artwork"
+    },
+    {
+      "key": "circus_age3",
+      "name": "Circus",
+      "field": "cost",
+      "previous": {
+        "clay": 3,
+        "ore": 1
+      },
+      "bga": {
+        "stone": 3,
+        "ore": 1
+      },
+      "resolution": "BGA definitions; differing card costs also checked on corresponding v2 sprite artwork"
+    },
+    {
+      "key": "craftsmens_guild_age3",
+      "name": "Craftsmens Guild",
+      "field": "cost",
+      "previous": {
+        "stone": 2,
+        "ore": 1
+      },
+      "bga": {
+        "ore": 2,
+        "stone": 2
+      },
+      "resolution": "BGA definitions; differing card costs also checked on corresponding v2 sprite artwork"
+    }
+  ],
+  "open_rule_questions": [],
+  "limits": [
+    "Static BGA definitions do not include the server rules implementation.",
+    "No runtime migration or proof of special-action timing; packages 3 through 9 remain open.",
+    "Artwork is external. Sprite coordinates and MIME types use the frozen reference manifest.",
+    "Counts for 4 through 7 players are reference data; the engine supports 3 players only."
+  ]
+}

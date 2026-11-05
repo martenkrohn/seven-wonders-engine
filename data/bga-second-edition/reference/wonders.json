@@ -1,0 +1,608 @@
+{
+  "1": {
+    "name": "The Pyramids of Giza",
+    "nametr": "The Pyramids of Giza",
+    "ressmode": "all",
+    "ress": [
+      "S"
+    ],
+    "color": "f0a117",
+    "stages": {
+      "1": {
+        "cost": [
+          "W",
+          "W"
+        ],
+        "points": {
+          "type": "simple",
+          "qt": 3
+        }
+      },
+      "2": {
+        "cost": [
+          "C",
+          "C",
+          "L"
+        ],
+        "points": {
+          "type": "simple",
+          "qt": 5
+        }
+      },
+      "3": {
+        "cost": [
+          "S",
+          "S",
+          "S",
+          "S"
+        ],
+        "points": {
+          "type": "simple",
+          "qt": 7
+        }
+      }
+    }
+  },
+  "2": {
+    "name": "The Hanging Gardens of Babylon",
+    "nametr": "The Hanging Gardens of Babylon",
+    "ressmode": "all",
+    "ress": [
+      "W"
+    ],
+    "color": "008800",
+    "stages": {
+      "1": {
+        "cost": [
+          "C",
+          "C"
+        ],
+        "points": {
+          "type": "simple",
+          "qt": 3
+        }
+      },
+      "2": {
+        "cost": [
+          "O",
+          "O",
+          "L"
+        ],
+        "science": "?"
+      },
+      "3": {
+        "cost": [
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        "points": {
+          "type": "simple",
+          "qt": 7
+        }
+      }
+    }
+  },
+  "3": {
+    "name": "The Statue of Zeus in Olympia",
+    "nametr": "The Statue of Zeus in Olympia",
+    "ressmode": "all",
+    "ress": [
+      "C"
+    ],
+    "color": "ffffff",
+    "stages": {
+      "1": {
+        "cost": [
+          "S",
+          "S"
+        ],
+        "points": {
+          "type": "simple",
+          "qt": 3
+        }
+      },
+      "2": {
+        "cost": [
+          "W",
+          "W"
+        ],
+        "buildFirstEachColor": true
+      },
+      "3": {
+        "cost": [
+          "C",
+          "C",
+          "C"
+        ],
+        "points": {
+          "type": "simple",
+          "qt": 7
+        }
+      }
+    }
+  },
+  "4": {
+    "name": "The Colossus of Rhodes",
+    "nametr": "The Colossus of Rhodes",
+    "ressmode": "all",
+    "ress": [
+      "O"
+    ],
+    "color": "442df0",
+    "stages": {
+      "1": {
+        "cost": [
+          "W",
+          "W"
+        ],
+        "points": {
+          "type": "simple",
+          "qt": 3
+        }
+      },
+      "2": {
+        "cost": [
+          "C",
+          "C",
+          "C"
+        ],
+        "shield": 2
+      },
+      "3": {
+        "cost": [
+          "O",
+          "O",
+          "O",
+          "O"
+        ],
+        "points": {
+          "type": "simple",
+          "qt": 7
+        }
+      }
+    }
+  },
+  "5": {
+    "name": "The Temple of Artemis in Ephesus",
+    "nametr": "The Temple of Artemis in Ephesus",
+    "ressmode": "all",
+    "ress": [
+      "P"
+    ],
+    "color": "b98a46",
+    "stages": {
+      "1": {
+        "cost": [
+          "C",
+          "C"
+        ],
+        "points": {
+          "type": "simple",
+          "qt": 3
+        }
+      },
+      "2": {
+        "cost": [
+          "W",
+          "W"
+        ],
+        "coins": {
+          "type": "simple",
+          "qt": 9
+        }
+      },
+      "3": {
+        "cost": [
+          "O",
+          "O",
+          "G"
+        ],
+        "points": {
+          "type": "simple",
+          "qt": 7
+        }
+      }
+    }
+  },
+  "6": {
+    "name": "The Lighthouse of Alexandria",
+    "nametr": "The Lighthouse of Alexandria",
+    "ressmode": "all",
+    "ress": [
+      "G"
+    ],
+    "color": "2d8775",
+    "stages": {
+      "1": {
+        "cost": [
+          "S",
+          "S"
+        ],
+        "points": {
+          "type": "simple",
+          "qt": 3
+        }
+      },
+      "2": {
+        "cost": [
+          "O",
+          "O"
+        ],
+        "ressmode": "or",
+        "ress": [
+          "C",
+          "O",
+          "W",
+          "S"
+        ]
+      },
+      "3": {
+        "cost": [
+          "P",
+          "L"
+        ],
+        "points": {
+          "type": "simple",
+          "qt": 7
+        }
+      }
+    }
+  },
+  "7": {
+    "name": "The Mausoleum of Halicarnassus",
+    "nametr": "The Mausoleum of Halicarnassus",
+    "ressmode": "all",
+    "ress": [
+      "L"
+    ],
+    "color": "000000",
+    "stages": {
+      "1": {
+        "cost": [
+          "O",
+          "O"
+        ],
+        "points": {
+          "type": "simple",
+          "qt": 3
+        }
+      },
+      "2": {
+        "cost": [
+          "G",
+          "P"
+        ],
+        "pickDiscarded": true
+      },
+      "3": {
+        "cost": [
+          "S",
+          "S",
+          "S"
+        ],
+        "points": {
+          "type": "simple",
+          "qt": 7
+        }
+      }
+    }
+  },
+  "8": {
+    "name": "The Pyramids of Giza",
+    "nametr": "The Pyramids of Giza",
+    "ressmode": "all",
+    "ress": [
+      "S"
+    ],
+    "color": "f0a117",
+    "stages": {
+      "1": {
+        "cost": [
+          "W",
+          "W"
+        ],
+        "points": {
+          "type": "simple",
+          "qt": 3
+        }
+      },
+      "2": {
+        "cost": [
+          "S",
+          "S",
+          "S"
+        ],
+        "points": {
+          "type": "simple",
+          "qt": 5
+        }
+      },
+      "3": {
+        "cost": [
+          "C",
+          "C",
+          "C"
+        ],
+        "points": {
+          "type": "simple",
+          "qt": 5
+        }
+      },
+      "4": {
+        "cost": [
+          "S",
+          "S",
+          "S",
+          "S",
+          "P"
+        ],
+        "points": {
+          "type": "simple",
+          "qt": 7
+        }
+      }
+    }
+  },
+  "9": {
+    "name": "The Hanging Gardens of Babylon",
+    "nametr": "The Hanging Gardens of Babylon",
+    "ressmode": "all",
+    "ress": [
+      "W"
+    ],
+    "color": "008800",
+    "stages": {
+      "1": {
+        "cost": [
+          "S",
+          "S"
+        ],
+        "sevenCard": true
+      },
+      "2": {
+        "cost": [
+          "G",
+          "C",
+          "C",
+          "C"
+        ],
+        "science": "?"
+      }
+    }
+  },
+  "10": {
+    "name": "The Statue of Zeus in Olympia",
+    "nametr": "The Statue of Zeus in Olympia",
+    "ressmode": "all",
+    "ress": [
+      "C"
+    ],
+    "color": "ffffff",
+    "stages": {
+      "1": {
+        "cost": [
+          "O",
+          "O"
+        ],
+        "points": {
+          "type": "simple",
+          "qt": 2
+        },
+        "buildFirst": true
+      },
+      "2": {
+        "cost": [
+          "C",
+          "C",
+          "C"
+        ],
+        "points": {
+          "type": "simple",
+          "qt": 3
+        },
+        "buildLast": true
+      },
+      "3": {
+        "cost": [
+          "G",
+          "P",
+          "L"
+        ],
+        "points": {
+          "type": "simple",
+          "qt": 5
+        }
+      }
+    }
+  },
+  "11": {
+    "name": "The Colossus of Rhodes",
+    "nametr": "The Colossus of Rhodes",
+    "ressmode": "all",
+    "ress": [
+      "O"
+    ],
+    "color": "442df0",
+    "stages": {
+      "1": {
+        "cost": [
+          "S",
+          "S",
+          "S"
+        ],
+        "points": {
+          "type": "simple",
+          "qt": 3
+        },
+        "coins": {
+          "type": "simple",
+          "qt": 3
+        },
+        "shield": 1
+      },
+      "2": {
+        "cost": [
+          "O",
+          "O",
+          "O",
+          "O"
+        ],
+        "coins": {
+          "type": "simple",
+          "qt": 4
+        },
+        "shield": 1,
+        "points": {
+          "type": "simple",
+          "qt": 4
+        }
+      }
+    }
+  },
+  "12": {
+    "name": "The Temple of Artemis in Ephesus",
+    "nametr": "The Temple of Artemis in Ephesus",
+    "ressmode": "all",
+    "ress": [
+      "P"
+    ],
+    "color": "b98a46",
+    "stages": {
+      "1": {
+        "cost": [
+          "S",
+          "S"
+        ],
+        "coins": {
+          "type": "simple",
+          "qt": 4
+        },
+        "points": {
+          "type": "simple",
+          "qt": 2
+        }
+      },
+      "2": {
+        "cost": [
+          "W",
+          "W"
+        ],
+        "coins": {
+          "type": "simple",
+          "qt": 4
+        },
+        "points": {
+          "type": "simple",
+          "qt": 3
+        }
+      },
+      "3": {
+        "cost": [
+          "O",
+          "O",
+          "L"
+        ],
+        "coins": {
+          "type": "simple",
+          "qt": 4
+        },
+        "points": {
+          "type": "simple",
+          "qt": 5
+        }
+      }
+    }
+  },
+  "13": {
+    "name": "The Lighthouse of Alexandria",
+    "nametr": "The Lighthouse of Alexandria",
+    "ressmode": "all",
+    "ress": [
+      "G"
+    ],
+    "color": "2d8775",
+    "stages": {
+      "1": {
+        "cost": [
+          "C",
+          "C"
+        ],
+        "ressmode": "or",
+        "ress": [
+          "C",
+          "O",
+          "W",
+          "S"
+        ]
+      },
+      "2": {
+        "cost": [
+          "O",
+          "O",
+          "O"
+        ],
+        "ressmode": "or",
+        "ress": [
+          "P",
+          "L",
+          "G"
+        ]
+      },
+      "3": {
+        "cost": [
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        "points": {
+          "type": "simple",
+          "qt": 7
+        }
+      }
+    }
+  },
+  "14": {
+    "name": "The Mausoleum of Halicarnassus",
+    "nametr": "The Mausoleum of Halicarnassus",
+    "ressmode": "all",
+    "ress": [
+      "L"
+    ],
+    "color": "000000",
+    "stages": {
+      "1": {
+        "cost": [
+          "C",
+          "C"
+        ],
+        "pickDiscarded": true,
+        "points": {
+          "type": "simple",
+          "qt": 2
+        }
+      },
+      "2": {
+        "cost": [
+          "G",
+          "P"
+        ],
+        "pickDiscarded": true,
+        "points": {
+          "type": "simple",
+          "qt": 1
+        }
+      },
+      "3": {
+        "cost": [
+          "W",
+          "W",
+          "W"
+        ],
+        "pickDiscarded": true
+      }
+    }
+  }
+}

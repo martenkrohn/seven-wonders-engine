@@ -1,0 +1,2775 @@
+{
+  "1": {
+    "img": 74,
+    "imgtype": 1,
+    "treecoords": {
+      "x": 32,
+      "y": 70
+    },
+    "treecoordschained": {
+      "x": 56,
+      "y": 0
+    },
+    "name": "Lumber Yard",
+    "nametr": "Lumber Yard",
+    "category": "raw",
+    "age": 1,
+    "cost": [],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 2,
+      "5": 2,
+      "6": 2,
+      "7": 2
+    },
+    "ressmode": "all",
+    "ress": [
+      "W"
+    ],
+    "canbuild": [],
+    "freeif": []
+  },
+  "2": {
+    "img": 0,
+    "imgtype": 1,
+    "treecoords": {
+      "x": 135,
+      "y": 70
+    },
+    "treecoordschained": {
+      "x": 56,
+      "y": 0
+    },
+    "name": "Stone Pit",
+    "nametr": "Stone Pit",
+    "category": "raw",
+    "age": 1,
+    "cost": [],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 2,
+      "6": 2,
+      "7": 2
+    },
+    "ressmode": "all",
+    "ress": [
+      "S"
+    ],
+    "canbuild": [],
+    "freeif": []
+  },
+  "3": {
+    "img": 1,
+    "imgtype": 1,
+    "treecoords": {
+      "x": 32,
+      "y": 145
+    },
+    "treecoordschained": {
+      "x": 56,
+      "y": 0
+    },
+    "name": "Clay Pool",
+    "nametr": "Clay Pool",
+    "category": "raw",
+    "age": 1,
+    "cost": [],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 2,
+      "6": 2,
+      "7": 2
+    },
+    "ressmode": "all",
+    "ress": [
+      "C"
+    ],
+    "canbuild": [],
+    "freeif": []
+  },
+  "4": {
+    "img": 2,
+    "imgtype": 1,
+    "treecoords": {
+      "x": 135,
+      "y": 145
+    },
+    "treecoordschained": {
+      "x": 56,
+      "y": 0
+    },
+    "name": "Ore Vein",
+    "nametr": "Ore Vein",
+    "category": "raw",
+    "age": 1,
+    "cost": [],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 2,
+      "5": 2,
+      "6": 2,
+      "7": 2
+    },
+    "ressmode": "all",
+    "ress": [
+      "O"
+    ],
+    "canbuild": [],
+    "freeif": []
+  },
+  "5": {
+    "img": 3,
+    "imgtype": 2,
+    "treecoords": {
+      "x": 32,
+      "y": 224
+    },
+    "treecoordschained": {
+      "x": 56,
+      "y": 0
+    },
+    "name": "Tree Farm",
+    "nametr": "Tree Farm",
+    "category": "raw",
+    "age": 1,
+    "cost": [],
+    "coincost": 1,
+    "qt": {
+      "3": 0,
+      "4": 0,
+      "5": 0,
+      "6": 1,
+      "7": 1
+    },
+    "ressmode": "or",
+    "ress": [
+      "W",
+      "C"
+    ],
+    "canbuild": [],
+    "freeif": []
+  },
+  "6": {
+    "img": 4,
+    "imgtype": 2,
+    "treecoords": {
+      "x": 135,
+      "y": 224
+    },
+    "treecoordschained": {
+      "x": 56,
+      "y": 0
+    },
+    "name": "Excavation",
+    "nametr": "Excavation",
+    "category": "raw",
+    "age": 1,
+    "cost": [],
+    "coincost": 1,
+    "qt": {
+      "3": 0,
+      "4": 1,
+      "5": 1,
+      "6": 1,
+      "7": 1
+    },
+    "ressmode": "or",
+    "ress": [
+      "S",
+      "C"
+    ],
+    "canbuild": [],
+    "freeif": []
+  },
+  "7": {
+    "img": 5,
+    "imgtype": 2,
+    "treecoords": {
+      "x": 32,
+      "y": 301
+    },
+    "treecoordschained": {
+      "x": 56,
+      "y": 0
+    },
+    "name": "Clay Pit",
+    "nametr": "Clay Pit",
+    "category": "raw",
+    "age": 1,
+    "cost": [],
+    "coincost": 1,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 1,
+      "6": 1,
+      "7": 1
+    },
+    "ressmode": "or",
+    "ress": [
+      "C",
+      "O"
+    ],
+    "canbuild": [],
+    "freeif": []
+  },
+  "8": {
+    "img": 6,
+    "imgtype": 2,
+    "treecoords": {
+      "x": 135,
+      "y": 301
+    },
+    "treecoordschained": {
+      "x": 56,
+      "y": 0
+    },
+    "name": "Timber Yard",
+    "nametr": "Timber Yard",
+    "category": "raw",
+    "age": 1,
+    "cost": [],
+    "coincost": 1,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 1,
+      "6": 1,
+      "7": 1
+    },
+    "ressmode": "or",
+    "ress": [
+      "S",
+      "W"
+    ],
+    "canbuild": [],
+    "freeif": []
+  },
+  "9": {
+    "img": 7,
+    "imgtype": 2,
+    "treecoords": {
+      "x": 32,
+      "y": 378
+    },
+    "treecoordschained": {
+      "x": 56,
+      "y": 0
+    },
+    "name": "Forest Cave",
+    "nametr": "Forest Cave",
+    "category": "raw",
+    "age": 1,
+    "cost": [],
+    "coincost": 1,
+    "qt": {
+      "3": 0,
+      "4": 0,
+      "5": 1,
+      "6": 1,
+      "7": 1
+    },
+    "ressmode": "or",
+    "ress": [
+      "W",
+      "O"
+    ],
+    "canbuild": [],
+    "freeif": []
+  },
+  "10": {
+    "img": 8,
+    "imgtype": 2,
+    "treecoords": {
+      "x": 135,
+      "y": 378
+    },
+    "treecoordschained": {
+      "x": 56,
+      "y": 0
+    },
+    "name": "Mine",
+    "nametr": "Mine",
+    "category": "raw",
+    "age": 1,
+    "cost": [],
+    "coincost": 1,
+    "qt": {
+      "3": 0,
+      "4": 0,
+      "5": 0,
+      "6": 1,
+      "7": 1
+    },
+    "ressmode": "or",
+    "ress": [
+      "S",
+      "O"
+    ],
+    "canbuild": [],
+    "freeif": []
+  },
+  "11": {
+    "img": 9,
+    "imgtype": 1,
+    "treecoords": {
+      "x": 83,
+      "y": 547
+    },
+    "treecoordschained": {
+      "x": 56,
+      "y": 0
+    },
+    "name": "Loom",
+    "nametr": "Loom",
+    "category": "man",
+    "age": 1,
+    "cost": [],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 1,
+      "6": 2,
+      "7": 2
+    },
+    "ressmode": "all",
+    "ress": [
+      "L"
+    ],
+    "canbuild": [],
+    "freeif": []
+  },
+  "12": {
+    "img": 10,
+    "imgtype": 1,
+    "treecoords": {
+      "x": 32,
+      "y": 469
+    },
+    "treecoordschained": {
+      "x": 56,
+      "y": 0
+    },
+    "name": "Glassworks",
+    "nametr": "Glassworks",
+    "category": "man",
+    "age": 1,
+    "cost": [],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 1,
+      "6": 2,
+      "7": 2
+    },
+    "ressmode": "all",
+    "ress": [
+      "G"
+    ],
+    "canbuild": [],
+    "freeif": []
+  },
+  "13": {
+    "img": 11,
+    "imgtype": 1,
+    "treecoords": {
+      "x": 135,
+      "y": 469
+    },
+    "treecoordschained": {
+      "x": 56,
+      "y": 0
+    },
+    "name": "Press",
+    "nametr": "Press",
+    "category": "man",
+    "age": 1,
+    "cost": [],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 1,
+      "6": 2,
+      "7": 2
+    },
+    "ressmode": "all",
+    "ress": [
+      "P"
+    ],
+    "canbuild": [],
+    "freeif": []
+  },
+  "14": {
+    "img": 23,
+    "imgtype": 1,
+    "treecoords": {
+      "x": 32,
+      "y": 638
+    },
+    "treecoordschained": {
+      "x": 56,
+      "y": 69
+    },
+    "name": "Pawnshop",
+    "nametr": "Pawnshop",
+    "category": "civ",
+    "age": 1,
+    "cost": [],
+    "coincost": 0,
+    "qt": {
+      "3": 0,
+      "4": 1,
+      "5": 1,
+      "6": 1,
+      "7": 2
+    },
+    "canbuild": [
+      37
+    ],
+    "freeif": [],
+    "points": {
+      "type": "simple",
+      "qt": 3
+    }
+  },
+  "15": {
+    "img": 25,
+    "imgtype": 3,
+    "treecoords": {
+      "x": 135,
+      "y": 638
+    },
+    "treecoordschained": {
+      "x": 56,
+      "y": 151
+    },
+    "name": "Baths",
+    "nametr": "Baths",
+    "category": "civ",
+    "age": 1,
+    "cost": [
+      "S"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 1,
+      "6": 1,
+      "7": 2
+    },
+    "canbuild": [
+      35
+    ],
+    "freeif": [],
+    "points": {
+      "type": "simple",
+      "qt": 3
+    }
+  },
+  "16": {
+    "img": 24,
+    "imgtype": 1,
+    "treecoords": {
+      "x": 32,
+      "y": 715
+    },
+    "treecoordschained": {
+      "x": 56,
+      "y": 233
+    },
+    "name": "Altar",
+    "nametr": "Altar",
+    "category": "civ",
+    "age": 1,
+    "cost": [],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 2,
+      "6": 2,
+      "7": 2
+    },
+    "canbuild": [
+      61
+    ],
+    "freeif": [],
+    "points": {
+      "type": "simple",
+      "qt": 3
+    }
+  },
+  "17": {
+    "img": 22,
+    "imgtype": 1,
+    "treecoords": {
+      "x": 135,
+      "y": 715
+    },
+    "treecoordschained": {
+      "x": 56,
+      "y": 315
+    },
+    "name": "Theater",
+    "nametr": "Theater",
+    "category": "civ",
+    "age": 1,
+    "cost": [],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 1,
+      "6": 2,
+      "7": 2
+    },
+    "canbuild": [
+      62
+    ],
+    "freeif": [],
+    "points": {
+      "type": "simple",
+      "qt": 3
+    }
+  },
+  "18": {
+    "img": 21,
+    "imgtype": 1,
+    "treecoords": {
+      "x": 32,
+      "y": 806
+    },
+    "treecoordschained": {
+      "x": 56,
+      "y": 0
+    },
+    "name": "Tavern",
+    "nametr": "Tavern",
+    "category": "com",
+    "age": 1,
+    "cost": [],
+    "coincost": 0,
+    "qt": {
+      "3": 0,
+      "4": 1,
+      "5": 2,
+      "6": 2,
+      "7": 3
+    },
+    "canbuild": [],
+    "freeif": [],
+    "coins": {
+      "type": "simple",
+      "qt": 5
+    }
+  },
+  "19": {
+    "img": 18,
+    "imgtype": 2,
+    "treecoords": {
+      "x": 136,
+      "y": 885
+    },
+    "treecoordschained": {
+      "x": 56,
+      "y": 479
+    },
+    "name": "East Trading Post",
+    "nametr": "East Trading Post",
+    "category": "com",
+    "age": 1,
+    "cost": [],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 1,
+      "6": 1,
+      "7": 2
+    },
+    "canbuild": [
+      39
+    ],
+    "freeif": [],
+    "shield": 0,
+    "discount": {
+      "type": "raw",
+      "direction": "right"
+    }
+  },
+  "20": {
+    "img": 19,
+    "imgtype": 2,
+    "treecoords": {
+      "x": 32,
+      "y": 885
+    },
+    "treecoordschained": {
+      "x": 56,
+      "y": 561
+    },
+    "name": "West Trading Post",
+    "nametr": "West Trading Post",
+    "category": "com",
+    "age": 1,
+    "cost": [],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 1,
+      "6": 1,
+      "7": 2
+    },
+    "canbuild": [
+      39
+    ],
+    "freeif": [],
+    "discount": {
+      "type": "raw",
+      "direction": "left"
+    }
+  },
+  "21": {
+    "img": 20,
+    "imgtype": 2,
+    "treecoords": {
+      "x": 136,
+      "y": 805
+    },
+    "treecoordschained": {
+      "x": 56,
+      "y": 397
+    },
+    "name": "Marketplace",
+    "nametr": "Marketplace",
+    "category": "com",
+    "age": 1,
+    "cost": [],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 1,
+      "6": 2,
+      "7": 2
+    },
+    "canbuild": [
+      40
+    ],
+    "freeif": [],
+    "discount": {
+      "type": "man",
+      "direction": "both"
+    }
+  },
+  "22": {
+    "img": 13,
+    "imgtype": 3,
+    "treecoords": {
+      "x": 32,
+      "y": 975
+    },
+    "treecoordschained": {
+      "x": 56,
+      "y": 0
+    },
+    "name": "Stockade",
+    "nametr": "Stockade",
+    "category": "mil",
+    "age": 1,
+    "cost": [
+      "W"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 1,
+      "6": 1,
+      "7": 2
+    },
+    "canbuild": [],
+    "freeif": [],
+    "shield": 1
+  },
+  "23": {
+    "img": 12,
+    "imgtype": 3,
+    "treecoords": {
+      "x": 135,
+      "y": 975
+    },
+    "treecoordschained": {
+      "x": 56,
+      "y": 0
+    },
+    "name": "Barracks",
+    "nametr": "Barracks",
+    "category": "mil",
+    "age": 1,
+    "cost": [
+      "O"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 2,
+      "6": 2,
+      "7": 2
+    },
+    "canbuild": [],
+    "freeif": [],
+    "shield": 1
+  },
+  "24": {
+    "img": 14,
+    "imgtype": 3,
+    "treecoords": {
+      "x": 83,
+      "y": 1053
+    },
+    "treecoordschained": {
+      "x": 56,
+      "y": 0
+    },
+    "name": "Guard Tower",
+    "nametr": "Guard Tower",
+    "category": "mil",
+    "age": 1,
+    "cost": [
+      "C"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 2,
+      "5": 2,
+      "6": 2,
+      "7": 2
+    },
+    "canbuild": [],
+    "freeif": [],
+    "shield": 1
+  },
+  "25": {
+    "img": 15,
+    "imgtype": 3,
+    "treecoords": {
+      "x": 32,
+      "y": 1143
+    },
+    "treecoordschained": {
+      "x": 56,
+      "y": 644
+    },
+    "name": "Apothocary",
+    "nametr": "Apothecary",
+    "category": "sci",
+    "age": 1,
+    "cost": [
+      "L"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 2,
+      "6": 2,
+      "7": 2
+    },
+    "canbuild": [
+      45,
+      47
+    ],
+    "freeif": [],
+    "science": 3
+  },
+  "26": {
+    "img": 17,
+    "imgtype": 3,
+    "treecoords": {
+      "x": 135,
+      "y": 1143
+    },
+    "treecoordschained": {
+      "x": 56,
+      "y": 807
+    },
+    "name": "Workshop",
+    "nametr": "Workshop",
+    "category": "sci",
+    "age": 1,
+    "cost": [
+      "G"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 1,
+      "6": 1,
+      "7": 2
+    },
+    "canbuild": [
+      48,
+      46
+    ],
+    "freeif": [],
+    "science": 2
+  },
+  "27": {
+    "img": 16,
+    "imgtype": 3,
+    "treecoords": {
+      "x": 83,
+      "y": 1221
+    },
+    "treecoordschained": {
+      "x": 56,
+      "y": 972
+    },
+    "name": "Scriptorium",
+    "nametr": "Scriptorium",
+    "category": "sci",
+    "age": 1,
+    "cost": [
+      "P"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 2,
+      "5": 2,
+      "6": 2,
+      "7": 2
+    },
+    "canbuild": [
+      38,
+      49
+    ],
+    "freeif": [],
+    "science": 1
+  },
+  "28": {
+    "img": 26,
+    "imgtype": 2,
+    "treecoords": {
+      "x": 296,
+      "y": 69
+    },
+    "treecoordschained": {
+      "x": 283,
+      "y": 0
+    },
+    "name": "Sawmill",
+    "nametr": "Sawmill",
+    "category": "raw",
+    "age": 2,
+    "cost": [],
+    "coincost": 1,
+    "qt": {
+      "3": 1,
+      "4": 2,
+      "5": 2,
+      "6": 2,
+      "7": 2
+    },
+    "ressmode": "all",
+    "ress": [
+      "W",
+      "W"
+    ],
+    "canbuild": [],
+    "freeif": []
+  },
+  "29": {
+    "img": 27,
+    "imgtype": 2,
+    "treecoords": {
+      "x": 399,
+      "y": 69
+    },
+    "treecoordschained": {
+      "x": 283,
+      "y": 0
+    },
+    "name": "Quarry",
+    "nametr": "Quarry",
+    "category": "raw",
+    "age": 2,
+    "cost": [],
+    "coincost": 1,
+    "qt": {
+      "3": 1,
+      "4": 2,
+      "5": 2,
+      "6": 2,
+      "7": 2
+    },
+    "ressmode": "all",
+    "ress": [
+      "S",
+      "S"
+    ],
+    "canbuild": [],
+    "freeif": []
+  },
+  "30": {
+    "img": 28,
+    "imgtype": 2,
+    "treecoords": {
+      "x": 296,
+      "y": 145
+    },
+    "treecoordschained": {
+      "x": 283,
+      "y": 0
+    },
+    "name": "Brickyard",
+    "nametr": "Brickyard",
+    "category": "raw",
+    "age": 2,
+    "cost": [],
+    "coincost": 1,
+    "qt": {
+      "3": 1,
+      "4": 2,
+      "5": 2,
+      "6": 2,
+      "7": 2
+    },
+    "ressmode": "all",
+    "ress": [
+      "C",
+      "C"
+    ],
+    "canbuild": [],
+    "freeif": []
+  },
+  "31": {
+    "img": 29,
+    "imgtype": 2,
+    "treecoords": {
+      "x": 399,
+      "y": 145
+    },
+    "treecoordschained": {
+      "x": 283,
+      "y": 0
+    },
+    "name": "Foundry",
+    "nametr": "Foundry",
+    "category": "raw",
+    "age": 2,
+    "cost": [],
+    "coincost": 1,
+    "qt": {
+      "3": 1,
+      "4": 2,
+      "5": 2,
+      "6": 2,
+      "7": 2
+    },
+    "ressmode": "all",
+    "ress": [
+      "O",
+      "O"
+    ],
+    "canbuild": [],
+    "freeif": []
+  },
+  "32": {
+    "img": 9,
+    "imgtype": 1,
+    "treecoords": {
+      "x": 348,
+      "y": 311
+    },
+    "treecoordschained": {
+      "x": 283,
+      "y": 0
+    },
+    "name": "Loom",
+    "nametr": "Loom",
+    "category": "man",
+    "age": 2,
+    "cost": [],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 2,
+      "6": 2,
+      "7": 2
+    },
+    "ressmode": "all",
+    "ress": [
+      "L"
+    ],
+    "canbuild": [],
+    "freeif": []
+  },
+  "33": {
+    "img": 10,
+    "imgtype": 1,
+    "treecoords": {
+      "x": 296,
+      "y": 233
+    },
+    "treecoordschained": {
+      "x": 283,
+      "y": 0
+    },
+    "name": "Glassworks",
+    "nametr": "Glassworks",
+    "category": "man",
+    "age": 2,
+    "cost": [],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 2,
+      "6": 2,
+      "7": 2
+    },
+    "ressmode": "all",
+    "ress": [
+      "G"
+    ],
+    "canbuild": [],
+    "freeif": []
+  },
+  "34": {
+    "img": 11,
+    "imgtype": 1,
+    "treecoords": {
+      "x": 399,
+      "y": 233
+    },
+    "treecoordschained": {
+      "x": 283,
+      "y": 0
+    },
+    "name": "Press",
+    "nametr": "Press",
+    "category": "man",
+    "age": 2,
+    "cost": [],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 2,
+      "6": 2,
+      "7": 2
+    },
+    "ressmode": "all",
+    "ress": [
+      "P"
+    ],
+    "canbuild": [],
+    "freeif": []
+  },
+  "35": {
+    "img": 45,
+    "imgtype": 4,
+    "treecoords": {
+      "x": 399,
+      "y": 395
+    },
+    "treecoordschained": {
+      "x": 283,
+      "y": 151
+    },
+    "name": "Aqueduct",
+    "nametr": "Aqueduct",
+    "category": "civ",
+    "age": 2,
+    "cost": [
+      "S",
+      "S",
+      "S"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 1,
+      "6": 1,
+      "7": 2
+    },
+    "canbuild": [],
+    "freeif": [
+      15
+    ],
+    "points": {
+      "type": "simple",
+      "qt": 5
+    }
+  },
+  "36": {
+    "img": 44,
+    "imgtype": 4,
+    "treecoords": {
+      "x": 295,
+      "y": 473
+    },
+    "treecoordschained": {
+      "x": 283,
+      "y": 0
+    },
+    "name": "Temple",
+    "nametr": "Temple",
+    "category": "civ",
+    "age": 2,
+    "cost": [
+      "W",
+      "C",
+      "G"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 1,
+      "6": 2,
+      "7": 2
+    },
+    "canbuild": [],
+    "freeif": [],
+    "points": {
+      "type": "simple",
+      "qt": 4
+    }
+  },
+  "37": {
+    "img": 43,
+    "imgtype": 4,
+    "treecoords": {
+      "x": 295,
+      "y": 395
+    },
+    "treecoordschained": {
+      "x": 283,
+      "y": 69
+    },
+    "name": "Statue",
+    "nametr": "Statue",
+    "category": "civ",
+    "age": 2,
+    "cost": [
+      "O",
+      "O",
+      "W"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 1,
+      "6": 1,
+      "7": 2
+    },
+    "canbuild": [],
+    "freeif": [
+      14
+    ],
+    "points": {
+      "type": "simple",
+      "qt": 4
+    }
+  },
+  "38": {
+    "img": 42,
+    "imgtype": 4,
+    "treecoords": {
+      "x": 399,
+      "y": 473
+    },
+    "treecoordschained": {
+      "x": 283,
+      "y": 890
+    },
+    "name": "Courthouse",
+    "nametr": "Courthouse",
+    "category": "civ",
+    "age": 2,
+    "cost": [
+      "C",
+      "C",
+      "L"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 2,
+      "6": 2,
+      "7": 2
+    },
+    "canbuild": [],
+    "freeif": [
+      27
+    ],
+    "points": {
+      "type": "simple",
+      "qt": 4
+    }
+  },
+  "39": {
+    "img": 40,
+    "imgtype": 5,
+    "treecoords": {
+      "x": 399,
+      "y": 565
+    },
+    "treecoordschained": {
+      "x": 283,
+      "y": 479
+    },
+    "name": "Forum",
+    "nametr": "Forum",
+    "category": "com",
+    "age": 2,
+    "cost": [
+      "C",
+      "C"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 1,
+      "6": 2,
+      "7": 3
+    },
+    "ressmode": "or",
+    "ress": [
+      "G",
+      "L",
+      "P"
+    ],
+    "canbuild": [
+      66
+    ],
+    "freeif": [
+      19,
+      20
+    ]
+  },
+  "40": {
+    "img": 41,
+    "imgtype": 5,
+    "treecoords": {
+      "x": 295,
+      "y": 565
+    },
+    "treecoordschained": {
+      "x": 283,
+      "y": 397
+    },
+    "name": "Caravansery",
+    "nametr": "Caravansery",
+    "category": "com",
+    "age": 2,
+    "cost": [
+      "W",
+      "W"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 2,
+      "6": 3,
+      "7": 3
+    },
+    "ressmode": "or",
+    "ress": [
+      "W",
+      "S",
+      "O",
+      "C"
+    ],
+    "canbuild": [
+      67
+    ],
+    "freeif": [
+      21
+    ]
+  },
+  "41": {
+    "img": 38,
+    "imgtype": 6,
+    "treecoords": {
+      "x": 295,
+      "y": 643
+    },
+    "treecoordschained": {
+      "x": 283,
+      "y": 0
+    },
+    "name": "Vineyard",
+    "nametr": "Vineyard",
+    "category": "com",
+    "age": 2,
+    "cost": [],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 1,
+      "6": 2,
+      "7": 2
+    },
+    "canbuild": [],
+    "freeif": [],
+    "shield": 0,
+    "coins": {
+      "type": "raw",
+      "direction": "all",
+      "qt": 1
+    }
+  },
+  "42": {
+    "img": 39,
+    "imgtype": 6,
+    "treecoords": {
+      "x": 399,
+      "y": 643
+    },
+    "treecoordschained": {
+      "x": 283,
+      "y": 0
+    },
+    "name": "Bazaar",
+    "nametr": "Bazaar",
+    "category": "com",
+    "age": 2,
+    "cost": [],
+    "coincost": 0,
+    "qt": {
+      "3": 0,
+      "4": 1,
+      "5": 1,
+      "6": 1,
+      "7": 2
+    },
+    "canbuild": [],
+    "freeif": [],
+    "coins": {
+      "type": "man",
+      "direction": "all",
+      "qt": 2
+    }
+  },
+  "43": {
+    "img": 31,
+    "imgtype": 2,
+    "treecoords": {
+      "x": 295,
+      "y": 808
+    },
+    "treecoordschained": {
+      "x": 283,
+      "y": 1219
+    },
+    "name": "Walls",
+    "nametr": "Walls",
+    "category": "mil",
+    "age": 2,
+    "cost": [
+      "S",
+      "S",
+      "S"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 1,
+      "6": 1,
+      "7": 2
+    },
+    "canbuild": [
+      70
+    ],
+    "freeif": [],
+    "shield": 2
+  },
+  "44": {
+    "img": 33,
+    "imgtype": 2,
+    "treecoords": {
+      "x": 399,
+      "y": 808
+    },
+    "treecoordschained": {
+      "x": 283,
+      "y": 1301
+    },
+    "name": "Training Ground",
+    "nametr": "Training Ground",
+    "category": "mil",
+    "age": 2,
+    "cost": [
+      "O",
+      "O",
+      "W"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 0,
+      "4": 1,
+      "5": 1,
+      "6": 2,
+      "7": 3
+    },
+    "canbuild": [
+      71
+    ],
+    "freeif": [],
+    "shield": 2
+  },
+  "45": {
+    "img": 30,
+    "imgtype": 5,
+    "treecoords": {
+      "x": 295,
+      "y": 733
+    },
+    "treecoordschained": {
+      "x": 283,
+      "y": 561
+    },
+    "name": "Stables",
+    "nametr": "Stables",
+    "category": "mil",
+    "age": 2,
+    "cost": [
+      "C",
+      "W",
+      "O"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 2,
+      "6": 2,
+      "7": 2
+    },
+    "canbuild": [],
+    "freeif": [
+      25
+    ],
+    "shield": 2
+  },
+  "46": {
+    "img": 32,
+    "imgtype": 5,
+    "treecoords": {
+      "x": 399,
+      "y": 733
+    },
+    "treecoordschained": {
+      "x": 283,
+      "y": 726
+    },
+    "name": "Archery Range",
+    "nametr": "Archery Range",
+    "category": "mil",
+    "age": 2,
+    "cost": [
+      "W",
+      "W",
+      "O"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 1,
+      "6": 2,
+      "7": 2
+    },
+    "canbuild": [],
+    "freeif": [
+      26
+    ],
+    "shield": 2
+  },
+  "47": {
+    "img": 36,
+    "imgtype": 4,
+    "treecoords": {
+      "x": 295,
+      "y": 902
+    },
+    "treecoordschained": {
+      "x": 283,
+      "y": 644
+    },
+    "name": "Dispensary",
+    "nametr": "Dispensary",
+    "category": "sci",
+    "age": 2,
+    "cost": [
+      "O",
+      "O",
+      "G"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 2,
+      "5": 2,
+      "6": 2,
+      "7": 2
+    },
+    "canbuild": [
+      74,
+      69
+    ],
+    "freeif": [
+      25
+    ],
+    "science": 3
+  },
+  "48": {
+    "img": 34,
+    "imgtype": 4,
+    "treecoords": {
+      "x": 399,
+      "y": 902
+    },
+    "treecoordschained": {
+      "x": 283,
+      "y": 807
+    },
+    "name": "Laboratory",
+    "nametr": "Laboratory",
+    "category": "sci",
+    "age": 2,
+    "cost": [
+      "C",
+      "C",
+      "P"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 2,
+      "6": 2,
+      "7": 2
+    },
+    "canbuild": [
+      75,
+      73
+    ],
+    "freeif": [
+      26
+    ],
+    "science": 2
+  },
+  "49": {
+    "img": 37,
+    "imgtype": 4,
+    "treecoords": {
+      "x": 295,
+      "y": 979
+    },
+    "treecoordschained": {
+      "x": 283,
+      "y": 972
+    },
+    "name": "Library",
+    "nametr": "Library",
+    "category": "sci",
+    "age": 2,
+    "cost": [
+      "S",
+      "S",
+      "L"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 1,
+      "6": 2,
+      "7": 2
+    },
+    "canbuild": [
+      65,
+      76
+    ],
+    "freeif": [
+      27
+    ],
+    "science": 1
+  },
+  "50": {
+    "img": 35,
+    "imgtype": 3,
+    "treecoords": {
+      "x": 399,
+      "y": 979
+    },
+    "treecoordschained": {
+      "x": 283,
+      "y": 1137
+    },
+    "name": "School",
+    "nametr": "School",
+    "category": "sci",
+    "age": 2,
+    "cost": [
+      "W",
+      "P"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 1,
+      "6": 1,
+      "7": 2
+    },
+    "canbuild": [
+      77,
+      78
+    ],
+    "freeif": [],
+    "science": 1
+  },
+  "51": {
+    "img": 64,
+    "imgtype": 2,
+    "treecoords": {
+      "x": 559,
+      "y": 1035
+    },
+    "treecoordschained": {
+      "x": 501,
+      "y": 0
+    },
+    "name": "Workers Guild",
+    "nametr": "Workers Guild",
+    "category": "gui",
+    "age": 3,
+    "cost": [
+      "O",
+      "O",
+      "C",
+      "S",
+      "W"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 1,
+      "6": 1,
+      "7": 1
+    },
+    "canbuild": [],
+    "freeif": [],
+    "points": {
+      "type": "raw",
+      "direction": "both",
+      "qt": 1
+    }
+  },
+  "52": {
+    "img": 65,
+    "imgtype": 2,
+    "treecoords": {
+      "x": 664,
+      "y": 1035
+    },
+    "treecoordschained": {
+      "x": 501,
+      "y": 0
+    },
+    "name": "Craftsmen Guild",
+    "nametr": "Craftsmens Guild",
+    "category": "gui",
+    "age": 3,
+    "cost": [
+      "O",
+      "O",
+      "S",
+      "S"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 1,
+      "6": 1,
+      "7": 1
+    },
+    "canbuild": [],
+    "freeif": [],
+    "points": {
+      "type": "man",
+      "direction": "both",
+      "qt": 2
+    }
+  },
+  "53": {
+    "img": 66,
+    "imgtype": 2,
+    "treecoords": {
+      "x": 664,
+      "y": 1112
+    },
+    "treecoordschained": {
+      "x": 501,
+      "y": 0
+    },
+    "name": "Traders Guild",
+    "nametr": "Traders Guild",
+    "category": "gui",
+    "age": 3,
+    "cost": [
+      "G",
+      "L",
+      "P"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 1,
+      "6": 1,
+      "7": 1
+    },
+    "canbuild": [],
+    "freeif": [],
+    "points": {
+      "type": "com",
+      "direction": "both",
+      "qt": 1
+    }
+  },
+  "54": {
+    "img": 67,
+    "imgtype": 2,
+    "treecoords": {
+      "x": 664,
+      "y": 1189
+    },
+    "treecoordschained": {
+      "x": 501,
+      "y": 0
+    },
+    "name": "Philosophers Guild",
+    "nametr": "Philosophers Guild",
+    "category": "gui",
+    "age": 3,
+    "cost": [
+      "C",
+      "C",
+      "C",
+      "P",
+      "L"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 1,
+      "6": 1,
+      "7": 1
+    },
+    "canbuild": [],
+    "freeif": [],
+    "points": {
+      "type": "sci",
+      "direction": "both",
+      "qt": 1
+    }
+  },
+  "55": {
+    "img": 68,
+    "imgtype": 2,
+    "treecoords": {
+      "x": 559,
+      "y": 1189
+    },
+    "treecoordschained": {
+      "x": 501,
+      "y": 0
+    },
+    "name": "Spies Guild",
+    "nametr": "Spies Guild",
+    "category": "gui",
+    "age": 3,
+    "cost": [
+      "C",
+      "C",
+      "G"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 1,
+      "6": 1,
+      "7": 1
+    },
+    "canbuild": [],
+    "freeif": [],
+    "points": {
+      "type": "mil",
+      "direction": "both",
+      "qt": 1
+    }
+  },
+  "56": {
+    "img": 69,
+    "imgtype": 2,
+    "treecoords": {
+      "x": 455,
+      "y": 1270
+    },
+    "treecoordschained": {
+      "x": 501,
+      "y": 0
+    },
+    "name": "Decorators Guild",
+    "nametr": "Decorators Guild",
+    "category": "gui",
+    "age": 3,
+    "cost": [
+      "O",
+      "O",
+      "S",
+      "L"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 1,
+      "6": 1,
+      "7": 1
+    },
+    "canbuild": [],
+    "freeif": [],
+    "points": {
+      "type": "decorators",
+      "direction": "none",
+      "qt": 7
+    }
+  },
+  "57": {
+    "img": 70,
+    "imgtype": 2,
+    "treecoords": {
+      "x": 664,
+      "y": 1270
+    },
+    "treecoordschained": {
+      "x": 501,
+      "y": 0
+    },
+    "name": "Shipowners Guild",
+    "nametr": "Shipowners Guild",
+    "category": "gui",
+    "age": 3,
+    "cost": [
+      "W",
+      "W",
+      "W",
+      "G",
+      "P"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 1,
+      "6": 1,
+      "7": 1
+    },
+    "canbuild": [],
+    "freeif": [],
+    "points": {
+      "type": "rawmangui",
+      "direction": "none",
+      "qt": 1
+    }
+  },
+  "58": {
+    "img": 71,
+    "imgtype": 2,
+    "treecoords": {
+      "x": 559,
+      "y": 1270
+    },
+    "treecoordschained": {
+      "x": 501,
+      "y": 0
+    },
+    "name": "Scientists Guild",
+    "nametr": "Scientists Guild",
+    "category": "gui",
+    "age": 3,
+    "cost": [
+      "W",
+      "W",
+      "O",
+      "O",
+      "P"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 1,
+      "6": 1,
+      "7": 1
+    },
+    "canbuild": [],
+    "freeif": [],
+    "science": "?"
+  },
+  "59": {
+    "img": 72,
+    "imgtype": 2,
+    "treecoords": {
+      "x": 559,
+      "y": 1112
+    },
+    "treecoordschained": {
+      "x": 501,
+      "y": 0
+    },
+    "name": "Magistrates Guild",
+    "nametr": "Magistrates Guild",
+    "category": "gui",
+    "age": 3,
+    "cost": [
+      "W",
+      "W",
+      "W",
+      "S",
+      "L"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 1,
+      "6": 1,
+      "7": 1
+    },
+    "canbuild": [],
+    "freeif": [],
+    "points": {
+      "type": "civ",
+      "direction": "both",
+      "qt": 1
+    }
+  },
+  "60": {
+    "img": 73,
+    "imgtype": 2,
+    "treecoords": {
+      "x": 455,
+      "y": 1189
+    },
+    "treecoordschained": {
+      "x": 501,
+      "y": 0
+    },
+    "name": "Builders Guild",
+    "nametr": "Builders Guild",
+    "category": "gui",
+    "age": 3,
+    "cost": [
+      "S",
+      "S",
+      "S",
+      "C",
+      "C",
+      "G"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 1,
+      "6": 1,
+      "7": 1
+    },
+    "canbuild": [],
+    "freeif": [],
+    "points": {
+      "type": "wonder",
+      "direction": "all",
+      "qt": 1
+    }
+  },
+  "61": {
+    "img": 61,
+    "imgtype": 4,
+    "treecoords": {
+      "x": 560,
+      "y": 69
+    },
+    "treecoordschained": {
+      "x": 501,
+      "y": 233
+    },
+    "name": "Pantheon",
+    "nametr": "Pantheon",
+    "category": "civ",
+    "age": 3,
+    "cost": [
+      "C",
+      "C",
+      "O",
+      "G",
+      "P",
+      "L"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 1,
+      "6": 2,
+      "7": 2
+    },
+    "canbuild": [],
+    "freeif": [
+      16
+    ],
+    "points": {
+      "type": "simple",
+      "qt": 7
+    }
+  },
+  "62": {
+    "img": 60,
+    "imgtype": 4,
+    "treecoords": {
+      "x": 665,
+      "y": 69
+    },
+    "treecoordschained": {
+      "x": 501,
+      "y": 315
+    },
+    "name": "Gardens",
+    "nametr": "Gardens",
+    "category": "civ",
+    "age": 3,
+    "cost": [
+      "C",
+      "C",
+      "W"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 2,
+      "5": 2,
+      "6": 2,
+      "7": 2
+    },
+    "canbuild": [],
+    "freeif": [
+      17
+    ],
+    "points": {
+      "type": "simple",
+      "qt": 5
+    }
+  },
+  "63": {
+    "img": 62,
+    "imgtype": 3,
+    "treecoords": {
+      "x": 560,
+      "y": 146
+    },
+    "treecoordschained": {
+      "x": 501,
+      "y": 0
+    },
+    "name": "Town Hall",
+    "nametr": "Town Hall",
+    "category": "civ",
+    "age": 3,
+    "cost": [
+      "S",
+      "S",
+      "O",
+      "G"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 1,
+      "6": 2,
+      "7": 2
+    },
+    "canbuild": [],
+    "freeif": [],
+    "points": {
+      "type": "simple",
+      "qt": 6
+    }
+  },
+  "64": {
+    "img": 59,
+    "imgtype": 3,
+    "treecoords": {
+      "x": 665,
+      "y": 146
+    },
+    "treecoordschained": {
+      "x": 501,
+      "y": 0
+    },
+    "name": "Palace",
+    "nametr": "Palace",
+    "category": "civ",
+    "age": 3,
+    "cost": [
+      "S",
+      "O",
+      "W",
+      "C",
+      "G",
+      "P",
+      "L"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 1,
+      "6": 1,
+      "7": 2
+    },
+    "canbuild": [],
+    "freeif": [],
+    "points": {
+      "type": "simple",
+      "qt": 8
+    }
+  },
+  "65": {
+    "img": 63,
+    "imgtype": 4,
+    "treecoords": {
+      "x": 612,
+      "y": 223
+    },
+    "treecoordschained": {
+      "x": 501,
+      "y": 890
+    },
+    "name": "Senate",
+    "nametr": "Senate",
+    "category": "civ",
+    "age": 3,
+    "cost": [
+      "W",
+      "W",
+      "S",
+      "O"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 2,
+      "6": 2,
+      "7": 2
+    },
+    "canbuild": [],
+    "freeif": [
+      49
+    ],
+    "points": {
+      "type": "simple",
+      "qt": 6
+    }
+  },
+  "66": {
+    "img": 57,
+    "imgtype": 4,
+    "treecoords": {
+      "x": 665,
+      "y": 309
+    },
+    "treecoordschained": {
+      "x": 501,
+      "y": 479
+    },
+    "name": "Haven",
+    "nametr": "Haven",
+    "category": "com",
+    "age": 3,
+    "cost": [
+      "W",
+      "O",
+      "L"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 2,
+      "5": 2,
+      "6": 2,
+      "7": 2
+    },
+    "canbuild": [],
+    "freeif": [
+      39
+    ],
+    "coins": {
+      "type": "raw",
+      "direction": "none",
+      "qt": 1
+    },
+    "points": {
+      "type": "raw",
+      "direction": "none",
+      "qt": 1
+    }
+  },
+  "67": {
+    "img": 58,
+    "imgtype": 4,
+    "treecoords": {
+      "x": 560,
+      "y": 309
+    },
+    "treecoordschained": {
+      "x": 501,
+      "y": 397
+    },
+    "name": "Lighthouse",
+    "nametr": "Lighthouse",
+    "category": "com",
+    "age": 3,
+    "cost": [
+      "S",
+      "G"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 1,
+      "6": 2,
+      "7": 2
+    },
+    "canbuild": [],
+    "freeif": [
+      40
+    ],
+    "coins": {
+      "type": "com",
+      "direction": "none",
+      "qt": 1
+    },
+    "points": {
+      "type": "com",
+      "direction": "none",
+      "qt": 1
+    }
+  },
+  "68": {
+    "img": 56,
+    "imgtype": 3,
+    "treecoords": {
+      "x": 560,
+      "y": 386
+    },
+    "treecoordschained": {
+      "x": 501,
+      "y": 0
+    },
+    "name": "Chamber of Commerce",
+    "nametr": "Chamber of Commerce",
+    "category": "com",
+    "age": 3,
+    "cost": [
+      "C",
+      "C",
+      "P"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 0,
+      "4": 1,
+      "5": 1,
+      "6": 2,
+      "7": 2
+    },
+    "canbuild": [],
+    "freeif": [],
+    "coins": {
+      "type": "man",
+      "direction": "none",
+      "qt": 2
+    },
+    "points": {
+      "type": "man",
+      "direction": "none",
+      "qt": 2
+    }
+  },
+  "69": {
+    "img": 55,
+    "imgtype": 3,
+    "treecoords": {
+      "x": 612,
+      "y": 464
+    },
+    "treecoordschained": {
+      "x": 501,
+      "y": 561
+    },
+    "name": "Arena",
+    "nametr": "Arena",
+    "category": "com",
+    "age": 3,
+    "cost": [
+      "S",
+      "S",
+      "O"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 2,
+      "6": 2,
+      "7": 2
+    },
+    "canbuild": [],
+    "freeif": [
+      47
+    ],
+    "coins": {
+      "type": "wonder",
+      "direction": "none",
+      "qt": 3
+    },
+    "points": {
+      "type": "wonder",
+      "direction": "none",
+      "qt": 1
+    }
+  },
+  "70": {
+    "img": 48,
+    "imgtype": 5,
+    "treecoords": {
+      "x": 665,
+      "y": 552
+    },
+    "treecoordschained": {
+      "x": 501,
+      "y": 1219
+    },
+    "name": "Fortifications",
+    "nametr": "Fortifications",
+    "category": "mil",
+    "age": 3,
+    "cost": [
+      "O",
+      "O",
+      "O",
+      "C"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 1,
+      "6": 1,
+      "7": 2
+    },
+    "canbuild": [],
+    "freeif": [
+      43
+    ],
+    "shield": 3
+  },
+  "71": {
+    "img": 46,
+    "imgtype": 5,
+    "treecoords": {
+      "x": 561,
+      "y": 629
+    },
+    "treecoordschained": {
+      "x": 501,
+      "y": 1301
+    },
+    "name": "Circus",
+    "nametr": "Circus",
+    "category": "mil",
+    "age": 3,
+    "cost": [
+      "S",
+      "S",
+      "S",
+      "O"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 0,
+      "4": 1,
+      "5": 1,
+      "6": 2,
+      "7": 2
+    },
+    "canbuild": [],
+    "freeif": [
+      44
+    ],
+    "shield": 3
+  },
+  "72": {
+    "img": 47,
+    "imgtype": 5,
+    "treecoords": {
+      "x": 665,
+      "y": 629
+    },
+    "treecoordschained": {
+      "x": 501,
+      "y": 0
+    },
+    "name": "Arsenal",
+    "nametr": "Arsenal",
+    "category": "mil",
+    "age": 3,
+    "cost": [
+      "W",
+      "W",
+      "O",
+      "L"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 2,
+      "6": 2,
+      "7": 2
+    },
+    "canbuild": [],
+    "freeif": [],
+    "shield": 3
+  },
+  "73": {
+    "img": 49,
+    "imgtype": 5,
+    "treecoords": {
+      "x": 618,
+      "y": 707
+    },
+    "treecoordschained": {
+      "x": 501,
+      "y": 726
+    },
+    "name": "Siege Workshop",
+    "nametr": "Siege Workshop",
+    "category": "mil",
+    "age": 3,
+    "cost": [
+      "C",
+      "C",
+      "C",
+      "W"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 2,
+      "6": 2,
+      "7": 2
+    },
+    "canbuild": [],
+    "freeif": [
+      48
+    ],
+    "shield": 3
+  },
+  "74": {
+    "img": 53,
+    "imgtype": 4,
+    "treecoords": {
+      "x": 560,
+      "y": 792
+    },
+    "treecoordschained": {
+      "x": 501,
+      "y": 644
+    },
+    "name": "Lodge",
+    "nametr": "Lodge",
+    "category": "sci",
+    "age": 3,
+    "cost": [
+      "C",
+      "C",
+      "P",
+      "L"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 1,
+      "6": 2,
+      "7": 2
+    },
+    "canbuild": [],
+    "freeif": [
+      47
+    ],
+    "science": 3
+  },
+  "75": {
+    "img": 50,
+    "imgtype": 4,
+    "treecoords": {
+      "x": 560,
+      "y": 869
+    },
+    "treecoordschained": {
+      "x": 501,
+      "y": 807
+    },
+    "name": "Observatory",
+    "nametr": "Observatory",
+    "category": "sci",
+    "age": 3,
+    "cost": [
+      "O",
+      "O",
+      "G",
+      "L"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 1,
+      "6": 1,
+      "7": 2
+    },
+    "canbuild": [],
+    "freeif": [
+      48
+    ],
+    "science": 2
+  },
+  "76": {
+    "img": 52,
+    "imgtype": 4,
+    "treecoords": {
+      "x": 612,
+      "y": 947
+    },
+    "treecoordschained": {
+      "x": 501,
+      "y": 972
+    },
+    "name": "University",
+    "nametr": "University",
+    "category": "sci",
+    "age": 3,
+    "cost": [
+      "W",
+      "W",
+      "P",
+      "G"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 2,
+      "5": 2,
+      "6": 2,
+      "7": 2
+    },
+    "canbuild": [],
+    "freeif": [
+      49
+    ],
+    "science": 1
+  },
+  "77": {
+    "img": 51,
+    "imgtype": 4,
+    "treecoords": {
+      "x": 665,
+      "y": 792
+    },
+    "treecoordschained": {
+      "x": 501,
+      "y": 1054
+    },
+    "name": "Academy",
+    "nametr": "Academy",
+    "category": "sci",
+    "age": 3,
+    "cost": [
+      "S",
+      "S",
+      "S",
+      "G"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 1,
+      "6": 1,
+      "7": 2
+    },
+    "canbuild": [],
+    "freeif": [
+      50
+    ],
+    "science": 3
+  },
+  "78": {
+    "img": 54,
+    "imgtype": 4,
+    "treecoords": {
+      "x": 665,
+      "y": 869
+    },
+    "treecoordschained": {
+      "x": 501,
+      "y": 1137
+    },
+    "name": "Study",
+    "nametr": "Study",
+    "category": "sci",
+    "age": 3,
+    "cost": [
+      "W",
+      "P",
+      "L"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 1,
+      "4": 1,
+      "5": 2,
+      "6": 2,
+      "7": 2
+    },
+    "canbuild": [],
+    "freeif": [
+      50
+    ],
+    "science": 2
+  },
+  "79": {
+    "img": 75,
+    "imgtype": 3,
+    "treecoords": {
+      "x": 665,
+      "y": 386
+    },
+    "treecoordschained": {
+      "x": 501,
+      "y": 0
+    },
+    "name": "Ludus",
+    "nametr": "Ludus",
+    "category": "com",
+    "age": 3,
+    "cost": [
+      "S",
+      "O"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 0,
+      "4": 0,
+      "5": 1,
+      "6": 1,
+      "7": 2
+    },
+    "canbuild": [],
+    "freeif": [],
+    "coins": {
+      "type": "mil",
+      "direction": "none",
+      "qt": 3
+    },
+    "points": {
+      "type": "mil",
+      "direction": "none",
+      "qt": 1
+    }
+  },
+  "80": {
+    "img": 76,
+    "imgtype": 5,
+    "treecoords": {
+      "x": 561,
+      "y": 552
+    },
+    "treecoordschained": {
+      "x": 501,
+      "y": 0
+    },
+    "name": "Castrum",
+    "nametr": "Castrum",
+    "category": "mil",
+    "age": 3,
+    "cost": [
+      "C",
+      "C",
+      "W",
+      "P"
+    ],
+    "coincost": 0,
+    "qt": {
+      "3": 0,
+      "4": 1,
+      "5": 1,
+      "6": 1,
+      "7": 2
+    },
+    "canbuild": [],
+    "freeif": [],
+    "shield": 3
+  }
+}

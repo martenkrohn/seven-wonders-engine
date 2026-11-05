@@ -61,6 +61,11 @@ into bounded packages. Its [next-agent task](docs/NEXT_AGENT_TASK.md) covers
 only the next package. The [GUI audit](docs/GUI_AUDIT.md) records the restored
 baseline and the remaining interface/artwork work.
 
+The [BGA target contract](data/bga-second-edition/README.md) now preserves all
+80 checked card/age rows, 14 wonder sides, source checksums and the complete ID
+mapping in this repository. It is preparation for migration; the executable
+and `engine-contract.json` still describe the legacy rules.
+
 Keep engine changes and C++ regressions here. The RL repository consumes an
 exact engine commit as a Git submodule. Follow [DEVELOPMENT.md](docs/DEVELOPMENT.md)
 for releases and the planned BGA migration. Known rule gaps are recorded in

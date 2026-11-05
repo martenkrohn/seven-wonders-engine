@@ -24,7 +24,20 @@ Engine CI needs no Gymnasium, NumPy or PyTorch.
 
 Use the previously collected BGA reference as the target source of truth.
 The complete card/wonder comparison remains in the RL project's
-`docs/reference/edition-comparison/`. Migration has not started here.
+`docs/reference/edition-comparison/`. Package 1 freezes its checked targets,
+source hashes and identity mapping in [data/bga-second-edition](../data/bga-second-edition/README.md).
+Runtime migration has not started; the binary still implements the legacy rules.
+
+Audit the target data independently of the RL checkout:
+
+```sh
+python3 scripts/audit_bga_targets.py --check
+python3 -m unittest discover -s tests -p 'test_bga*.py' -v
+```
+
+The normalized target JSON will feed generated C++ tables and the Python
+export artifact when those packages are implemented. The frozen raw BGA JSON
+is an audit input, not a second editable source or a runtime dependency.
 
 Implement independently reviewable changes with rule regressions: data and
 costs; wonder abilities; discard selection and simultaneity; science scoring.

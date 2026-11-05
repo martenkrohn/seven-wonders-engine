@@ -123,6 +123,28 @@ Tk-Klickpartien prüfen Bedienung und Schlussanzeige mit und ohne lokale Bilder.
 Details und Grenzen: [GUI_AUDIT.md](GUI_AUDIT.md). Die weitere Migration wird
 über [MIGRATION_PLAN.md](MIGRATION_PLAN.md) einzeln abgearbeitet.
 
+## ENG-011 – BGA-Zieldaten und Zuordnung vorbereitet
+
+5. November 2026, Paket 1. `data/bga-second-edition/` enthält die geprüften
+80 Kartenzeilen und 14 Wunderseiten, statische BGA-JSON-Eingaben mit ihren
+Prüfsummen, Quellenentscheidungen und vollständige Zuordnungen. Neue IDs:
+Ludus 76, Castrum 77, Decorators Guild 78; Strategists 73 bleibt reserviert.
+Der Vergleich hatte Decorators an Position 73 gegenübergestellt; diese
+historische Position wird ausdrücklich von der neuen Kartenidentität getrennt.
+
+Ein eigenständiger Standardbibliotheksaudit und elf Regressionen prüfen
+Abdeckung, Bestands-IDs, Altersvarianten, Kosten, Effekte, Wunderstufen,
+Sprite-Zuordnungen, 25 Ketten und Deckmengen; CI führt beide aus. Der optionale
+Workspace-Abgleich prüft zusätzlich alle Zielwerte gegen den vorhandenen
+Vergleich. Einzelheiten: [Zielvertrag](../data/bga-second-edition/README.md).
+
+Kein C++- oder Buildstand, keine GUI und keine RL-Daten wurden verändert.
+Patch/Inventar bleiben gültig. Der ausführbare Regelstand bleibt
+`legacy-dmag-with-downstream-fixes`, Releasevertrag `v0.1.1-legacy`, Protokoll 2.
+Nur die inaktive Zieldatei trägt `bga-second-edition-development` mit
+`second_edition_implemented=false`. Generatorintegration und Regelmigration
+folgen erst in den dafür vorgesehenen Paketen.
+
 ## Abgrenzung
 
 Es findet keine pauschale Behauptung vollständiger Regelkorrektheit statt. Insbesondere werden die Wunder-Ausbauschritte nicht zur neuen Edition migriert. Auch Kartenwerte werden durch den aktuellen Self-Play-Umbau nicht geändert. Falls frühere Kartenänderungen nicht im exakten Unterschied zu diesem Upstream-Commit erscheinen, werden sie nicht ohne Nachweis als Änderungen dieser C++-Fassung behauptet. Für jede zukünftige Änderung ist ein neuer Eintrag mit Anlass, genauer Funktion, Wirkung, Test und Grenzen anzulegen und der exakte Nachweis neu zu erzeugen.

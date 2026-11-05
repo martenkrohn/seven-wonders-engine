@@ -12,6 +12,8 @@ jobs:
         with:
           python-version: '3.12'
       - run: python scripts/audit_simulator.py --check
+      - run: python scripts/audit_bga_targets.py --check
+      - run: python -m unittest discover -s tests -p 'test_bga*.py' -v
       - run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
       - run: cmake --build build --parallel 2
       - run: ctest --test-dir build --output-on-failure
