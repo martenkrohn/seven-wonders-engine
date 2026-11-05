@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Audit the frozen migration target; never load it into the legacy engine.
+"""Audit the frozen migration target independently of the generated runtime tables.
 
 Standard library only. All default paths are relative to this script, not cwd.
 --workspace additionally checks the original, external comparison and inputs.
@@ -171,11 +171,10 @@ def validate_package(directory=DATA, engine_root=ROOT, workspace=None):
     for entry in legacy:
         require(card_ids.get(entry["id"]) == entry["symbol"], "Legacy card ID changed")
     for symbol, identity in NEW_IDS.items():
-        require(identity not in card_ids or card_ids[identity] == symbol,
+        require(card_ids.get(identity) == symbol,
                 f"Appended ID {identity} reused")
-    # Check the legacy rows against actual constructors, not just enum positions.
-    constructors = dict(re.findall(r'Card\(CARD_ID::(\w+),\s*"([^"]+)"',
-                                   (engine_root / "main.cpp").read_text()))
+    # Historical constructor inputs are checksum-bound in provenance.json and
+    # optionally checked by --workspace. Current main.cpp uses generated tables.
     by_key = {r["key"]: r for r in cards}
     used_ids = {}
     for row in cards:
@@ -216,7 +215,8 @@ def validate_package(directory=DATA, engine_root=ROOT, workspace=None):
         else:
             require(identity == row["legacy_engine_id"] and identity not in (0, 73)
                     and legacy[identity]["symbol"] == symbol, f"Legacy mapping: {key}")
-            require(constructors.get(symbol) == row["legacy_name"], f"Legacy constructor name: {key}")
+            expected_legacy_name = {"Well": "Pawnshop", "Craftsmens Guild": "Craftmens Guild"}.get(row["name"], row["name"])
+            require(row["legacy_name"] == expected_legacy_name, f"Legacy constructor name alias: {key}")
             old_name = NAMES.get(row["legacy_name"], row["legacy_name"])
             old_name = {"Craftmens Guild": "Craftsmens Guild"}.get(old_name, old_name)
             require(old_name == row["name"], f"Legacy name alias: {key}")

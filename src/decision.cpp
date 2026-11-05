@@ -173,32 +173,11 @@ class DecisionCore {
             fixed("wonder:"+std::to_string(owner),p.board->GetProduction(),1);
             for (const Card& c : p.cards_played) {
                 const std::string id = "card:"+std::to_string(owner)+":"+std::to_string(c.GetInstanceId());
-                std::vector<int> choices;
-                int resource = -1, quantity=1;
-                switch (c.GetId()) {
-                    case CARD_ID::tree_farm: choices={RESOURCE::wood,RESOURCE::clay}; break;
-                    case CARD_ID::forest_cave: choices={RESOURCE::wood,RESOURCE::ore}; break;
-                    case CARD_ID::timber_yard: choices={RESOURCE::wood,RESOURCE::stone}; break;
-                    case CARD_ID::excavation: choices={RESOURCE::clay,RESOURCE::stone}; break;
-                    case CARD_ID::mine: choices={RESOURCE::ore,RESOURCE::stone}; break;
-                    case CARD_ID::clay_pit: choices={RESOURCE::ore,RESOURCE::clay}; break;
-                    case CARD_ID::forum: if (self) choices={4,5,6}; break;
-                    case CARD_ID::caravansery: if (self) choices={0,1,2,3}; break;
-                    case CARD_ID::lumber_yard: resource=RESOURCE::wood; break;
-                    case CARD_ID::stone_pit: resource=RESOURCE::stone; break;
-                    case CARD_ID::clay_pool: resource=RESOURCE::clay; break;
-                    case CARD_ID::ore_vein: resource=RESOURCE::ore; break;
-                    case CARD_ID::sawmill: resource=RESOURCE::wood; quantity=2; break;
-                    case CARD_ID::quarry: resource=RESOURCE::stone; quantity=2; break;
-                    case CARD_ID::brickyard: resource=RESOURCE::clay; quantity=2; break;
-                    case CARD_ID::foundry: resource=RESOURCE::ore; quantity=2; break;
-                    case CARD_ID::loom: resource=RESOURCE::loom; break;
-                    case CARD_ID::glassworks: resource=RESOURCE::glass; break;
-                    case CARD_ID::press: resource=RESOURCE::papyrus; break;
-                }
-                if (resource>=0 && (c.GetType()==CARD_TYPE::materials || c.GetType()==CARD_TYPE::manufactured))
-                    fixed(id,resource,quantity);
-                if (!choices.empty()) {
+                const auto& e=c.GetEffects();
+                if(!self && !e.tradable) continue;
+                for(int r=0;r<7;++r) if(e.production[r]) fixed(id+":"+std::to_string(r),r,e.production[r]);
+                if(!e.choice.empty()) {
+                    auto choices=e.choice;
                     std::sort(choices.begin(),choices.end());
                     result.push_back({id,owner,choices,1,price(choices.front())});
                 }
@@ -500,7 +479,9 @@ public:
         json out={{"protocol_version",3},{"contract_id","decision-v1"},{"game_id",game_id},{"revision",revision},
           {"engine",{{"release","v0.2.0-dev"},{"source_commit",ENGINE_SOURCE_COMMIT},{"source_dirty",ENGINE_SOURCE_DIRTY},
             {"ruleset","bga-second-edition-development"},{"second_edition_implemented",false},
-            {"capabilities",{"regular_options_v1","discard_choice_v1","simultaneous_settlement_v1","legacy_wonder_abilities_v1"}}}},
+            {"card_data",{{"format_version",CARD_DATA_FORMAT_VERSION},{"source_sha256",CardDataHash()},
+              {"tables_complete",true},{"effects_complete",false},{"deferred_effect_ids",{76,78}}}},
+            {"capabilities",{"card_tables_v1","regular_options_v1","discard_choice_v1","simultaneous_settlement_v1","legacy_wonder_abilities_v1"}}}},
           {"game",{{"turn",turn},{"age",Age()},{"round_in_age",turn==21?json(nullptr):json(Round())},
             {"round_kind",turn==21?json(nullptr):json(Round()==7?"seventh":"regular")},{"phase",phase},
             {"resolution_id",Resolution()},{"snapshot_id",Base()},{"scores_final",phase=="finished"},{"engine_seed",seed}}},

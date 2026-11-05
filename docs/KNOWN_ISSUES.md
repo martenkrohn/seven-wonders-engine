@@ -1,12 +1,16 @@
 # Known rule and interface limitations
 
 The tagged legacy release is the existing simulator with selected downstream
-fixes. The current development tree adds optimal science joker scoring; neither
+fixes. The current development tree adds optimal science scoring, simultaneous
+resolution and generated card tables; neither
 is a fully verified implementation of either printed edition.
 
-- Card declarations still match the pinned 2021 upstream. Known discrepancies
-  include Aqueduct, Town Hall, Arsenal and University; second-edition card
-  costs and wonder stages have not been migrated.
+- All 80 card-age table rows now match the frozen target, including Aqueduct,
+  Town Hall, Arsenal and University. Ludus (76) and Decorators Guild (78) retain
+  their target metadata but contribute no new coin/scoring effect until package
+  5-II. Decorators is already in the sampled guild pool; scores can therefore
+  omit its conditional seven points. Ludus has no copy in a three-player deck.
+  The contract/status explicitly mark card effects incomplete. See [CARD_DATA.md](CARD_DATA.md).
 - Science jokers are scored optimally in the development tree (package 3);
   tagged legacy releases retain their greedy scoring. The separate old
   `CopyGuild()` candidate selection still estimates Scientists Guild value

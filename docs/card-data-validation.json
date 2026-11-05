@@ -1,0 +1,321 @@
+{
+  "format_version": 1,
+  "package": "5-I",
+  "checked_on": "2026-11-05",
+  "status": "validated_card_tables_development_effects_incomplete",
+  "engine_baseline_commit": "6840e94667b78c546590af88404fd3c0d7ef2c5b",
+  "rl_commit": "a283d5897d01b8edd32021562271698f1d41a3ee",
+  "rl_pin": "f39c1d7ead271df437269b7f555a2c7a0d4b9ad1",
+  "engine_contract": {
+    "format_version": 1,
+    "release": "v0.2.0-dev",
+    "ruleset": "bga-second-edition-development",
+    "protocol_version": 3,
+    "players": 3,
+    "second_edition_implemented": false,
+    "card_data": {
+      "format_version": 1,
+      "export": "data/generated/cards-v1.json",
+      "tables_complete": true,
+      "effects_complete": false,
+      "deferred_effect_ids": [
+        76,
+        78
+      ]
+    },
+    "upstream_repository": "https://github.com/dmag-ufsm/7Wonders",
+    "upstream_commit": "a0bc333a7a7f21f83156de8a2d522e7baa913f0a"
+  },
+  "red_regressions": [
+    {
+      "case": "points",
+      "failure": "Altar: expected 3 VP"
+    },
+    {
+      "case": "cost",
+      "failure": "Aqueduct: expected three stone, not clay"
+    },
+    {
+      "case": "chain",
+      "failure": "Pantheon: expected direct Altar chain"
+    },
+    {
+      "case": "quantities",
+      "failure": "Town Hall: expected one copy at five players"
+    },
+    {
+      "case": "guilds",
+      "failure": "Retired Strategists in guild pool"
+    }
+  ],
+  "red_context": "New test_card_tables harness compiled against baseline runtime before table integration; exit 1. Existing grey-age separation already passed and is preserved.",
+  "coverage": {
+    "rows": 80,
+    "types": 77,
+    "chain_edges": 25,
+    "three_player_deck_draws": 40,
+    "cards_per_age": 21,
+    "guild_pool": 10,
+    "guilds_drawn": 5,
+    "compiled_target_comparison": "Every name/ID/color/age/cost/effect/counts-by-players/chain predecessor is compared with frozen targets through the actual compiled Card factory.",
+    "runtime": "All 80 rows offered and applied in a real DecisionEngine cohort; exact and one-short costs; all 25 chain edges built without payment; fixed/choice production availability and overproduction; quantity-two sources; fixed VP/shields/bank and immediate coins.",
+    "deferred": "Ludus metadata retained but contributes zero even with red structure; Decorators metadata retained but scores zero even with completed wonder; effects incomplete explicitly published.",
+    "generator": "Read-only byte/mtime checks, deliberate stale artifact rejection, two byte-identical regenerations in isolated minimal checkout with unrelated cwd; no RL/images."
+  },
+  "full_games": [
+    {
+      "seed": 0,
+      "decisions": 57,
+      "discard_decisions": 0,
+      "turn_slots": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ],
+      "scores": [
+        47,
+        36,
+        40
+      ]
+    },
+    {
+      "seed": 7,
+      "decisions": 54,
+      "discard_decisions": 0,
+      "turn_slots": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        21
+      ],
+      "scores": [
+        48,
+        42,
+        29
+      ]
+    },
+    {
+      "seed": 8,
+      "decisions": 57,
+      "discard_decisions": 1,
+      "turn_slots": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ],
+      "scores": [
+        53,
+        51,
+        37
+      ]
+    },
+    {
+      "seed": 19,
+      "decisions": 54,
+      "discard_decisions": 0,
+      "turn_slots": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        21
+      ],
+      "scores": [
+        42,
+        45,
+        42
+      ]
+    },
+    {
+      "seed": 42,
+      "decisions": 54,
+      "discard_decisions": 0,
+      "turn_slots": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        21
+      ],
+      "scores": [
+        46,
+        42,
+        45
+      ]
+    }
+  ],
+  "repeated_seed7_equal": true,
+  "terminal_replay_seed8": true,
+  "precommit_binary_metadata": {
+    "capabilities": [
+      "card_tables_v1",
+      "regular_options_v1",
+      "discard_choice_v1",
+      "simultaneous_settlement_v1",
+      "legacy_wonder_abilities_v1"
+    ],
+    "card_data": {
+      "deferred_effect_ids": [
+        76,
+        78
+      ],
+      "effects_complete": false,
+      "format_version": 1,
+      "source_sha256": "c654f36c96fdd325dc6e26cbe8ed9808ff9ea884a94d8e1eaa49284ac4a864b1",
+      "tables_complete": true
+    },
+    "release": "v0.2.0-dev",
+    "ruleset": "bga-second-edition-development",
+    "second_edition_implemented": false,
+    "source_commit": "6840e94667b78c546590af88404fd3c0d7ef2c5b",
+    "source_dirty": true
+  },
+  "checks": [
+    {
+      "command": "cmake -S . -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build --parallel 2",
+      "exit_code": 0
+    },
+    {
+      "command": "ctest --test-dir build --output-on-failure",
+      "exit_code": 0,
+      "passed": 12
+    },
+    {
+      "command": "python3 -m unittest discover -s tests -p 'test_*.py' -v",
+      "exit_code": 0,
+      "total": 31,
+      "passed": 26,
+      "skipped": 5
+    },
+    {
+      "command": "python3 scripts/audit_bga_targets.py --check",
+      "exit_code": 0
+    },
+    {
+      "command": "python3 scripts/generate_card_data.py --check",
+      "exit_code": 0
+    },
+    {
+      "command": "python3 scripts/audit_simulator.py --check",
+      "exit_code": 0,
+      "scoped_files": 58
+    },
+    {
+      "command": "Historical --workspace check with every engine/* input restored from f39c1d7 into a temporary workspace, other original inputs symlinked",
+      "exit_code": 0
+    }
+  ],
+  "unchanged_scope": {
+    "frozen_target_reference_provenance": true,
+    "wonders": true,
+    "science_optimizer_and_copy_candidate_algorithm": true,
+    "gui_and_rl_runtime_exports_features_training": true,
+    "parent_pin_and_lock": true,
+    "push_or_release": false
+  },
+  "limits": [
+    "Only three players implemented; higher counts are reference data.",
+    "Ludus 76 and Decorators 78 new effects remain package 5-II; Castrum fixed shields implemented.",
+    "Wonder definitions/activation remain legacy.",
+    "GUI and RL still protocol 2; five historical GUI process tests deliberately skipped.",
+    "No claim of complete second-edition rules."
+  ],
+  "artifacts_sha256": {
+    "data/bga-second-edition/targets.json": "c654f36c96fdd325dc6e26cbe8ed9808ff9ea884a94d8e1eaa49284ac4a864b1",
+    "data/bga-second-edition/provenance.json": "3175d7903d5d9d24aa80f89626490b6775d371fd9356702e210dacdd57745e96",
+    "data/generated/cards-v1.json": "d1f082ecc68d45d56429f64c539211adc8bcecad40e9668d285bd251cbeda57a",
+    "include/card_data.generated.h": "3af03a20edc12b5a9383bfc6431265fdc0f8a5a99cae874aa02358ee5d7e9174",
+    "include/card_data.h": "fdc191aefa7a9b313070fb87c854eb2d0769c1cf554231e48c9d66d69ea7af14",
+    "scripts/generate_card_data.py": "c61fde6c8f11ab11a8442e85059bbafbf8f91c48e631f3588753ab02e1f553e5",
+    "main.cpp": "c9618d905315b19800f694b31db8cda1034b28199a7da2ad97664e1b8b8b3493",
+    "include/card.h": "c22683f8fcf04fed7e911b3c9f744b81fceca1fea1ce5685df1dce9f2dc1c101",
+    "include/player.h": "9c4c2d44665ef232678d97851d1d7ad5379f2c1ed13c6dd9adc16fbc71fb4c26",
+    "src/card.cpp": "f46b282c908695d45d503d9e9412b39102e2ddd3ebb1597e47ac608ed1b36a77",
+    "src/player.cpp": "5d51767fe90ffde4a57cacce3eddc7f659e11cdbd948a424394763a0d56ef217",
+    "src/decision.cpp": "fecd052ae43ca480448a6713022cf6a1bfbe40732a1417d54274538479948034",
+    "tests/test_card_tables.cpp": "2aa28d4f49b0a19f19bad8037d37b0c6b31e970f97e6980523293c28ee26d95f",
+    "tests/test_bga_card_data.py": "30bef6c8f8ef5866264c474d3e1b1aa70ac3bc95604e1d9e6bae04770e21b7c3",
+    "docs/simulator/manifest.json": "e320eeca1c5fb0e071d8f8efbcc9b9a7442eb1bc49103b8492eec706dbd4b822",
+    "docs/simulator/upstream.patch": "7681d1432663566ee5590abf482319d5a2c16a52bed105d26bc215eeded514c8"
+  }
+}

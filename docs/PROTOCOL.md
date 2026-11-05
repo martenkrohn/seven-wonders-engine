@@ -1,10 +1,15 @@
 # Dateiprotokoll 3 – implementierter Entwicklungsstand
 
-Stand: 5. November 2026, Paket 4b-II. Vertragskennung **`decision-v1`**.
+Stand: 5. November 2026, Paket 5-I. Vertragskennung **`decision-v1`**.
 `engine-contract.json`: Transportversion **3**, Release `v0.2.0-dev`,
 Regeln `bga-second-edition-development`, `second_edition_implemented=false`.
-Die Transportversion bezeichnet keine fertige BGA-Edition. Kartenwerte und
+Die Transportversion bezeichnet keine fertige BGA-Edition. Kartentabellen
+entsprechen den geprüften Zielen; Ludus-/Decorators-Effekte sind noch offen,
 Wunderfähigkeiten verwenden weiterhin die alten Definitionen.
+`engine.card_data` nennt Formatversion, SHA-256 der Zielquelle,
+`tables_complete=true`, `effects_complete=false` und `deferred_effect_ids=[76,78]`.
+Die zusätzliche Capability heißt `card_tables_v1`; sie bestätigt keine
+vollständigen Kartenregeln. Einzelheiten: [CARD_DATA.md](CARD_DATA.md).
 
 Der vollständige Fachvertrag steht in [DECISION_PROTOCOL_DRAFT.md](DECISION_PROTOCOL_DRAFT.md),
 die Ausführung und Grenzen in [SIMULTANEOUS_RESOLUTION.md](SIMULTANEOUS_RESOLUTION.md).

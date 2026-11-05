@@ -82,6 +82,10 @@ class BgaTargetTests(unittest.TestCase):
                 row["chain_from"] = predecessors
                 self.rejected("[Cc]hain")
 
+    def test_legacy_name_alias_remains_historical_after_generator_migration(self):
+        self.card("well_age1")["legacy_name"] = "Well"
+        self.rejected("Legacy constructor name alias")
+
     def test_four_corrected_costs_cannot_revert_to_csv(self):
         old = {"town_hall_age3": dict(stone=3, glass=1), "arena_age3": dict(clay=2, ore=1),
                "circus_age3": dict(clay=3, ore=1), "craftsmens_guild_age3": dict(stone=2, ore=1)}

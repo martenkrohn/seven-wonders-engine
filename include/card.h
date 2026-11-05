@@ -6,6 +6,7 @@
 #include <map>
 #include <cstdint>
 #include <resources.h>
+#include <card_data.h>
 
 namespace CARD_ID{
         enum ID{
@@ -99,6 +100,9 @@ namespace CARD_ID{
             strategists,
             scientists,
             builders,
+            ludus,
+            castrum,
+            decorators,
         };
 
 }
@@ -131,6 +135,8 @@ private:
     int era;
     int freeWithId;
     int amountPerPlayers[5];
+    const CardDefinition* definition = nullptr;
+    bool generated = false;
     std::map<int, int> cost{
         { RESOURCE::wood, 0 },
         { RESOURCE::ore, 0 },
@@ -145,6 +151,10 @@ private:
 public:
     Card();
     Card(int id, std::string name, int type, int era, int freeWithId, std::vector<int> cost, std::vector<int> amountPerPlayers);
+    static Card FromDefinition(int id,int age);
+    const CardEffects& GetEffects() const;
+    std::vector<std::pair<int,int>> GetChainFrom() const;
+    const std::map<int,int>& GetCost() const;
     /*[[nodiscard]] */std::string GetName() const;
     /*[[nodiscard]] */int GetId() const;
     int GetType() const;

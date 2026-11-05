@@ -2,15 +2,16 @@
 
 Stand: 5. November 2026. Paket 1 des [Migrationsplans](../../docs/MIGRATION_PLAN.md).
 `targets.json` ist die geprüfte, versionierte Zieldefinition des Grundspiels:
-80 Karten-/Zeitalterzeilen, 77 Kartentypen und 14 Wunderseiten. Sie wird von
-der laufenden Legacy-Engine noch nicht geladen. Ihr Entwicklungs-Regelname
+80 Karten-/Zeitalterzeilen, 77 Kartentypen und 14 Wunderseiten. Seit Paket 5-I
+erzeugt sie die einkompilierten Kartentabellen und den neutralen Export;
+die Runtime liest keine Quelldateien. Ihr Entwicklungs-Regelname
 lautet `bga-second-edition-development`, `second_edition_implemented=false`.
 Der Vertrag des tatsächlich laufenden Binarys steht in
 [`engine-contract.json`](../../engine-contract.json). Seit Paket 3 trägt er
-denselben Entwicklungsnamen: Die Wissenschaftswertung ist korrigiert, Karten
-und Wunder verwenden weiterhin Legacy-Daten; die vollständige zweite Edition
-ist noch nicht implementiert.
-`format_version=1` bezeichnet dieses Datenschema, nicht Transportversion 2.
+denselben Entwicklungsnamen. Die Kartentabellen sind migriert, die neuen
+Ludus-/Decorators-Effekte und die Wunder noch offen; die vollständige zweite
+Edition ist noch nicht implementiert. [Pipeline und Grenzen](../../docs/CARD_DATA.md).
+`format_version=1` bezeichnet dieses Datenschema, nicht Transportversion 3.
 
 ## Herkunft und Prüfung
 
@@ -85,8 +86,8 @@ Alle bestehenden Kartentypen behalten ihre IDs. Die Ausnahme ist keine
 Umnummerierung: Strategists Guild entfällt im Ziel, ihre **73 bleibt reserviert**.
 Der alte Vergleich verwendet diese Position für Decorators Guild; deshalb
 bleibt dort `comparison_engine_id=73`, während die neue Karte **78** erhält.
-Ludus erhält **76**, Castrum **77**. Diese drei IDs sind hier reserviert;
-`include/card.h` wird erst mit der späteren Kartenmigration erweitert.
+Ludus erhält **76**, Castrum **77**. Seit Paket 5-I sind diese IDs in
+`include/card.h` angehängt; Strategists 73 wird nicht neu vergeben.
 Loom (15), Glassworks (16) und Press (17) teilen ihre jeweilige Engine-ID
 über zwei Zeitalter, bleiben aber sechs eindeutige Zielzeilen mit verschiedenen
 BGA-IDs und teilweise anderen Deckmengen.
@@ -112,31 +113,32 @@ Hashes, URLs, Dimensionen und tatsächliche MIME-Typen. Insbesondere enthalten
 `img/cards_v2.jpg` und `img/boards_v2.jpg` WebP. Grafikdateien bleiben extern;
 BGA-Karten brauchen später ein Namensoverlay.
 
-## Entscheidung für spätere C++-/Python-Erzeugung
+## Gemeinsame C++-/Python-Erzeugung
 
-Nach der Migration dient **diese normalisierte `targets.json`** als gemeinsame
-fachliche Quelle. Ein deterministischer Generator im Engine-Repository soll
-daraus beim Build C++-Tabellen/Header und ein sprachneutrales Exportartefakt
-mit Schema-, Regelnamen- und Quelldatenhash erzeugen. Die Tabellen werden in
-das Binary kompiliert. Ein isolierter Spielprozess benötigt keine Quelldatei
-und keinen Pfad relativ zum Arbeitsverzeichnis. Ressourcen/Effekte werden
-dabei ausdrücklich auf C++-Enums und implementierte Handler abgebildet;
-Sonderentscheidungen lassen sich nicht allein durch Datentabellen ersetzen.
+Die in Paket 1 getroffene Pipelineentscheidung ist für die Karten in Paket
+5-I umgesetzt: `scripts/generate_card_data.py` erzeugt aus der normalisierten
+`targets.json` den eingecheckten Header `include/card_data.generated.h` und
+`data/generated/cards-v1.json`. Beide sind Ableitungen mit reproduzierbarem
+Diff-/Hashcheck, keine unabhängig gepflegten Zielwerte. Der Build kompiliert
+sie ein und benötigt keinen Generatorlauf; die Runtime liest keine Quellpfade.
+Format, Befehle und genaue Grenzen stehen in
+[CARD_DATA.md](../../docs/CARD_DATA.md).
 
-Der Python-Export konsumiert dasselbe geprüfte Artefakt oder beim Paketbau
-eine Kopie derselben Quelle, anschließend als Paketressource. Die generierten
-Dateien sind Ableitungen und erhalten einen reproduzierbaren Diff-/Hashcheck;
-es entstehen keine unabhängig von Hand gepflegten zweiten Zielwerte und keine
-Rückextraktion der neuen Regeln aus C++ per Regex. Diese Generatorintegration
-gehört zur späteren Karten-/Wundermigration und RL-Übernahme. Paket 2 repariert
-zunächst ausdrücklich die alten Exporter gegen den alten Regelstand.
+Die spätere Python-Anbindung konsumiert dasselbe geprüfte Exportartefakt
+oder eine Paketressource derselben Quelle. RL-Datenbanken und die in Paket 2
+reparierten Legacy-Exporter sind in Paket 5-I unverändert. Sonderentscheidungen
+werden nicht durch Datentabellen ersetzt; Wunder und neue Kartenalgorithmen
+haben eigene Folgeaufträge.
 
 ## Abnahmegrenzen
 
 Die Definitionen ergeben für diesen Datenauftrag keine zusätzliche offene
 Regelfrage (`open_rule_questions=[]`). Sie beweisen kein BGA-Serververhalten.
-Paket 3 hat inzwischen die Wissenschaftsjoker korrigiert. Simultane Auflösung,
-Ablageentscheidungen und Ausführung neuer Fähigkeiten bleiben bei den folgenden
-Paketen. Kartenkosten/-punkte, Deckmengen und Wunderstufen der laufenden Engine
-wurden durch die Datenvorbereitung und Wissenschaftskorrektur nicht geändert.
-GUI-, RL-Feature- und Trainingsmigration sind ebenfalls offen.
+Paket 3 hat die Wissenschaftsjoker korrigiert, Paket 4b-II simultane Auflösung
+und Pflicht-Ablageentscheidungen implementiert. Paket 5-I migriert die
+Kartentabellen; Ludus-/Decorators-Effekte, Wunder und Consumer folgen separat.
+Der historische optionale Workspace-Audit bindet weiterhin die damaligen
+C++-Dateiprüfsummen. Für einen erneuten historischen Abgleich müssen deren
+Originalbytes bereitstehen; aktuelle Quellen erhalten keine neuen
+historischen Hashwerte. Der eigenständige Zielaudit bleibt ohne diesen
+optionalen historischen Vergleich vollständig nutzbar.

@@ -44,6 +44,11 @@ endif()
 add_definitions(-DENGINE_SOURCE_COMMIT="${ENGINE_COMMIT}" -DENGINE_SOURCE_DIRTY=${ENGINE_DIRTY_VALUE})
 add_executable(7Wonders ${SOURCES} ${HEADERS})
 
+add_executable(test_card_tables tests/test_card_tables.cpp
+    src/card.cpp src/decision.cpp src/player.cpp src/wonder.cpp src/filer.cpp)
+add_test(NAME card_tables COMMAND test_card_tables)
+set_tests_properties(card_tables PROPERTIES TIMEOUT 30)
+
 add_executable(test_decision_resolution tests/test_decision_resolution.cpp
     src/card.cpp src/decision.cpp src/player.cpp src/wonder.cpp src/filer.cpp)
 add_test(NAME decision_resolution COMMAND test_decision_resolution)
@@ -113,6 +118,12 @@ endif()
 # Optional standalone client: standard library only, no RL dependencies.
 find_package(Python3 3.10 COMPONENTS Interpreter QUIET)
 if(Python3_Interpreter_FOUND)
+    add_test(NAME generated_card_data COMMAND "${Python3_EXECUTABLE}"
+        "${CMAKE_CURRENT_SOURCE_DIR}/scripts/generate_card_data.py" --check)
+    add_test(NAME compiled_card_data COMMAND "${CMAKE_COMMAND}" -E env
+        "SEVENWONDERS_CARD_TEST=$<TARGET_FILE:test_card_tables>" "${Python3_EXECUTABLE}" -m unittest discover
+        -s "${CMAKE_CURRENT_SOURCE_DIR}/tests" -p test_bga_card_data.py -v)
+    set_tests_properties(generated_card_data compiled_card_data PROPERTIES TIMEOUT 30)
     add_test(NAME protocol_smoke COMMAND "${Python3_EXECUTABLE}"
         "${CMAKE_CURRENT_SOURCE_DIR}/scripts/smoke_protocol.py"
         --engine "$<TARGET_FILE:7Wonders>")

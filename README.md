@@ -9,8 +9,10 @@ Science jokers are scored optimally. Package 4b-II implements simultaneous
 settlement and mandatory discard decisions with stable physical card identities,
 request deduplication and end-of-age barriers. The active [protocol is 3](docs/PROTOCOL.md),
 contract `decision-v1`; the [engine contract](engine-contract.json) distinguishes
-transport from rules. Card/wonder definitions and activation stages still use
-the legacy data; `second_edition_implemented=false`. See the
+transport from rules. Package 5-I now compiles the checked card tables, including
+costs, points, chains, quantities and fixed effects. Ludus and Decorators Guild
+effects remain pending; wonder definitions and activation stages remain legacy.
+`second_edition_implemented=false`. See the [card data pipeline](docs/CARD_DATA.md) and
 [resolution validation](docs/SIMULTANEOUS_RESOLUTION.md) for scope and evidence.
 
 The tagged `v0.1.1-legacy` release preserves the restored original Tk GUI and
@@ -66,8 +68,8 @@ baseline and the remaining interface/artwork work.
 
 The [BGA target contract](data/bga-second-edition/README.md) now preserves all
 80 checked card/age rows, 14 wonder sides, source checksums and the complete ID
-mapping in this repository. Runtime migration has begun with science scoring;
-the executable still uses the legacy card and wonder definitions.
+mapping in this repository. The executable uses generated card tables;
+new Ludus/Decorators effects and wonder migration are still pending.
 
 Keep engine changes and C++ regressions here. The RL repository consumes an
 exact engine commit as a Git submodule. Follow [DEVELOPMENT.md](docs/DEVELOPMENT.md)

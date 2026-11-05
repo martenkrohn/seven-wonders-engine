@@ -77,6 +77,7 @@ private:
     // Applies a building to this player without taking a card from any source.
     void ApplyBuilding(DMAG::Card c, bool free_card);
     int ImmediateCoins(const DMAG::Card& c);
+    int CountCardEffect(const CardEffects& effect);
 
 public:
     Player();

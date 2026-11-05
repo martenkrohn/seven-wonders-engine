@@ -281,6 +281,49 @@ Aktiver Vertrag und Herkunftspatch/Inventar sind aktualisiert. Details:
 [SIMULTANEOUS_RESOLUTION.md](SIMULTANEOUS_RESOLUTION.md),
 [PROTOCOL.md](PROTOCOL.md), [resolution-validation.json](resolution-validation.json).
 
+## ENG-015 – Erzeugte BGA-Kartentabellen im Entwicklungsstand
+
+5. November 2026, Paket 5-I, `v0.2.0-dev`, Protokoll 3 und
+`second_edition_implemented=false`. `targets.json` speist einen deterministischen
+Standardbibliotheksgenerator, einen einkompilierten C++17-Header und den
+sprachneutralen Export `data/generated/cards-v1.json` (Format 1, Quellenhash).
+Keine Runtime-JSON-, RL- oder Bildabhängigkeit; `--check` ist schreibfrei.
+
+Fünf gezielte rote Laufzeitfälle gegen `6840e94` belegen Altar-Punkte,
+Aqueduct-Kosten, Pantheon-Kette, Town-Hall-Mengen und den alten Strategists-Pool.
+Alle 80 Zeitalterzeilen/77 Typen und 25 Ketten sind übernommen. Bestehende IDs
+bleiben stabil, 73 reserviert; Ludus 76, Castrum 77 und Decorators 78 sind
+angehängt. Graue Altersvarianten bleiben getrennt; mehrdeutige Namenssuche
+verlangt ein Alter. Pro Ära 21 Karten, fünf aus zehn Gilden bei drei Spielern.
+
+`Game::CreateDecks`, `Card::FromDefinition`, `Player::ApplyBuilding`, die
+festen Wissenschaftssymbole und Punkte-/Münzfaktoren sowie
+`DecisionCore::Sources` verwenden die erzeugten Werte. Damit teilen Planung
+und Anwendung Produktionsmengen, Wahlalternativen und Handelbarkeit. Die
+bisherigen Wissenschaftsoptimierungs- und Gildenkopie-Kandidatenalgorithmen
+bleiben erhalten. Der alte synthetische Card-Testkonstruktor bleibt verfügbar;
+reale Deckkarten verwenden die strikte ID-/Altersfabrik.
+
+Ludus-/Decorators-Zielmetadaten sind vollständig enthalten, ihre neuen
+Algorithmen jedoch ausdrücklich für 5-II gesperrt. Status und Vertrag nennen
+`tables_complete=true`, `effects_complete=false`, fehlende IDs 76/78; Decorators
+ist im Deckpool, wertet derzeit auch mit vollendetem Wunder null. Castrum
+wendet seine festen drei Schilde an. Kein vollständiger Kartenregelstand.
+Wunderdefinitionen, GUI/RL und Parent-Pin/Lock bleiben unverändert.
+
+Zwölf CTests und 26 Python-Prüfungen bestehen; fünf historische V2-GUI-
+Prozessprüfungen bleiben abgegrenzt. Der neue C++-Test baut alle Zeilen im
+echten Entscheidungsweg, prüft alle Ketten, exakte/unzureichende Kosten,
+Produktion und die Grenze zu 5-II. Python vergleicht alle kompilierten Felder
+mit den Zielen und 40 reale Deckziehungen. Generator-Doppelgenerierung,
+Schreibfreiheit und isolierte Pfade sind geprüft; die vorhandenen
+Auflösungs-/Wissenschafts-/Ablagetests bleiben grün. Fünf vollständige reale
+Partien einschließlich Pflicht-Ablagewahl und Terminalwiederholung sind
+protokolliert. Ziel- und Herkunftsaudit grün; 58 C++-/Build-/Testdateien im
+Inventar. Historischer Workspace-Audit nutzt unveränderte Originalbytes aus
+dem Legacy-Commit, keine aktualisierten Herkunftshashes. Details:
+[CARD_DATA.md](CARD_DATA.md), [card-data-validation.json](card-data-validation.json).
+
 ## Abgrenzung
 
-Es findet keine pauschale Behauptung vollständiger Regelkorrektheit statt. Insbesondere werden die Wunder-Ausbauschritte nicht zur neuen Edition migriert. Auch Kartenwerte werden durch den aktuellen Self-Play-Umbau nicht geändert. Falls frühere Kartenänderungen nicht im exakten Unterschied zu diesem Upstream-Commit erscheinen, werden sie nicht ohne Nachweis als Änderungen dieser C++-Fassung behauptet. Für jede zukünftige Änderung ist ein neuer Eintrag mit Anlass, genauer Funktion, Wirkung, Test und Grenzen anzulegen und der exakte Nachweis neu zu erzeugen.
+Es findet keine pauschale Behauptung vollständiger Regelkorrektheit statt. Insbesondere werden die Wunder-Ausbauschritte nicht zur neuen Edition migriert. Die Kartentabellenmigration in ENG-015 bleibt von den noch offenen neuen Sondereffekten getrennt. Falls frühere Kartenänderungen nicht im exakten Unterschied zu diesem Upstream-Commit erscheinen, werden sie nicht ohne Nachweis als Änderungen dieser C++-Fassung behauptet. Für jede zukünftige Änderung ist ein neuer Eintrag mit Anlass, genauer Funktion, Wirkung, Test und Grenzen anzulegen und der exakte Nachweis neu zu erzeugen.

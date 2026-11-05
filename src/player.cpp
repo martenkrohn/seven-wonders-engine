@@ -145,138 +145,48 @@ bool Player::BuildStructure(DMAG::Card c, std::vector<DMAG::Card> cards, bool fr
 }
 
 void Player::ApplyBuilding(DMAG::Card c, bool free_card) {
-    int cost = 0;
-    int card = c.GetId();
-    switch (c.GetType()) {
-        case CARD_TYPE::materials:
-            if (card == CARD_ID::lumber_yard) {
-                this->resources[RESOURCE::wood] += 1;
-            } else if (card == CARD_ID::stone_pit) {
-                this->resources[RESOURCE::stone] += 1;
-            } else if (card == CARD_ID::clay_pool) {
-                this->resources[RESOURCE::clay] += 1;
-            } else if (card == CARD_ID::ore_vein) {
-                this->resources[RESOURCE::ore] += 1;
-            } else if (card == CARD_ID::tree_farm) {
-                // wood or clay (won't be applied here, see ProduceResource)
-                cost = 1;
-            } else if (card == CARD_ID::excavation) {
-                // stone or clay (won't be applied here, see ProduceResource)
-                cost = 1;
-            } else if (card == CARD_ID::clay_pit) {
-                // clay or ore (won't be applied here, see ProduceResource)
-                cost = 1;
-            } else if (card == CARD_ID::timber_yard) {
-                // stone or wood (won't be applied here, see ProduceResource)
-                cost = 1;
-            } else if (card == CARD_ID::forest_cave) {
-                // wood or ore (won't be applied here, see ProduceResource)
-                cost = 1;
-            } else if (card == CARD_ID::mine) {
-                // ore or stone (won't be applied here, see ProduceResource)
-                cost = 1;
-            } else if (card == CARD_ID::sawmill) {
-                this->resources[RESOURCE::wood] += 2;
-                cost = 1;
-            } else if (card == CARD_ID::quarry) {
-                this->resources[RESOURCE::stone] += 2;
-                cost = 1;
-            } else if (card == CARD_ID::brickyard) {
-                this->resources[RESOURCE::clay] += 2;
-                cost = 1;
-            } else if (card == CARD_ID::foundry) {
-                this->resources[RESOURCE::ore] += 2;
-                cost = 1;
-            }
-            break;
-
-        case CARD_TYPE::manufactured:
-            if (card == CARD_ID::loom) {
-                this->resources[RESOURCE::loom]++;
-            } else if (card == CARD_ID::glassworks) {
-                this->resources[RESOURCE::glass]++;
-            } else if (card == CARD_ID::press) {
-                this->resources[RESOURCE::papyrus]++;
-            }
-            break;
-
-        case CARD_TYPE::commercial:
-            if (card == CARD_ID::tavern) {
-                // Immediate coins are settled after the city entry below.
-            } else if (card == CARD_ID::east_trading_post) {
-                this->raw_cheap_east = true;
-            } else if (card == CARD_ID::west_trading_post) {
-                this->raw_cheap_west = true;
-            } else if (card == CARD_ID::marketplace) {
-                this->manuf_cheap = true;
-            } else if (card == CARD_ID::forum) {
-                // handled via AvailableCard + used_forum in IncrementOnDemand
-            } else if (card == CARD_ID::caravansery) {
-                // handled via AvailableCard + used_caravansery in IncrementOnDemand
-            }
-            break;
-
-        case CARD_TYPE::military:
-            if (card == CARD_ID::stockade || card == CARD_ID::barracks || card == CARD_ID::guard_tower) {
-                this->resources[RESOURCE::shields] += 1;
-
-            } else if (card == CARD_ID::walls   || card == CARD_ID::training_ground ||
-                       card == CARD_ID::stables || card == CARD_ID::archery_range) {
-                this->resources[RESOURCE::shields] += 2;
-
-            } else if (card == CARD_ID::fortifications || card == CARD_ID::circus ||
-                       card == CARD_ID::arsenal        || card == CARD_ID::siege_workshop) {
-                this->resources[RESOURCE::shields] += 3;
-            }
-            break;
-
-        default:
-            break;
-    }
-
+    const auto& e=c.GetEffects();
+    for(int r=0;r<7;++r) resources[r]+=e.production[r];
+    resources[RESOURCE::shields]+=e.shields;
+    if(e.discount=="raw_right") raw_cheap_east=true;
+    if(e.discount=="raw_left") raw_cheap_west=true;
+    if(e.discount=="manufactured_both") manuf_cheap=true;
     cards_played.push_back(c);
     if (!defer_coin_effects) resources[RESOURCE::coins] += ImmediateCoins(c);
+    if (!free_card) resources[RESOURCE::coins] -= c.GetCost().at(RESOURCE::coins);
+}
 
-    if (!free_card) this->resources[RESOURCE::coins] -= cost;
+// Existing count effects use the same metadata for coins and end scoring.
+// New Ludus/Decorators algorithms remain disabled by runtime_complete.
+int Player::CountCardEffect(const CardEffects& effect) {
+    auto count=[&](Player* p) {
+        if(effect.count=="wonder_stages") return p->board->GetStage();
+        if(effect.count=="brown_grey_purple")
+            return p->AmountOfType(CARD_TYPE::materials)+p->AmountOfType(CARD_TYPE::manufactured)
+                +p->AmountOfType(CARD_TYPE::guild);
+        const std::array<std::string,7> colors={"brown","grey","blue","yellow","red","green","purple"};
+        for(int t=0;t<7;++t) if(effect.count==colors[t]) return p->AmountOfType(t);
+        return 0;
+    };
+    int total=0;
+    if(effect.target=="self" || effect.target=="self_and_neighbors") total+=count(this);
+    if(effect.target=="neighbors" || effect.target=="self_and_neighbors")
+        total+=count(player_east)+count(player_west);
+    return total;
 }
 
 // Requires the complete construction cohort (including the source building).
 int Player::ImmediateCoins(const Card& c) {
-    switch (c.GetId()) {
-        case CARD_ID::tavern: return 5;
-        case CARD_ID::vineyard:
-            return AmountOfType(CARD_TYPE::materials)
-                + player_east->AmountOfType(CARD_TYPE::materials)
-                + player_west->AmountOfType(CARD_TYPE::materials);
-        case CARD_ID::bazar:
-            return 2 * (AmountOfType(CARD_TYPE::manufactured)
-                + player_east->AmountOfType(CARD_TYPE::manufactured)
-                + player_west->AmountOfType(CARD_TYPE::manufactured));
-        case CARD_ID::haven: return AmountOfType(CARD_TYPE::materials);
-        case CARD_ID::lighthouse: return AmountOfType(CARD_TYPE::commercial);
-        case CARD_ID::chamber_of_commerce: return 2 * AmountOfType(CARD_TYPE::manufactured);
-        case CARD_ID::arena: return 3 * board->GetStage();
-        default: return 0;
-    }
+    const auto& e=c.GetEffects();
+    if(!e.runtime_complete) return 0;
+    return e.coins + (e.coins_per?e.coins_per*CountCardEffect(e):0);
 }
 
-// Checks if the player has a card that permits him to play card 'c' for free.
 bool Player::CheckFreeCard(DMAG::Card c){
-    int free_id = c.GetFreeWith();
-
-    if (free_id != CARD_ID::none) {
-        // Treating exception:
-        // Forum can be constructed for free if the player has either the East Trading Post
-        // or the West Trading Post (raw_cheap_east or raw_cheap_west).
-        if (free_id == -1 && (this->raw_cheap_east || this->raw_cheap_west))
-            return true;
-
-        // General case:
-        for (DMAG::Card const& card : this->cards_played) {
-            if (card.GetId() == free_id) return true;
-        }
-    }
-
+    for(const auto& prerequisite:c.GetChainFrom())
+        for(const auto& built:cards_played)
+            if(built.GetId()==prerequisite.first && (!prerequisite.second || built.GetEra()==prerequisite.second))
+                return true;
     return false;
 }
 
@@ -672,155 +582,33 @@ void Player::Battle(int age){
 
 // Calculates the number of VPs the player gets from civilian structures.
 int Player::CalculateCivilianScore(){
-    // Each Civilian (blue) structure gives a fixed number of VPs.
-    int civil_score = 0;
-
-    for (DMAG::Card const& card : this->cards_played) {
-        if (card.GetType() != CARD_TYPE::civilian)
-            continue;
-
-        switch (card.GetId()) {
-            case CARD_ID::altar:
-            case CARD_ID::theater:
-                civil_score += 2;
-                break;
-
-            case CARD_ID::pawnshop:
-            case CARD_ID::baths:
-            case CARD_ID::temple:
-                civil_score += 3;
-                break;
-
-            case CARD_ID::courthouse:
-            case CARD_ID::statue:
-                civil_score += 4;
-                break;
-
-            case CARD_ID::aqueduct:
-            case CARD_ID::gardens:
-                civil_score += 5;
-                break;
-
-            case CARD_ID::town_hall:
-            case CARD_ID::senate:
-                civil_score += 6;
-                break;
-
-            case CARD_ID::pantheon:
-                civil_score += 7;
-                break;
-
-            case CARD_ID::palace:
-                civil_score += 8;
-                break;
-        }
-    }
-
-    return civil_score;
+    int score=0;
+    for(const auto& c:cards_played)
+        if(c.GetType()==CARD_TYPE::civilian && c.GetEffects().runtime_complete) score+=c.GetEffects().vp;
+    return score;
 }
 
-// Calculates the number of VPs the player gets from certain commercial structures.
-// (the other special effects will be calculated when the structure is built!)
 int Player::CalculateCommercialScore(){
-    int comm_score = 0;
-
-    for (DMAG::Card const& card : this->cards_played) {
-        if (card.GetType() != CARD_TYPE::commercial)
-            continue;
-
-        switch (card.GetId()) {
-            case (CARD_ID::haven):
-                // +1 VP per Raw Material CARD in your own city.
-                comm_score += this->AmountOfType(CARD_TYPE::materials);
-                break;
-
-            case (CARD_ID::lighthouse):
-                // +1 VP per Commercial Structure CARD in your own city.
-                comm_score += this->AmountOfType(CARD_TYPE::commercial);
-                break;
-
-            case (CARD_ID::chamber_of_commerce):
-                // +2 VP per Manufactured Good CARD in your own city.
-                comm_score += (this->AmountOfType(CARD_TYPE::manufactured) * 2);
-                break;
-
-            case (CARD_ID::arena):
-                // +1 VP Coin per Wonder stage constructed in your own city.
-                comm_score += this->board->GetStage();
-                break;
-        }
+    int score=0;
+    for(const auto& c:cards_played) {
+        const auto& e=c.GetEffects();
+        if(c.GetType()==CARD_TYPE::commercial && e.runtime_complete)
+            score+=e.vp+(e.vp_per?e.vp_per*CountCardEffect(e):0);
     }
-
-    comm_score += floor(this->resources[RESOURCE::coins] / 3);
-
-    return comm_score;
+    return score+floor(resources[RESOURCE::coins]/3);
 }
 
-// Calculates the number of VPs the player gets from guild structures.
 int Player::CalculateGuildScore(){
-    // The guilds (purple) provide several means of gaining victory points, most of
-    // which are based on the types of structure a player and/or his neighbors have built.
-    int guild_score = 0;
-
-    for (DMAG::Card const& card : this->cards_played) {
-        if (card.GetType() != CARD_TYPE::guild)
-            continue;
-
-        switch (card.GetId()) {
-            case CARD_ID::workers:
-                guild_score += player_east->AmountOfType(CARD_TYPE::materials)
-                             + player_west->AmountOfType(CARD_TYPE::materials);
-                break;
-
-            case CARD_ID::craftsmens:
-                guild_score += 2 * (player_east->AmountOfType(CARD_TYPE::manufactured)
-                             + player_west->AmountOfType(CARD_TYPE::manufactured));
-                break;
-
-            case CARD_ID::traders:
-                guild_score += player_east->AmountOfType(CARD_TYPE::commercial)
-                             + player_west->AmountOfType(CARD_TYPE::commercial);
-                break;
-
-            case CARD_ID::philosophers:
-                guild_score += player_east->AmountOfType(CARD_TYPE::scientific)
-                             + player_west->AmountOfType(CARD_TYPE::scientific);
-                break;
-
-            case CARD_ID::spies:
-                guild_score += player_east->AmountOfType(CARD_TYPE::military)
-                             + player_west->AmountOfType(CARD_TYPE::military);
-                break;
-
-            case CARD_ID::magistrates:
-                guild_score += player_east->AmountOfType(CARD_TYPE::civilian)
-                             + player_west->AmountOfType(CARD_TYPE::civilian);
-                break;
-
-            case CARD_ID::shipowners:
-                guild_score += this->AmountOfType(CARD_TYPE::materials)
-                             + this->AmountOfType(CARD_TYPE::manufactured)
-                             + this->AmountOfType(CARD_TYPE::guild);
-                break;
-
-            case CARD_ID::strategists:
-                guild_score += player_east->GetDefeatTokens()
-                             + player_west->GetDefeatTokens();
-                break;
-
-            case CARD_ID::scientists:
-                // computed in CalculateScientificScore()
-                break;
-
-            case CARD_ID::builders:
-                guild_score += player_east->GetBoard()->GetStage()
-                             + player_west->GetBoard()->GetStage()
-                             + this->board->GetStage();
-                break;
-        }
+    int score=0;
+    for(const auto& c:cards_played) {
+        const auto& e=c.GetEffects();
+        if(c.GetType()!=CARD_TYPE::guild || !e.runtime_complete) continue;
+        score+=e.vp+(e.vp_per?e.vp_per*CountCardEffect(e):0);
+        // Reserved legacy fixture identity; never part of generated base decks.
+        if(c.GetId()==CARD_ID::strategists)
+            score+=player_east->GetDefeatTokens()+player_west->GetDefeatTokens();
     }
-
-    return guild_score;
+    return score;
 }
 
 // Calculates the number of VPs the player gets from battles.
@@ -832,35 +620,12 @@ int Player::CalculateMilitaryScore(){
 int Player::CalculateScientificScore(){
     int gear = 0, tablet = 0, compass = 0, sci_extra = 0;
 
-    for (DMAG::Card const& card : this->cards_played) {
-        int card_type = card.GetType();
-        int card_id = card.GetId();
-
-        if (card_type != CARD_TYPE::scientific && card_id != CARD_ID::scientists)
-            continue;
-
-        switch (card_id) {
-            case CARD_ID::workshop:
-            case CARD_ID::laboratory:
-            case CARD_ID::observatory:
-            case CARD_ID::study:
-                gear++; break;
-
-            case CARD_ID::apothecary:
-            case CARD_ID::dispensary:
-            case CARD_ID::lodge:
-            case CARD_ID::academy:
-                compass++; break;
-
-            case CARD_ID::scriptorium:
-            case CARD_ID::library:
-            case CARD_ID::school:
-            case CARD_ID::university:
-                tablet++; break;
-
-            case CARD_ID::scientists:
-                sci_extra++; break;
-        }
+    for (const auto& card : cards_played) {
+        const auto& symbol=card.GetEffects().science;
+        if(symbol=="gear") ++gear;
+        else if(symbol=="compass") ++compass;
+        else if(symbol=="tablet") ++tablet;
+        else if(symbol=="joker") ++sci_extra;
     }
 
     int id = this->board->GetId();

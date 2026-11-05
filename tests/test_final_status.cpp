@@ -55,7 +55,7 @@ int main() {
         const json status=engine->Status();
         require(status["game"]["phase"] == "finished", "Missing final phase");
         require(status["game"]["turn"] == 21, "Missing final turn");
-        require(status["players"]["0"]["points"]["civilian"] == 2, "Seventh card was not scored");
+        require(status["players"]["0"]["points"]["civilian"] == 3, "Seventh card was not scored");
         require(status["players"]["0"]["points"]["military"] == 10, "Age-III battles missing or repeated");
         require(status["players"]["1"]["points"]["military"] == 4, "Incorrect final battle score");
         require(status["players"]["2"]["points"]["military"] == -2, "Final defeat tokens missing");

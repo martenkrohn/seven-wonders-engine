@@ -2,8 +2,40 @@
 #include <string>
 #include <utility>
 #include <stdexcept>
+#include <card_data.generated.h>
 
 namespace DMAG {
+
+const std::vector<CardDefinition>& CardDefinitions() { return GENERATED_CARD_DEFINITIONS; }
+const char* CardDataHash() { return GENERATED_CARD_DATA_SHA256; }
+const CardDefinition* FindCardDefinition(int id,int age) {
+    for(const auto& d:CardDefinitions()) if(d.id==id && d.age==age) return &d;
+    return nullptr;
+}
+
+Card Card::FromDefinition(int id,int age) {
+    const auto* d=FindCardDefinition(id,age);
+    if(!d) throw std::invalid_argument("Unknown card ID/age");
+    const int prerequisite=d->chain_from.empty()?CARD_ID::none:
+        (d->chain_from.size()==1?d->chain_from.front().first:-1);
+    Card c(id,d->name,d->type,age,prerequisite,
+           std::vector<int>(d->cost.begin(),d->cost.end()),
+           std::vector<int>(d->quantities.begin(),d->quantities.end()));
+    c.generated=true;
+    return c;
+}
+
+const CardEffects& Card::GetEffects() const {
+    static const CardEffects empty;
+    return definition?definition->effects:empty;
+}
+const std::map<int,int>& Card::GetCost() const { return cost; }
+std::vector<std::pair<int,int>> Card::GetChainFrom() const {
+    if(generated) return definition->chain_from;
+    if(freeWithId==-1) return {{CARD_ID::east_trading_post,0},{CARD_ID::west_trading_post,0}};
+    if(freeWithId>0) return {{freeWithId,0}};
+    return {};
+}
 
 Card::Card() : id(CARD_ID::none), type(CARD_TYPE::materials), era(0),
                freeWithId(CARD_ID::none), amountPerPlayers{} {}
@@ -14,6 +46,17 @@ Card::Card(int id, std::string name, int type, int era, int freeWithId, std::vec
     this->type = type;
     this->era = era;
     this->freeWithId = freeWithId;
+    definition=FindCardDefinition(id,era);
+    // Compatibility for synthetic legacy tests with an arbitrary age. Real
+    // decks use the strict FromDefinition factory; multi-age types never fall back.
+    if(!definition) {
+        const CardDefinition* unique=nullptr;
+        for(const auto& d:CardDefinitions()) if(d.id==id) {
+            if(unique) { unique=nullptr;break; }
+            unique=&d;
+        }
+        definition=unique;
+    }
 
     // must have a better way to deal with the cost and quantity of units by number of players
     // (but this one is working)

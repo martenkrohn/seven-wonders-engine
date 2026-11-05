@@ -2,7 +2,7 @@
   "format_version": 1,
   "upstream": "https://github.com/dmag-ufsm/7Wonders",
   "baseline_commit": "a0bc333a7a7f21f83156de8a2d522e7baa913f0a",
-  "patch_sha256": "56e225bc16c091c61091603b01c3a04b6ed33ec46d5ccfd805ca398784519f71",
+  "patch_sha256": "7681d1432663566ee5590abf482319d5a2c16a52bed105d26bc215eeded514c8",
   "files": [
     {
       "path": "CMakeLists.txt",
@@ -12,7 +12,7 @@
         "sha256": "89798e4668c9abcc0dee848590b15e1fa9c788650ce727237bb4d0365b7ae4c4"
       },
       "current": {
-        "sha256": "6988d4be048e3d0e0bc81c4ffe3eb000d0500b39101ab2b3fcd94c3b5100cbef",
+        "sha256": "7895b1a1d10859eb19a9f84fdeddc42bb2283dfd83676b4991af963501e109a0",
         "mode": "100644"
       }
     },
@@ -24,7 +24,25 @@
         "sha256": "399a5036f828298b664bbec2414cfd057a6380e06268e66fb67d861029f2d3cd"
       },
       "current": {
-        "sha256": "7cfbdd528b0f89c9e78185245ebb82d2e68caf7f28c4fd273d55a60ddf831417",
+        "sha256": "c22683f8fcf04fed7e911b3c9f744b81fceca1fea1ce5685df1dce9f2dc1c101",
+        "mode": "100644"
+      }
+    },
+    {
+      "path": "include/card_data.generated.h",
+      "status": "added",
+      "baseline": null,
+      "current": {
+        "sha256": "3af03a20edc12b5a9383bfc6431265fdc0f8a5a99cae874aa02358ee5d7e9174",
+        "mode": "100644"
+      }
+    },
+    {
+      "path": "include/card_data.h",
+      "status": "added",
+      "baseline": null,
+      "current": {
+        "sha256": "fdc191aefa7a9b313070fb87c854eb2d0769c1cf554231e48c9d66d69ea7af14",
         "mode": "100644"
       }
     },
@@ -465,7 +483,7 @@
         "sha256": "46e13fa5ef2493e95db98e9dd357e1182d914b2505360b8918ca697811a51a82"
       },
       "current": {
-        "sha256": "176a07d7c91b101365be2b547370111151d296979c45f3e74cd5982017f077ad",
+        "sha256": "9c4c2d44665ef232678d97851d1d7ad5379f2c1ed13c6dd9adc16fbc71fb4c26",
         "mode": "100644"
       }
     },
@@ -501,7 +519,7 @@
         "sha256": "cde2e751d66dd10e4ff4793172441bdd9314a80f3f37349a9258db7ce2674a4c"
       },
       "current": {
-        "sha256": "c4b5c1c6a0568c41688cc6f60d6d8e047802fcf40e759220a5693e3e335c6be7",
+        "sha256": "c9618d905315b19800f694b31db8cda1034b28199a7da2ad97664e1b8b8b3493",
         "mode": "100644"
       }
     },
@@ -513,7 +531,7 @@
         "sha256": "d479a2427f6a0f14e335cce68b895816fbc1662c7f87ffa35d6cd32a4de8a296"
       },
       "current": {
-        "sha256": "5fc3fcc99d145bf9d1572445006c0f46efca92982c555fc5efb4f9ce190f9bdd",
+        "sha256": "f46b282c908695d45d503d9e9412b39102e2ddd3ebb1597e47ac608ed1b36a77",
         "mode": "100644"
       }
     },
@@ -522,7 +540,7 @@
       "status": "added",
       "baseline": null,
       "current": {
-        "sha256": "bba3ee6f51448d0c3c9e0382f8b7a6e3b7b81bfa0881a3465b1528555cc676bf",
+        "sha256": "fecd052ae43ca480448a6713022cf6a1bfbe40732a1417d54274538479948034",
         "mode": "100644"
       }
     },
@@ -546,7 +564,7 @@
         "sha256": "ea3bd2f5862ac2b952f3e9848b0333c6f56effa073618645ce9ef4d9074e2ce1"
       },
       "current": {
-        "sha256": "d6528a883f9e10f71c1906e81c3c1a545254bb9cc7595e38b346c0526fbfca91",
+        "sha256": "5d51767fe90ffde4a57cacce3eddc7f659e11cdbd948a424394763a0d56ef217",
         "mode": "100644"
       }
     },
@@ -568,6 +586,15 @@
       "baseline": null,
       "current": {
         "sha256": "c7a04ce49a45cede5662562a91287d2c815a7b8d6d383ab85f57b3a10448fc1c",
+        "mode": "100644"
+      }
+    },
+    {
+      "path": "tests/test_card_tables.cpp",
+      "status": "added",
+      "baseline": null,
+      "current": {
+        "sha256": "2aa28d4f49b0a19f19bad8037d37b0c6b31e970f97e6980523293c28ee26d95f",
         "mode": "100644"
       }
     },
@@ -612,7 +639,7 @@
       "status": "added",
       "baseline": null,
       "current": {
-        "sha256": "b3b4455508e8561e698b674cc51082820ec42186a7af9cc3fe5c12c374dceae9",
+        "sha256": "dcca6351a00b47388c0586ba1ef27312d0afaa6ecd2e29f562396babf24b436b",
         "mode": "100644"
       }
     },
