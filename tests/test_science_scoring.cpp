@@ -173,7 +173,7 @@ int main() {
         exhaustive_counts();
         for (int stage = 0; stage <= 3; ++stage) {
             wonder_boundary<Babylon_a>(stage, stage >= 2 ? 13 : 5);
-            wonder_boundary<Babylon_b>(stage, stage >= 3 ? 13 : 5);
+            wonder_boundary<Babylon_b>(stage, stage >= 2 ? 13 : 5);
         }
         copied_joker();
         final_publication();

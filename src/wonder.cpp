@@ -113,144 +113,19 @@ bool Gizah_b::CanAddStage(Player* p) { return Wonder::CanAddStage(p); }
 
 // BABYLON A
 
-Babylon_a::Babylon_a(){
-    this->id = WONDER_ID::babylon_a;
-    this->name = "Babylon A";
-    this->production = RESOURCE::clay;
-    this->effects = {EFFECT::vp, EFFECT::add_science, EFFECT::vp};
-    this->cost[RESOURCE::clay] = 2;
-}
+Babylon_a::Babylon_a() { Configure(WONDER_ID::babylon_a); }
 
-bool Babylon_a::AddStage(Player* p){
-    std::map<int, int> p_resources = p->GetResources();
-    bool stage_built = false;
+bool Babylon_a::AddStage(Player* p) { return Wonder::AddStage(p); }
 
-    switch (this->stage) {
-    // Building stage 1
-    case 0:
-        if (p->ProduceResource(RESOURCE::clay, this->cost[RESOURCE::clay]-p_resources[RESOURCE::clay])) {
-            this->stage++;
-            this->wonder_points += 3;
-            this->cost[RESOURCE::wood] = 3;
-            stage_built = true;
-        } break;
-
-    // Building stage 2
-    case 1:
-        if (p->ProduceResource(RESOURCE::wood, this->cost[RESOURCE::wood]-p_resources[RESOURCE::wood])) {
-            this->stage++;
-            this->cost[RESOURCE::clay] = 4;
-            stage_built = true;
-        } break;
-
-    // Building stage 3
-    case 2:
-        if (p->ProduceResource(RESOURCE::clay, this->cost[RESOURCE::clay]-p_resources[RESOURCE::clay])) {
-            this->stage++;
-            this->wonder_points += 7;
-            stage_built = true;
-        } break;
-    }
-
-    return stage_built;
-}
-
-bool Babylon_a::CanAddStage(Player* p){
-    std::map<int, int> p_resources = p->GetResources();
-    bool stage_built = false;
-
-    switch (this->stage) {
-    case 0:
-        if (p->ProduceResource(RESOURCE::clay, this->cost[RESOURCE::clay]-p_resources[RESOURCE::clay])) {
-            stage_built = true;
-        } break;
-    case 1:
-        if (p->ProduceResource(RESOURCE::wood, this->cost[RESOURCE::wood]-p_resources[RESOURCE::wood])) {
-            stage_built = true;
-        } break;
-    case 2:
-        if (p->ProduceResource(RESOURCE::clay, this->cost[RESOURCE::clay]-p_resources[RESOURCE::clay])) {
-            stage_built = true;
-        } break;
-    }
-
-    return stage_built;
-}
+bool Babylon_a::CanAddStage(Player* p) { return Wonder::CanAddStage(p); }
 
 // BABYLON B
 
-Babylon_b::Babylon_b(){
-    this->id = WONDER_ID::babylon_b;
-    this->name = "Babylon B";
-    this->production = RESOURCE::clay;
-    this->effects = {EFFECT::vp, EFFECT::play_seventh_card, EFFECT::add_science};
-    this->cost[RESOURCE::clay] = 1;
-    this->cost[RESOURCE::loom] = 1;
-}
+Babylon_b::Babylon_b() { Configure(WONDER_ID::babylon_b); }
 
-bool Babylon_b::AddStage(Player* p){
-    std::map<int, int> p_resources = p->GetResources();
-    bool stage_built = false;
+bool Babylon_b::AddStage(Player* p) { return Wonder::AddStage(p); }
 
-    switch (this->stage) {
-    // Building stage 1
-    case 0:
-        if (p->ProduceResource(RESOURCE::clay, this->cost[RESOURCE::clay]-p_resources[RESOURCE::clay]) &&
-            p->ProduceResource(RESOURCE::loom, this->cost[RESOURCE::loom]-p_resources[RESOURCE::loom])) {
-            this->stage++;
-            this->wonder_points += 3;
-            this->cost[RESOURCE::glass] = 1;
-            this->cost[RESOURCE::wood] = 2;
-            stage_built = true;
-        } break;
-
-    // Building stage 2
-    case 1:
-        if (p->ProduceResource(RESOURCE::glass, this->cost[RESOURCE::glass]-p_resources[RESOURCE::glass]) &&
-            p->ProduceResource(RESOURCE::wood, this->cost[RESOURCE::wood]-p_resources[RESOURCE::wood])) {
-            this->stage++;
-            this->cost[RESOURCE::clay] = 3;
-            this->cost[RESOURCE::papyrus] = 1;
-            p->CanPlaySeventh(); // The Player can play the seventh card of an Age.
-            stage_built = true;
-        } break;
-
-    // Building stage 3
-    case 2:
-        if (p->ProduceResource(RESOURCE::clay, this->cost[RESOURCE::clay]-p_resources[RESOURCE::clay]) &&
-            p->ProduceResource(RESOURCE::papyrus, this->cost[RESOURCE::papyrus]-p_resources[RESOURCE::papyrus])) {
-            this->stage++;
-            stage_built = true;
-        } break;
-    }
-
-    return stage_built;
-}
-
-bool Babylon_b::CanAddStage(Player* p){
-    std::map<int, int> p_resources = p->GetResources();
-    bool stage_built = false;
-
-    switch (this->stage) {
-    case 0:
-        if (p->ProduceResource(RESOURCE::clay, this->cost[RESOURCE::clay]-p_resources[RESOURCE::clay]) &&
-            p->ProduceResource(RESOURCE::loom, this->cost[RESOURCE::loom]-p_resources[RESOURCE::loom])) {
-            stage_built = true;
-        } break;
-    case 1:
-        if (p->ProduceResource(RESOURCE::glass, this->cost[RESOURCE::glass]-p_resources[RESOURCE::glass]) &&
-            p->ProduceResource(RESOURCE::wood, this->cost[RESOURCE::wood]-p_resources[RESOURCE::wood])) {
-            stage_built = true;
-        } break;
-    case 2:
-        if (p->ProduceResource(RESOURCE::clay, this->cost[RESOURCE::clay]-p_resources[RESOURCE::clay]) &&
-            p->ProduceResource(RESOURCE::papyrus, this->cost[RESOURCE::papyrus]-p_resources[RESOURCE::papyrus])) {
-            stage_built = true;
-        } break;
-    }
-
-    return stage_built;
-}
+bool Babylon_b::CanAddStage(Player* p) { return Wonder::CanAddStage(p); }
 
 // OLYMPIA A
 

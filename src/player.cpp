@@ -629,12 +629,7 @@ int Player::CalculateScientificScore(){
         else if(symbol=="joker") ++sci_extra;
     }
 
-    int id = this->board->GetId();
-    int stage = this->board->GetStage();
-    if ((id == WONDER_ID::babylon_a && stage >= 2) ||
-            (id == WONDER_ID::babylon_b && stage >= 3)) {
-        sci_extra++;
-    }
+    sci_extra+=board->EffectCount("add_science");
 
     // Enumerate every allocation of all jokers without changing fixed symbols.
     // Greedy concentration misses e.g. (2 gears, 1 compass, 1 joker): 13 > 10.

@@ -59,4 +59,14 @@ void runtime() {
     expect(f.boards[0].CanAddStage(&f.players[0]),"Gizah first stage must cost wood");
     r[RESOURCE::wood]=1;f.players[0].SetResources(r);expect(!f.boards[0].CanAddStage(&f.players[0]),"Gizah insufficient resources accepted");
 }
-int main(int argc,char** argv){try{if(argc>1 && std::string(argv[1])=="--dump")std::cout<<dump().dump()<<'\n';else runtime();return 0;}catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}}
+void babylon() {
+    DecisionFixture f;Babylon_b board;f.players[0].SetWonder(&board);
+    auto r=f.players[0].GetResources();for(int n=0;n<7;++n)r[n]=20;f.players[0].SetResources(r);
+    auto e=f.Engine(5);
+    finish_cohort(*e,{choose(*e,0,"build_wonder"),choose(*e,1,"discard"),choose(*e,2,"discard")});
+    expect(e->Status()["game"]["turn"]==6 && e->Status()["waiting_for"]==json({0}),"Babylon B stage one must enable this age's seventh card");
+    applied(*e,choose(*e,0,"build_structure"));
+    expect(e->Status()["game"]["turn"]==7,"Babylon seventh decision failed to close age");
+    expect(board.GetStageCount()==2,"Babylon B must have exactly two stages");
+}
+int main(int argc,char** argv){try{if(argc>1 && std::string(argv[1])=="--dump")std::cout<<dump().dump()<<'\n';else if(argc>1 && std::string(argv[1])=="babylon")babylon();else{runtime();babylon();}return 0;}catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}}

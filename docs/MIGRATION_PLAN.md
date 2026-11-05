@@ -505,3 +505,9 @@ beider Seiten generiert; rote Gizah-Holzkosten vor der Änderung nachgewiesen.
 Alle Stufen dieser acht Seiten gegen die eingefrorenen Ziele und im realen
 Entscheidungspfad geprüft. 15 CTests grün. Babylon/Olympia/Halikarnassos
 bleiben für die folgenden getrennten Schritte.
+
+6a: Commit `10cd70b`. 6b Babylon: beide Seiten verwenden die Ziele; B hat
+exakt zwei Stufen und erhält die siebte Karte bereits nach Stufe eins, auch
+beim Bau im sechsten Zug derselben Ära. Joker ab der zweiten Stufe. Roter
+Siebtkarte-Fall vor der Korrektur; 15 CTests einschließlich 375 Science-
+Beständen und neuem Stufengrenztest grün.
