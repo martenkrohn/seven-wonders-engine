@@ -1,0 +1,102 @@
+{
+  "date": "2026-11-05",
+  "release": "v0.1.1-legacy",
+  "ruleset": "legacy-dmag-with-downstream-fixes",
+  "protocol_version": 2,
+  "source_baseline": "v0.1.0-legacy",
+  "unchanged_cpp_build_test_files": 49,
+  "original_gui_source": {
+    "repository": "https://github.com/dmag-ufsm/7Wonders",
+    "commit": "a0bc333a7a7f21f83156de8a2d522e7baa913f0a",
+    "path": "Game.py",
+    "sha256": "348608fa5ff8a8d2c74161ab092e9becec2e61880682bc08e69219af336b671a"
+  },
+  "headless_gui_contracts": {
+    "tests": 8,
+    "passed": 8,
+    "failed": 0,
+    "full_trace_matches_existing_client_for_bot_counts": [
+      0,
+      2,
+      3
+    ],
+    "seed": 42
+  },
+  "ctest": {
+    "passed": 5,
+    "failed": 0
+  },
+  "cpp_provenance_audit": "passed",
+  "actual_tk_window_checks": [
+    {
+      "seed": 42,
+      "bots": 2,
+      "states": 22,
+      "maximum_widgets": 41,
+      "scores": [
+        46,
+        21,
+        43
+      ],
+      "name": "two simple bots and one human seat",
+      "missing_asset_count": 0
+    },
+    {
+      "seed": 42,
+      "bots": 0,
+      "states": 22,
+      "maximum_widgets": 41,
+      "human_action_types": [
+        "build_structure",
+        "build_wonder",
+        "discard"
+      ],
+      "scores": [
+        40,
+        37,
+        44
+      ],
+      "name": "three human seats, mixed actions",
+      "missing_asset_count": 0
+    },
+    {
+      "seed": 9,
+      "bots": 0,
+      "states": 22,
+      "maximum_widgets": 42,
+      "human_action_types": [
+        "build_hand_free",
+        "build_structure",
+        "build_wonder",
+        "discard"
+      ],
+      "scores": [
+        22,
+        39,
+        35
+      ],
+      "name": "all four action types, including Olympia free build",
+      "missing_asset_count": 0
+    },
+    {
+      "seed": 7,
+      "bots": 3,
+      "states": 22,
+      "maximum_widgets": 41,
+      "human_action_types": [],
+      "scores": [
+        30,
+        40,
+        49
+      ],
+      "name": "three bots with labeled placeholders",
+      "missing_asset_count": 88
+    }
+  ],
+  "limits": [
+    "Automated Tk interaction verifies full matches and the scored final window, not exhaustive manual visual acceptance.",
+    "Legacy Halikarnassos discard selection remains unsupported; existing engine rule gaps remain.",
+    "New-edition definitions and artwork have not been integrated."
+  ],
+  "next_work_package": 1
+}

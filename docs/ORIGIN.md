@@ -50,3 +50,13 @@ The source was extracted from Seven Wonders RL's tag
 changes are recorded as ENG-009. The original GPLv3 LICENSE and vendored notices
 are unchanged. RL features, agents, exported databases and experiments remain
 in the separate consumer repository.
+
+## Optional GUI restoration, 5 November 2026
+
+The original `Game.py` at the same pinned upstream commit supplies the restored
+Tk view in `gui/legacy_view.py`. `Game.py` now launches it through a separate
+stdlib protocol client in `gui/session.py`; lifecycle, file exchange, simple
+companions and missing-image handling were adapted downstream. Local artwork
+is supplied separately, and no artwork files were added. The game source and
+CMake build remain identical to `v0.1.0-legacy`. See `GUI_AUDIT.md` and
+`MIGRATION_PLAN.md` for verification and the bounded next steps.

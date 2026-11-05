@@ -107,6 +107,22 @@ Spielverläufe mit alter und ausgegliederter Engine unter derselben Toolchain.
 Der RL-Consumer verwendet einen festen Submodule-Commit. Die BGA-Migration
 beginnt erst in einer nachfolgenden Änderung.
 
+## ENG-010 – Alte GUI optional wieder eingebunden
+
+5. November 2026, `v0.1.1-legacy`. Die alte Tk-Darstellung aus Upstream-`Game.py`
+liegt unter `gui/legacy_view.py`; `Game.py` ist der eigenständige Launcher.
+`gui/session.py` ergänzt isolierte Laufzeitverzeichnisse, atomare Aktionen,
+Rundenprüfung, nicht blockierendes Warten, einfache Begleiter und geordnetes
+Prozessende. Der abschließende Status wird angezeigt statt Runde 20 vorzeitig
+zu beenden. Fehlende externe Bilder haben beschriftete Platzhalter.
+
+C++-Dateien, Kartendaten, Wunder, Protokollversion und `CMakeLists.txt` sind
+unverändert. Der bestehende C++-Patch und das Inventar bleiben deshalb gültig.
+Acht zusätzliche GUI-/Clientprüfungen laufen ohne Display; tatsächliche
+Tk-Klickpartien prüfen Bedienung und Schlussanzeige mit und ohne lokale Bilder.
+Details und Grenzen: [GUI_AUDIT.md](GUI_AUDIT.md). Die weitere Migration wird
+über [MIGRATION_PLAN.md](MIGRATION_PLAN.md) einzeln abgearbeitet.
+
 ## Abgrenzung
 
 Es findet keine pauschale Behauptung vollständiger Regelkorrektheit statt. Insbesondere werden die Wunder-Ausbauschritte nicht zur neuen Edition migriert. Auch Kartenwerte werden durch den aktuellen Self-Play-Umbau nicht geändert. Falls frühere Kartenänderungen nicht im exakten Unterschied zu diesem Upstream-Commit erscheinen, werden sie nicht ohne Nachweis als Änderungen dieser C++-Fassung behauptet. Für jede zukünftige Änderung ist ein neuer Eintrag mit Anlass, genauer Funktion, Wirkung, Test und Grenzen anzulegen und der exakte Nachweis neu zu erzeugen.

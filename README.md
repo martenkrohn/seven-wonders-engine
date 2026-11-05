@@ -4,7 +4,8 @@ A standalone C++17 simulator for three-player **7 Wonders**, forked from
 [DMAG/UFSM's 7Wonders](https://github.com/dmag-ufsm/7Wonders). It exposes a
 JSON file protocol for bots and other clients. No RL framework is required.
 
-**Current release: `v0.1.0-legacy`.** This preserves the simulator previously
+**Current release: `v0.1.1-legacy`.** This restores the optional original Tk GUI
+and preserves the simulator previously
 used by [Seven Wonders RL](https://github.com/martenkrohn/seven-wonders-rl),
 including its existing corrections and limitations. The second-edition/BGA
 migration is planned; it is **not implemented** in this release. The versioned
@@ -38,7 +39,27 @@ status and isolation requirements. Independent matches need separate working
 directories. Identical seeds are reproducible within the same toolchain;
 cross-platform shuffle equivalence is not guaranteed.
 
+## Optional graphical client
+
+The original Tk interface is available again. It supports local human seats
+and simple companion bots, using the existing legacy rules:
+
+```sh
+python3 Game.py 2 --assets-dir /path/to/local/images --seed 42
+```
+
+Python 3.10+, Tkinter and a display are required. Artwork is optional and
+remains external; missing images use labeled placeholders. No BGA artwork
+is bundled. See [GUI.md](docs/GUI.md) for controls, all-human mode, setup and
+known limitations. `v0.1.0-legacy` preserves the original extraction without
+the GUI; the C++ game/build files are unchanged in `v0.1.1-legacy`.
+
 ## Development
+
+The [migration work plan](docs/MIGRATION_PLAN.md) separates the remaining work
+into bounded packages. Its [next-agent task](docs/NEXT_AGENT_TASK.md) covers
+only the next package. The [GUI audit](docs/GUI_AUDIT.md) records the restored
+baseline and the remaining interface/artwork work.
 
 Keep engine changes and C++ regressions here. The RL repository consumes an
 exact engine commit as a Git submodule. Follow [DEVELOPMENT.md](docs/DEVELOPMENT.md)

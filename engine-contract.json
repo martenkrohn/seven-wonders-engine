@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "release": "v0.1.0-legacy",
+  "release": "v0.1.1-legacy",
   "ruleset": "legacy-dmag-with-downstream-fixes",
   "protocol_version": 2,
   "players": 3,
