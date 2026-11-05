@@ -1,0 +1,3152 @@
+{
+  "format_version": 1,
+  "contract_id": "decision-v1-draft",
+  "status": "draft_not_implemented",
+  "proposed_protocol_version": 3,
+  "checked_on": "2026-11-05",
+  "implemented_protocol_version": 2,
+  "example_profile": {
+    "name": "technical-require-choice",
+    "bga_verified": false,
+    "discard_can_skip": false,
+    "regular_coin_counting": "regular_cohort_before_end_turn_discard; conditional RQ-1"
+  },
+  "scope": "Message envelopes with reduced economic player payloads and abbreviated unrelated action options. They are not complete playable state fixtures. Alternative branches are independent. Terminal envelope omits intervening play. No examples are runtime tests.",
+  "scenario_preconditions": [
+    "All offered regular construction plans are covered by production in their base snapshot; unrelated public production fields are omitted.",
+    "Only one wonder of each family in real base-game setup; multi-grant fixtures are explicitly synthetic.",
+    "Source abilities use target stage activation; the current binary has not migrated these wonder definitions."
+  ],
+  "sources": [
+    "BGA",
+    "RULES",
+    "EFFECTS",
+    "FAQ",
+    "CODE"
+  ],
+  "main_trace": [
+    "S-collect",
+    "R-regular-0",
+    "A-accepted",
+    "R-regular-1",
+    "R-regular-2",
+    "S-discard",
+    "R-discard",
+    "S-after-discard",
+    "S-seventh"
+  ],
+  "messages": [
+    {
+      "id": "S-collect",
+      "kind": "status",
+      "payload": {
+        "protocol_version": 3,
+        "contract_id": "decision-v1-draft",
+        "game_id": "example-game",
+        "revision": 100,
+        "engine": {
+          "release": "unreleased-protocol3-proposal",
+          "ruleset": "bga-second-edition-development",
+          "source_commit": "example-future-commit",
+          "second_edition_implemented": false,
+          "capabilities": [
+            "regular_options_v1",
+            "discard_choice_v1",
+            "simultaneous_settlement_v1"
+          ]
+        },
+        "game": {
+          "turn": 12,
+          "age": 2,
+          "round_in_age": 6,
+          "round_kind": "regular",
+          "phase": "collect_actions",
+          "resolution_id": "example-game:r12",
+          "snapshot_id": "example-game:r12:base",
+          "scores_final": false
+        },
+        "waiting_for": [
+          0,
+          1,
+          2
+        ],
+        "decisions": [
+          {
+            "decision_id": "example-game:r12:regular:0",
+            "actor": 0,
+            "kind": "regular",
+            "offered_revision": 100,
+            "snapshot_id": "example-game:r12:base",
+            "source_grant_id": null,
+            "can_skip": false,
+            "timeout_ms": null,
+            "options": [
+              {
+                "option_id": "r12-s0-sell-aqueduct",
+                "kind": "discard",
+                "card": {
+                  "instance_id": "a2-aqueduct-0",
+                  "type_id": 25,
+                  "age": 2,
+                  "name": "Aqueduct"
+                },
+                "payment": {
+                  "bank": 0,
+                  "to_seats": {
+                    "0": 0,
+                    "1": 0,
+                    "2": 0
+                  }
+                },
+                "free_source": null,
+                "selectable": true,
+                "reason": null
+              }
+            ]
+          },
+          {
+            "decision_id": "example-game:r12:regular:1",
+            "actor": 1,
+            "kind": "regular",
+            "offered_revision": 100,
+            "snapshot_id": "example-game:r12:base",
+            "source_grant_id": null,
+            "can_skip": false,
+            "timeout_ms": null,
+            "options": [
+              {
+                "option_id": "r12-s1-build-stage",
+                "kind": "build_wonder",
+                "card": {
+                  "instance_id": "a2-loom-0",
+                  "type_id": 15,
+                  "age": 2,
+                  "name": "Loom"
+                },
+                "payment": {
+                  "bank": 0,
+                  "to_seats": {
+                    "0": 0,
+                    "1": 0,
+                    "2": 0
+                  }
+                },
+                "free_source": null,
+                "selectable": true,
+                "reason": null
+              }
+            ]
+          },
+          {
+            "decision_id": "example-game:r12:regular:2",
+            "actor": 2,
+            "kind": "regular",
+            "offered_revision": 100,
+            "snapshot_id": "example-game:r12:base",
+            "source_grant_id": null,
+            "can_skip": false,
+            "timeout_ms": null,
+            "options": [
+              {
+                "option_id": "r12-s2-build-stage",
+                "kind": "build_wonder",
+                "card": {
+                  "instance_id": "a2-stables-0",
+                  "type_id": 48,
+                  "age": 2,
+                  "name": "Stables"
+                },
+                "payment": {
+                  "bank": 0,
+                  "to_seats": {
+                    "0": 0,
+                    "1": 0,
+                    "2": 0
+                  }
+                },
+                "free_source": null,
+                "selectable": true,
+                "reason": null
+              }
+            ]
+          }
+        ],
+        "players": {
+          "0": {
+            "resources": {
+              "coins": 1
+            },
+            "neighbors": {
+              "left": 2,
+              "right": 1
+            },
+            "wonder_id": 0,
+            "wonder_stage": 0,
+            "hand_cards": [
+              {
+                "instance_id": "a2-aqueduct-0",
+                "type_id": 25,
+                "age": 2,
+                "name": "Aqueduct"
+              },
+              {
+                "instance_id": "a2-glassworks-0",
+                "type_id": 16,
+                "age": 2,
+                "name": "Glassworks"
+              }
+            ],
+            "built_cards": [],
+            "available_abilities": []
+          },
+          "1": {
+            "resources": {
+              "coins": 2
+            },
+            "neighbors": {
+              "left": 0,
+              "right": 2
+            },
+            "wonder_id": 13,
+            "wonder_stage": 0,
+            "hand_cards": [
+              {
+                "instance_id": "a2-loom-0",
+                "type_id": 15,
+                "age": 2,
+                "name": "Loom"
+              },
+              {
+                "instance_id": "a2-press-0",
+                "type_id": 17,
+                "age": 2,
+                "name": "Press"
+              }
+            ],
+            "built_cards": [
+              {
+                "instance_id": "a1-press-0",
+                "type_id": 17,
+                "age": 1,
+                "name": "Press"
+              }
+            ],
+            "available_abilities": []
+          },
+          "2": {
+            "resources": {
+              "coins": 2
+            },
+            "neighbors": {
+              "left": 1,
+              "right": 0
+            },
+            "wonder_id": 8,
+            "wonder_stage": 0,
+            "hand_cards": [
+              {
+                "instance_id": "a2-stables-0",
+                "type_id": 48,
+                "age": 2,
+                "name": "Stables"
+              },
+              {
+                "instance_id": "a2-library-0",
+                "type_id": 59,
+                "age": 2,
+                "name": "Library"
+              }
+            ],
+            "built_cards": [],
+            "available_abilities": []
+          }
+        },
+        "discard_count": 1,
+        "grants": [],
+        "receipts": [],
+        "events": [],
+        "result": null
+      }
+    },
+    {
+      "id": "R-regular-0",
+      "kind": "request",
+      "payload": {
+        "protocol_version": 3,
+        "game_id": "example-game",
+        "request_id": "req-regular-0",
+        "actor": 0,
+        "decision_id": "example-game:r12:regular:0",
+        "offered_revision": 100,
+        "action": {
+          "kind": "discard",
+          "option_id": "r12-s0-sell-aqueduct",
+          "card_instance_id": "a2-aqueduct-0"
+        }
+      },
+      "against_status": "S-collect"
+    },
+    {
+      "id": "R-regular-1",
+      "kind": "request",
+      "payload": {
+        "protocol_version": 3,
+        "game_id": "example-game",
+        "request_id": "req-regular-1",
+        "actor": 1,
+        "decision_id": "example-game:r12:regular:1",
+        "offered_revision": 100,
+        "action": {
+          "kind": "build_wonder",
+          "option_id": "r12-s1-build-stage",
+          "card_instance_id": "a2-loom-0"
+        }
+      },
+      "against_status": "S-collect"
+    },
+    {
+      "id": "R-regular-2",
+      "kind": "request",
+      "payload": {
+        "protocol_version": 3,
+        "game_id": "example-game",
+        "request_id": "req-regular-2",
+        "actor": 2,
+        "decision_id": "example-game:r12:regular:2",
+        "offered_revision": 100,
+        "action": {
+          "kind": "build_wonder",
+          "option_id": "r12-s2-build-stage",
+          "card_instance_id": "a2-stables-0"
+        }
+      },
+      "against_status": "S-collect"
+    },
+    {
+      "id": "A-accepted",
+      "kind": "receipt_fragment",
+      "payload": {
+        "request_id": "req-regular-0",
+        "decision_id": "example-game:r12:regular:0",
+        "actor": 0,
+        "status": "accepted",
+        "code": null,
+        "recorded_revision": 101,
+        "effect_event_id": null
+      },
+      "note": "First request alone can be accepted before remaining seats submit."
+    },
+    {
+      "id": "S-discard",
+      "kind": "status",
+      "payload": {
+        "protocol_version": 3,
+        "contract_id": "decision-v1-draft",
+        "game_id": "example-game",
+        "revision": 102,
+        "engine": {
+          "release": "unreleased-protocol3-proposal",
+          "ruleset": "bga-second-edition-development",
+          "source_commit": "example-future-commit",
+          "second_edition_implemented": false,
+          "capabilities": [
+            "regular_options_v1",
+            "discard_choice_v1",
+            "simultaneous_settlement_v1"
+          ]
+        },
+        "game": {
+          "turn": 12,
+          "age": 2,
+          "round_in_age": 6,
+          "round_kind": "regular",
+          "phase": "discard_choice",
+          "resolution_id": "example-game:r12",
+          "snapshot_id": "example-game:r12:base",
+          "scores_final": false
+        },
+        "waiting_for": [
+          1
+        ],
+        "decisions": [
+          {
+            "decision_id": "example-game:r12:discard:0",
+            "actor": 1,
+            "kind": "discard",
+            "offered_revision": 102,
+            "snapshot_id": "example-game:r12:choice0",
+            "source_grant_id": "example-game:grant:halikarnassos:1:stage1",
+            "can_skip": false,
+            "timeout_ms": null,
+            "options": [
+              {
+                "option_id": "dc-aqueduct",
+                "kind": "build_discard_free",
+                "card": {
+                  "instance_id": "a2-aqueduct-0",
+                  "type_id": 25,
+                  "age": 2,
+                  "name": "Aqueduct"
+                },
+                "payment": {
+                  "bank": 0,
+                  "to_seats": {
+                    "0": 0,
+                    "1": 0,
+                    "2": 0
+                  }
+                },
+                "free_source": "discard_grant",
+                "selectable": true,
+                "reason": null
+              },
+              {
+                "option_id": "dc-baths",
+                "kind": "build_discard_free",
+                "card": {
+                  "instance_id": "a1-baths-0",
+                  "type_id": 21,
+                  "age": 1,
+                  "name": "Baths"
+                },
+                "payment": {
+                  "bank": 0,
+                  "to_seats": {
+                    "0": 0,
+                    "1": 0,
+                    "2": 0
+                  }
+                },
+                "free_source": "discard_grant",
+                "selectable": true,
+                "reason": null
+              },
+              {
+                "option_id": "dc-glass",
+                "kind": "build_discard_free",
+                "card": {
+                  "instance_id": "a2-glassworks-0",
+                  "type_id": 16,
+                  "age": 2,
+                  "name": "Glassworks"
+                },
+                "payment": {
+                  "bank": 0,
+                  "to_seats": {
+                    "0": 0,
+                    "1": 0,
+                    "2": 0
+                  }
+                },
+                "free_source": "discard_grant",
+                "selectable": true,
+                "reason": null
+              },
+              {
+                "option_id": "dc-press",
+                "kind": "build_discard_free",
+                "card": {
+                  "instance_id": "a2-press-0",
+                  "type_id": 17,
+                  "age": 2,
+                  "name": "Press"
+                },
+                "payment": {
+                  "bank": 0,
+                  "to_seats": {
+                    "0": 0,
+                    "1": 0,
+                    "2": 0
+                  }
+                },
+                "free_source": "discard_grant",
+                "selectable": false,
+                "reason": "duplicate_in_city"
+              }
+            ]
+          }
+        ],
+        "players": {
+          "0": {
+            "resources": {
+              "coins": 4
+            },
+            "neighbors": {
+              "left": 2,
+              "right": 1
+            },
+            "wonder_id": 0,
+            "wonder_stage": 0,
+            "hand_cards": [],
+            "built_cards": [],
+            "available_abilities": []
+          },
+          "1": {
+            "resources": {
+              "coins": 2
+            },
+            "neighbors": {
+              "left": 0,
+              "right": 2
+            },
+            "wonder_id": 13,
+            "wonder_stage": 1,
+            "hand_cards": [],
+            "built_cards": [
+              {
+                "instance_id": "a1-press-0",
+                "type_id": 17,
+                "age": 1,
+                "name": "Press"
+              }
+            ],
+            "available_abilities": [
+              {
+                "code": "discard_build_for_free",
+                "availability": "decision",
+                "grant_id": "example-game:grant:halikarnassos:1:stage1"
+              }
+            ]
+          },
+          "2": {
+            "resources": {
+              "coins": 2
+            },
+            "neighbors": {
+              "left": 1,
+              "right": 0
+            },
+            "wonder_id": 8,
+            "wonder_stage": 1,
+            "hand_cards": [
+              {
+                "instance_id": "a2-library-0",
+                "type_id": 59,
+                "age": 2,
+                "name": "Library"
+              }
+            ],
+            "built_cards": [],
+            "available_abilities": [
+              {
+                "code": "play_seventh_card",
+                "availability": "next_round"
+              }
+            ]
+          }
+        },
+        "discard_count": 4,
+        "grants": [
+          {
+            "grant_id": "example-game:grant:halikarnassos:1:stage1",
+            "actor": 1,
+            "source": {
+              "kind": "wonder_stage",
+              "wonder_id": 13,
+              "stage": 1,
+              "event_id": "event-regular-1"
+            },
+            "resolution_id": "example-game:r12",
+            "status": "active",
+            "effect_event_id": null
+          }
+        ],
+        "receipts": [
+          {
+            "request_id": "req-regular-0",
+            "decision_id": "example-game:r12:regular:0",
+            "actor": 0,
+            "status": "applied",
+            "code": null,
+            "recorded_revision": 102,
+            "effect_event_id": "event-regular-0"
+          },
+          {
+            "request_id": "req-regular-1",
+            "decision_id": "example-game:r12:regular:1",
+            "actor": 1,
+            "status": "applied",
+            "code": null,
+            "recorded_revision": 102,
+            "effect_event_id": "event-regular-1"
+          },
+          {
+            "request_id": "req-regular-2",
+            "decision_id": "example-game:r12:regular:2",
+            "actor": 2,
+            "status": "applied",
+            "code": null,
+            "recorded_revision": 102,
+            "effect_event_id": "event-regular-2"
+          }
+        ],
+        "events": [
+          {
+            "event_id": "event-regular-0",
+            "kind": "regular_applied",
+            "actor": 0,
+            "decision_id": "example-game:r12:regular:0",
+            "grant_id": null,
+            "card_instance_id": "a2-aqueduct-0"
+          },
+          {
+            "event_id": "event-regular-1",
+            "kind": "regular_applied",
+            "actor": 1,
+            "decision_id": "example-game:r12:regular:1",
+            "grant_id": null,
+            "card_instance_id": "a2-loom-0"
+          },
+          {
+            "event_id": "event-regular-2",
+            "kind": "regular_applied",
+            "actor": 2,
+            "decision_id": "example-game:r12:regular:2",
+            "grant_id": null,
+            "card_instance_id": "a2-stables-0"
+          },
+          {
+            "event_id": "event-leftover-0",
+            "kind": "automatic_discard",
+            "actor": 0,
+            "decision_id": null,
+            "grant_id": null,
+            "card_instance_id": "a2-glassworks-0"
+          },
+          {
+            "event_id": "event-leftover-1",
+            "kind": "automatic_discard",
+            "actor": 1,
+            "decision_id": null,
+            "grant_id": null,
+            "card_instance_id": "a2-press-0"
+          }
+        ],
+        "result": null
+      },
+      "note": "All ordinary actions committed; sold and automatic leftover cards are visible only to actor 1."
+    },
+    {
+      "id": "R-discard",
+      "kind": "request",
+      "payload": {
+        "protocol_version": 3,
+        "game_id": "example-game",
+        "request_id": "req-discard",
+        "actor": 1,
+        "decision_id": "example-game:r12:discard:0",
+        "offered_revision": 102,
+        "action": {
+          "kind": "build_discard_free",
+          "option_id": "dc-aqueduct",
+          "card_instance_id": "a2-aqueduct-0"
+        }
+      },
+      "against_status": "S-discard"
+    },
+    {
+      "id": "S-after-discard",
+      "kind": "status",
+      "payload": {
+        "protocol_version": 3,
+        "contract_id": "decision-v1-draft",
+        "game_id": "example-game",
+        "revision": 103,
+        "engine": {
+          "release": "unreleased-protocol3-proposal",
+          "ruleset": "bga-second-edition-development",
+          "source_commit": "example-future-commit",
+          "second_edition_implemented": false,
+          "capabilities": [
+            "regular_options_v1",
+            "discard_choice_v1",
+            "simultaneous_settlement_v1"
+          ]
+        },
+        "game": {
+          "turn": 12,
+          "age": 2,
+          "round_in_age": 6,
+          "round_kind": "regular",
+          "phase": "advance",
+          "resolution_id": "example-game:r12",
+          "snapshot_id": "example-game:r12:base",
+          "scores_final": false
+        },
+        "waiting_for": [],
+        "decisions": [],
+        "players": {
+          "0": {
+            "resources": {
+              "coins": 4
+            },
+            "neighbors": {
+              "left": 2,
+              "right": 1
+            },
+            "wonder_id": 0,
+            "wonder_stage": 0,
+            "hand_cards": [],
+            "built_cards": [],
+            "available_abilities": []
+          },
+          "1": {
+            "resources": {
+              "coins": 2
+            },
+            "neighbors": {
+              "left": 0,
+              "right": 2
+            },
+            "wonder_id": 13,
+            "wonder_stage": 1,
+            "hand_cards": [],
+            "built_cards": [
+              {
+                "instance_id": "a1-press-0",
+                "type_id": 17,
+                "age": 1,
+                "name": "Press"
+              },
+              {
+                "instance_id": "a2-aqueduct-0",
+                "type_id": 25,
+                "age": 2,
+                "name": "Aqueduct"
+              }
+            ],
+            "available_abilities": []
+          },
+          "2": {
+            "resources": {
+              "coins": 2
+            },
+            "neighbors": {
+              "left": 1,
+              "right": 0
+            },
+            "wonder_id": 8,
+            "wonder_stage": 1,
+            "hand_cards": [
+              {
+                "instance_id": "a2-library-0",
+                "type_id": 59,
+                "age": 2,
+                "name": "Library"
+              }
+            ],
+            "built_cards": [],
+            "available_abilities": [
+              {
+                "code": "play_seventh_card",
+                "availability": "next_round"
+              }
+            ]
+          }
+        },
+        "discard_count": 3,
+        "grants": [
+          {
+            "grant_id": "example-game:grant:halikarnassos:1:stage1",
+            "actor": 1,
+            "source": {
+              "kind": "wonder_stage",
+              "wonder_id": 13,
+              "stage": 1,
+              "event_id": "event-regular-1"
+            },
+            "resolution_id": "example-game:r12",
+            "status": "consumed_build",
+            "effect_event_id": "event-discard-1"
+          }
+        ],
+        "receipts": [
+          {
+            "request_id": "req-regular-0",
+            "decision_id": "example-game:r12:regular:0",
+            "actor": 0,
+            "status": "applied",
+            "code": null,
+            "recorded_revision": 102,
+            "effect_event_id": "event-regular-0"
+          },
+          {
+            "request_id": "req-regular-1",
+            "decision_id": "example-game:r12:regular:1",
+            "actor": 1,
+            "status": "applied",
+            "code": null,
+            "recorded_revision": 102,
+            "effect_event_id": "event-regular-1"
+          },
+          {
+            "request_id": "req-regular-2",
+            "decision_id": "example-game:r12:regular:2",
+            "actor": 2,
+            "status": "applied",
+            "code": null,
+            "recorded_revision": 102,
+            "effect_event_id": "event-regular-2"
+          },
+          {
+            "request_id": "req-discard",
+            "decision_id": "example-game:r12:discard:0",
+            "actor": 1,
+            "status": "applied",
+            "code": null,
+            "recorded_revision": 103,
+            "effect_event_id": "event-discard-1"
+          }
+        ],
+        "events": [
+          {
+            "event_id": "event-regular-0",
+            "kind": "regular_applied",
+            "actor": 0,
+            "decision_id": "example-game:r12:regular:0",
+            "grant_id": null,
+            "card_instance_id": "a2-aqueduct-0"
+          },
+          {
+            "event_id": "event-regular-1",
+            "kind": "regular_applied",
+            "actor": 1,
+            "decision_id": "example-game:r12:regular:1",
+            "grant_id": null,
+            "card_instance_id": "a2-loom-0"
+          },
+          {
+            "event_id": "event-regular-2",
+            "kind": "regular_applied",
+            "actor": 2,
+            "decision_id": "example-game:r12:regular:2",
+            "grant_id": null,
+            "card_instance_id": "a2-stables-0"
+          },
+          {
+            "event_id": "event-leftover-0",
+            "kind": "automatic_discard",
+            "actor": 0,
+            "decision_id": null,
+            "grant_id": null,
+            "card_instance_id": "a2-glassworks-0"
+          },
+          {
+            "event_id": "event-leftover-1",
+            "kind": "automatic_discard",
+            "actor": 1,
+            "decision_id": null,
+            "grant_id": null,
+            "card_instance_id": "a2-press-0"
+          },
+          {
+            "event_id": "event-discard-1",
+            "kind": "discard_build_applied",
+            "actor": 1,
+            "decision_id": "example-game:r12:discard:0",
+            "grant_id": "example-game:grant:halikarnassos:1:stage1",
+            "card_instance_id": "a2-aqueduct-0"
+          }
+        ],
+        "result": null
+      }
+    },
+    {
+      "id": "R-replay",
+      "kind": "request",
+      "payload": {
+        "protocol_version": 3,
+        "game_id": "example-game",
+        "request_id": "req-discard",
+        "actor": 1,
+        "decision_id": "example-game:r12:discard:0",
+        "offered_revision": 102,
+        "action": {
+          "kind": "build_discard_free",
+          "option_id": "dc-aqueduct",
+          "card_instance_id": "a2-aqueduct-0"
+        }
+      },
+      "against_status": "S-after-discard",
+      "note": "Exact retransmission; return stored applied receipt without any new effect or revision."
+    },
+    {
+      "id": "A-replay",
+      "kind": "receipt_fragment",
+      "payload": {
+        "request_id": "req-discard",
+        "decision_id": "example-game:r12:discard:0",
+        "actor": 1,
+        "status": "applied",
+        "code": null,
+        "recorded_revision": 103,
+        "effect_event_id": "event-discard-1"
+      }
+    },
+    {
+      "id": "S-seventh",
+      "kind": "status",
+      "payload": {
+        "protocol_version": 3,
+        "contract_id": "decision-v1-draft",
+        "game_id": "example-game",
+        "revision": 104,
+        "engine": {
+          "release": "unreleased-protocol3-proposal",
+          "ruleset": "bga-second-edition-development",
+          "source_commit": "example-future-commit",
+          "second_edition_implemented": false,
+          "capabilities": [
+            "regular_options_v1",
+            "discard_choice_v1",
+            "simultaneous_settlement_v1"
+          ]
+        },
+        "game": {
+          "turn": 13,
+          "age": 2,
+          "round_in_age": 7,
+          "round_kind": "seventh",
+          "phase": "collect_actions",
+          "resolution_id": "example-game:r13",
+          "snapshot_id": "example-game:r13:base",
+          "scores_final": false
+        },
+        "waiting_for": [
+          2
+        ],
+        "decisions": [
+          {
+            "decision_id": "example-game:r13:seventh:2",
+            "actor": 2,
+            "kind": "seventh",
+            "offered_revision": 104,
+            "snapshot_id": "example-game:r13:base",
+            "source_grant_id": null,
+            "can_skip": false,
+            "timeout_ms": null,
+            "options": [
+              {
+                "option_id": "r13-build-library",
+                "kind": "build_structure",
+                "card": {
+                  "instance_id": "a2-library-0",
+                  "type_id": 59,
+                  "age": 2,
+                  "name": "Library"
+                },
+                "payment": {
+                  "bank": 0,
+                  "to_seats": {
+                    "0": 0,
+                    "1": 0,
+                    "2": 0
+                  }
+                },
+                "free_source": null,
+                "selectable": true,
+                "reason": null
+              }
+            ]
+          }
+        ],
+        "players": {
+          "0": {
+            "resources": {
+              "coins": 4
+            },
+            "neighbors": {
+              "left": 2,
+              "right": 1
+            },
+            "wonder_id": 0,
+            "wonder_stage": 0,
+            "hand_cards": [],
+            "built_cards": [],
+            "available_abilities": []
+          },
+          "1": {
+            "resources": {
+              "coins": 2
+            },
+            "neighbors": {
+              "left": 0,
+              "right": 2
+            },
+            "wonder_id": 13,
+            "wonder_stage": 1,
+            "hand_cards": [],
+            "built_cards": [
+              {
+                "instance_id": "a1-press-0",
+                "type_id": 17,
+                "age": 1,
+                "name": "Press"
+              },
+              {
+                "instance_id": "a2-aqueduct-0",
+                "type_id": 25,
+                "age": 2,
+                "name": "Aqueduct"
+              }
+            ],
+            "available_abilities": []
+          },
+          "2": {
+            "resources": {
+              "coins": 2
+            },
+            "neighbors": {
+              "left": 1,
+              "right": 0
+            },
+            "wonder_id": 8,
+            "wonder_stage": 1,
+            "hand_cards": [
+              {
+                "instance_id": "a2-library-0",
+                "type_id": 59,
+                "age": 2,
+                "name": "Library"
+              }
+            ],
+            "built_cards": [],
+            "available_abilities": [
+              {
+                "code": "play_seventh_card",
+                "availability": "decision"
+              }
+            ]
+          }
+        },
+        "discard_count": 3,
+        "grants": [
+          {
+            "grant_id": "example-game:grant:halikarnassos:1:stage1",
+            "actor": 1,
+            "source": {
+              "kind": "wonder_stage",
+              "wonder_id": 13,
+              "stage": 1,
+              "event_id": "event-regular-1"
+            },
+            "resolution_id": "example-game:r12",
+            "status": "consumed_build",
+            "effect_event_id": "event-discard-1"
+          }
+        ],
+        "receipts": [
+          {
+            "request_id": "req-regular-0",
+            "decision_id": "example-game:r12:regular:0",
+            "actor": 0,
+            "status": "applied",
+            "code": null,
+            "recorded_revision": 102,
+            "effect_event_id": "event-regular-0"
+          },
+          {
+            "request_id": "req-regular-1",
+            "decision_id": "example-game:r12:regular:1",
+            "actor": 1,
+            "status": "applied",
+            "code": null,
+            "recorded_revision": 102,
+            "effect_event_id": "event-regular-1"
+          },
+          {
+            "request_id": "req-regular-2",
+            "decision_id": "example-game:r12:regular:2",
+            "actor": 2,
+            "status": "applied",
+            "code": null,
+            "recorded_revision": 102,
+            "effect_event_id": "event-regular-2"
+          },
+          {
+            "request_id": "req-discard",
+            "decision_id": "example-game:r12:discard:0",
+            "actor": 1,
+            "status": "applied",
+            "code": null,
+            "recorded_revision": 103,
+            "effect_event_id": "event-discard-1"
+          }
+        ],
+        "events": [
+          {
+            "event_id": "event-regular-0",
+            "kind": "regular_applied",
+            "actor": 0,
+            "decision_id": "example-game:r12:regular:0",
+            "grant_id": null,
+            "card_instance_id": "a2-aqueduct-0"
+          },
+          {
+            "event_id": "event-regular-1",
+            "kind": "regular_applied",
+            "actor": 1,
+            "decision_id": "example-game:r12:regular:1",
+            "grant_id": null,
+            "card_instance_id": "a2-loom-0"
+          },
+          {
+            "event_id": "event-regular-2",
+            "kind": "regular_applied",
+            "actor": 2,
+            "decision_id": "example-game:r12:regular:2",
+            "grant_id": null,
+            "card_instance_id": "a2-stables-0"
+          },
+          {
+            "event_id": "event-leftover-0",
+            "kind": "automatic_discard",
+            "actor": 0,
+            "decision_id": null,
+            "grant_id": null,
+            "card_instance_id": "a2-glassworks-0"
+          },
+          {
+            "event_id": "event-leftover-1",
+            "kind": "automatic_discard",
+            "actor": 1,
+            "decision_id": null,
+            "grant_id": null,
+            "card_instance_id": "a2-press-0"
+          },
+          {
+            "event_id": "event-discard-1",
+            "kind": "discard_build_applied",
+            "actor": 1,
+            "decision_id": "example-game:r12:discard:0",
+            "grant_id": "example-game:grant:halikarnassos:1:stage1",
+            "card_instance_id": "a2-aqueduct-0"
+          }
+        ],
+        "result": null
+      }
+    },
+    {
+      "id": "R-seventh",
+      "kind": "request",
+      "payload": {
+        "protocol_version": 3,
+        "game_id": "example-game",
+        "request_id": "req-seventh",
+        "actor": 2,
+        "decision_id": "example-game:r13:seventh:2",
+        "offered_revision": 104,
+        "action": {
+          "kind": "build_structure",
+          "option_id": "r13-build-library",
+          "card_instance_id": "a2-library-0"
+        }
+      },
+      "against_status": "S-seventh"
+    },
+    {
+      "id": "S-finished",
+      "kind": "status",
+      "payload": {
+        "protocol_version": 3,
+        "contract_id": "decision-v1-draft",
+        "game_id": "example-game",
+        "revision": 200,
+        "engine": {
+          "release": "unreleased-protocol3-proposal",
+          "ruleset": "bga-second-edition-development",
+          "source_commit": "example-future-commit",
+          "second_edition_implemented": false,
+          "capabilities": [
+            "regular_options_v1",
+            "discard_choice_v1",
+            "simultaneous_settlement_v1"
+          ]
+        },
+        "game": {
+          "turn": 21,
+          "age": 4,
+          "round_in_age": null,
+          "round_kind": null,
+          "phase": "finished",
+          "resolution_id": "example-game:r20",
+          "snapshot_id": "example-game:r20:base",
+          "scores_final": true
+        },
+        "waiting_for": [],
+        "decisions": [],
+        "players": {
+          "0": {
+            "resources": {
+              "coins": 4
+            },
+            "neighbors": {
+              "left": 2,
+              "right": 1
+            },
+            "wonder_id": 0,
+            "wonder_stage": 0,
+            "hand_cards": [],
+            "built_cards": [],
+            "available_abilities": [],
+            "points": {
+              "total": 1
+            }
+          },
+          "1": {
+            "resources": {
+              "coins": 2
+            },
+            "neighbors": {
+              "left": 0,
+              "right": 2
+            },
+            "wonder_id": 13,
+            "wonder_stage": 1,
+            "hand_cards": [],
+            "built_cards": [
+              {
+                "instance_id": "a1-press-0",
+                "type_id": 17,
+                "age": 1,
+                "name": "Press"
+              },
+              {
+                "instance_id": "a2-aqueduct-0",
+                "type_id": 25,
+                "age": 2,
+                "name": "Aqueduct"
+              }
+            ],
+            "available_abilities": [],
+            "points": {
+              "total": 7
+            }
+          },
+          "2": {
+            "resources": {
+              "coins": 2
+            },
+            "neighbors": {
+              "left": 1,
+              "right": 0
+            },
+            "wonder_id": 8,
+            "wonder_stage": 1,
+            "hand_cards": [],
+            "built_cards": [
+              {
+                "instance_id": "a2-library-0",
+                "type_id": 59,
+                "age": 2,
+                "name": "Library"
+              }
+            ],
+            "available_abilities": [],
+            "points": {
+              "total": 1
+            }
+          }
+        },
+        "discard_count": 3,
+        "grants": [
+          {
+            "grant_id": "example-game:grant:halikarnassos:1:stage1",
+            "actor": 1,
+            "source": {
+              "kind": "wonder_stage",
+              "wonder_id": 13,
+              "stage": 1,
+              "event_id": "event-regular-1"
+            },
+            "resolution_id": "example-game:r12",
+            "status": "consumed_build",
+            "effect_event_id": "event-discard-1"
+          }
+        ],
+        "receipts": [
+          {
+            "request_id": "req-regular-0",
+            "decision_id": "example-game:r12:regular:0",
+            "actor": 0,
+            "status": "applied",
+            "code": null,
+            "recorded_revision": 102,
+            "effect_event_id": "event-regular-0"
+          },
+          {
+            "request_id": "req-regular-1",
+            "decision_id": "example-game:r12:regular:1",
+            "actor": 1,
+            "status": "applied",
+            "code": null,
+            "recorded_revision": 102,
+            "effect_event_id": "event-regular-1"
+          },
+          {
+            "request_id": "req-regular-2",
+            "decision_id": "example-game:r12:regular:2",
+            "actor": 2,
+            "status": "applied",
+            "code": null,
+            "recorded_revision": 102,
+            "effect_event_id": "event-regular-2"
+          },
+          {
+            "request_id": "req-discard",
+            "decision_id": "example-game:r12:discard:0",
+            "actor": 1,
+            "status": "applied",
+            "code": null,
+            "recorded_revision": 103,
+            "effect_event_id": "event-discard-1"
+          },
+          {
+            "request_id": "req-seventh",
+            "decision_id": "example-game:r13:seventh:2",
+            "actor": 2,
+            "status": "applied",
+            "code": null,
+            "recorded_revision": 105,
+            "effect_event_id": "event-seventh"
+          }
+        ],
+        "events": [
+          {
+            "event_id": "event-regular-0",
+            "kind": "regular_applied",
+            "actor": 0,
+            "decision_id": "example-game:r12:regular:0",
+            "grant_id": null,
+            "card_instance_id": "a2-aqueduct-0"
+          },
+          {
+            "event_id": "event-regular-1",
+            "kind": "regular_applied",
+            "actor": 1,
+            "decision_id": "example-game:r12:regular:1",
+            "grant_id": null,
+            "card_instance_id": "a2-loom-0"
+          },
+          {
+            "event_id": "event-regular-2",
+            "kind": "regular_applied",
+            "actor": 2,
+            "decision_id": "example-game:r12:regular:2",
+            "grant_id": null,
+            "card_instance_id": "a2-stables-0"
+          },
+          {
+            "event_id": "event-leftover-0",
+            "kind": "automatic_discard",
+            "actor": 0,
+            "decision_id": null,
+            "grant_id": null,
+            "card_instance_id": "a2-glassworks-0"
+          },
+          {
+            "event_id": "event-leftover-1",
+            "kind": "automatic_discard",
+            "actor": 1,
+            "decision_id": null,
+            "grant_id": null,
+            "card_instance_id": "a2-press-0"
+          },
+          {
+            "event_id": "event-discard-1",
+            "kind": "discard_build_applied",
+            "actor": 1,
+            "decision_id": "example-game:r12:discard:0",
+            "grant_id": "example-game:grant:halikarnassos:1:stage1",
+            "card_instance_id": "a2-aqueduct-0"
+          },
+          {
+            "event_id": "event-seventh",
+            "kind": "regular_applied",
+            "actor": 2,
+            "decision_id": "example-game:r13:seventh:2",
+            "grant_id": null,
+            "card_instance_id": "a2-library-0"
+          }
+        ],
+        "result": {
+          "totals": {
+            "0": 1,
+            "1": 7,
+            "2": 1
+          }
+        }
+      },
+      "note": "Separate terminal-envelope example after remaining play is omitted; not adjacent to S-seventh."
+    },
+    {
+      "id": "S-timed-discard",
+      "kind": "status",
+      "payload": {
+        "protocol_version": 3,
+        "contract_id": "decision-v1-draft",
+        "game_id": "example-game",
+        "revision": 102,
+        "engine": {
+          "release": "unreleased-protocol3-proposal",
+          "ruleset": "bga-second-edition-development",
+          "source_commit": "example-future-commit",
+          "second_edition_implemented": false,
+          "capabilities": [
+            "regular_options_v1",
+            "discard_choice_v1",
+            "simultaneous_settlement_v1"
+          ]
+        },
+        "game": {
+          "turn": 12,
+          "age": 2,
+          "round_in_age": 6,
+          "round_kind": "regular",
+          "phase": "discard_choice",
+          "resolution_id": "example-game:r12",
+          "snapshot_id": "example-game:r12:base",
+          "scores_final": false
+        },
+        "waiting_for": [
+          1
+        ],
+        "decisions": [
+          {
+            "decision_id": "example-game:r12:discard:0",
+            "actor": 1,
+            "kind": "discard",
+            "offered_revision": 102,
+            "snapshot_id": "example-game:r12:choice0",
+            "source_grant_id": "example-game:grant:halikarnassos:1:stage1",
+            "can_skip": false,
+            "timeout_ms": 10000,
+            "options": [
+              {
+                "option_id": "dc-aqueduct",
+                "kind": "build_discard_free",
+                "card": {
+                  "instance_id": "a2-aqueduct-0",
+                  "type_id": 25,
+                  "age": 2,
+                  "name": "Aqueduct"
+                },
+                "payment": {
+                  "bank": 0,
+                  "to_seats": {
+                    "0": 0,
+                    "1": 0,
+                    "2": 0
+                  }
+                },
+                "free_source": "discard_grant",
+                "selectable": true,
+                "reason": null
+              },
+              {
+                "option_id": "dc-baths",
+                "kind": "build_discard_free",
+                "card": {
+                  "instance_id": "a1-baths-0",
+                  "type_id": 21,
+                  "age": 1,
+                  "name": "Baths"
+                },
+                "payment": {
+                  "bank": 0,
+                  "to_seats": {
+                    "0": 0,
+                    "1": 0,
+                    "2": 0
+                  }
+                },
+                "free_source": "discard_grant",
+                "selectable": true,
+                "reason": null
+              },
+              {
+                "option_id": "dc-glass",
+                "kind": "build_discard_free",
+                "card": {
+                  "instance_id": "a2-glassworks-0",
+                  "type_id": 16,
+                  "age": 2,
+                  "name": "Glassworks"
+                },
+                "payment": {
+                  "bank": 0,
+                  "to_seats": {
+                    "0": 0,
+                    "1": 0,
+                    "2": 0
+                  }
+                },
+                "free_source": "discard_grant",
+                "selectable": true,
+                "reason": null
+              },
+              {
+                "option_id": "dc-press",
+                "kind": "build_discard_free",
+                "card": {
+                  "instance_id": "a2-press-0",
+                  "type_id": 17,
+                  "age": 2,
+                  "name": "Press"
+                },
+                "payment": {
+                  "bank": 0,
+                  "to_seats": {
+                    "0": 0,
+                    "1": 0,
+                    "2": 0
+                  }
+                },
+                "free_source": "discard_grant",
+                "selectable": false,
+                "reason": "duplicate_in_city"
+              }
+            ]
+          }
+        ],
+        "players": {
+          "0": {
+            "resources": {
+              "coins": 4
+            },
+            "neighbors": {
+              "left": 2,
+              "right": 1
+            },
+            "wonder_id": 0,
+            "wonder_stage": 0,
+            "hand_cards": [],
+            "built_cards": [],
+            "available_abilities": []
+          },
+          "1": {
+            "resources": {
+              "coins": 2
+            },
+            "neighbors": {
+              "left": 0,
+              "right": 2
+            },
+            "wonder_id": 13,
+            "wonder_stage": 1,
+            "hand_cards": [],
+            "built_cards": [
+              {
+                "instance_id": "a1-press-0",
+                "type_id": 17,
+                "age": 1,
+                "name": "Press"
+              }
+            ],
+            "available_abilities": [
+              {
+                "code": "discard_build_for_free",
+                "availability": "decision",
+                "grant_id": "example-game:grant:halikarnassos:1:stage1"
+              }
+            ]
+          },
+          "2": {
+            "resources": {
+              "coins": 2
+            },
+            "neighbors": {
+              "left": 1,
+              "right": 0
+            },
+            "wonder_id": 8,
+            "wonder_stage": 1,
+            "hand_cards": [
+              {
+                "instance_id": "a2-library-0",
+                "type_id": 59,
+                "age": 2,
+                "name": "Library"
+              }
+            ],
+            "built_cards": [],
+            "available_abilities": [
+              {
+                "code": "play_seventh_card",
+                "availability": "next_round"
+              }
+            ]
+          }
+        },
+        "discard_count": 4,
+        "grants": [
+          {
+            "grant_id": "example-game:grant:halikarnassos:1:stage1",
+            "actor": 1,
+            "source": {
+              "kind": "wonder_stage",
+              "wonder_id": 13,
+              "stage": 1,
+              "event_id": "event-regular-1"
+            },
+            "resolution_id": "example-game:r12",
+            "status": "active",
+            "effect_event_id": null
+          }
+        ],
+        "receipts": [
+          {
+            "request_id": "req-regular-0",
+            "decision_id": "example-game:r12:regular:0",
+            "actor": 0,
+            "status": "applied",
+            "code": null,
+            "recorded_revision": 102,
+            "effect_event_id": "event-regular-0"
+          },
+          {
+            "request_id": "req-regular-1",
+            "decision_id": "example-game:r12:regular:1",
+            "actor": 1,
+            "status": "applied",
+            "code": null,
+            "recorded_revision": 102,
+            "effect_event_id": "event-regular-1"
+          },
+          {
+            "request_id": "req-regular-2",
+            "decision_id": "example-game:r12:regular:2",
+            "actor": 2,
+            "status": "applied",
+            "code": null,
+            "recorded_revision": 102,
+            "effect_event_id": "event-regular-2"
+          }
+        ],
+        "events": [
+          {
+            "event_id": "event-regular-0",
+            "kind": "regular_applied",
+            "actor": 0,
+            "decision_id": "example-game:r12:regular:0",
+            "grant_id": null,
+            "card_instance_id": "a2-aqueduct-0"
+          },
+          {
+            "event_id": "event-regular-1",
+            "kind": "regular_applied",
+            "actor": 1,
+            "decision_id": "example-game:r12:regular:1",
+            "grant_id": null,
+            "card_instance_id": "a2-loom-0"
+          },
+          {
+            "event_id": "event-regular-2",
+            "kind": "regular_applied",
+            "actor": 2,
+            "decision_id": "example-game:r12:regular:2",
+            "grant_id": null,
+            "card_instance_id": "a2-stables-0"
+          },
+          {
+            "event_id": "event-leftover-0",
+            "kind": "automatic_discard",
+            "actor": 0,
+            "decision_id": null,
+            "grant_id": null,
+            "card_instance_id": "a2-glassworks-0"
+          },
+          {
+            "event_id": "event-leftover-1",
+            "kind": "automatic_discard",
+            "actor": 1,
+            "decision_id": null,
+            "grant_id": null,
+            "card_instance_id": "a2-press-0"
+          }
+        ],
+        "result": null
+      },
+      "note": "Independent timeout fixture: same offer as S-discard but configured with a 10000 ms deadline from publication."
+    },
+    {
+      "id": "S-timeout",
+      "kind": "status",
+      "payload": {
+        "protocol_version": 3,
+        "contract_id": "decision-v1-draft",
+        "game_id": "example-game",
+        "revision": 103,
+        "engine": {
+          "release": "unreleased-protocol3-proposal",
+          "ruleset": "bga-second-edition-development",
+          "source_commit": "example-future-commit",
+          "second_edition_implemented": false,
+          "capabilities": [
+            "regular_options_v1",
+            "discard_choice_v1",
+            "simultaneous_settlement_v1"
+          ]
+        },
+        "game": {
+          "turn": 12,
+          "age": 2,
+          "round_in_age": 6,
+          "round_kind": "regular",
+          "phase": "aborted",
+          "resolution_id": "example-game:r12",
+          "snapshot_id": "example-game:r12:base",
+          "scores_final": false
+        },
+        "waiting_for": [],
+        "decisions": [],
+        "players": {
+          "0": {
+            "resources": {
+              "coins": 4
+            },
+            "neighbors": {
+              "left": 2,
+              "right": 1
+            },
+            "wonder_id": 0,
+            "wonder_stage": 0,
+            "hand_cards": [],
+            "built_cards": [],
+            "available_abilities": []
+          },
+          "1": {
+            "resources": {
+              "coins": 2
+            },
+            "neighbors": {
+              "left": 0,
+              "right": 2
+            },
+            "wonder_id": 13,
+            "wonder_stage": 1,
+            "hand_cards": [],
+            "built_cards": [
+              {
+                "instance_id": "a1-press-0",
+                "type_id": 17,
+                "age": 1,
+                "name": "Press"
+              }
+            ],
+            "available_abilities": []
+          },
+          "2": {
+            "resources": {
+              "coins": 2
+            },
+            "neighbors": {
+              "left": 1,
+              "right": 0
+            },
+            "wonder_id": 8,
+            "wonder_stage": 1,
+            "hand_cards": [
+              {
+                "instance_id": "a2-library-0",
+                "type_id": 59,
+                "age": 2,
+                "name": "Library"
+              }
+            ],
+            "built_cards": [],
+            "available_abilities": [
+              {
+                "code": "play_seventh_card",
+                "availability": "next_round"
+              }
+            ]
+          }
+        },
+        "discard_count": 4,
+        "grants": [
+          {
+            "grant_id": "example-game:grant:halikarnassos:1:stage1",
+            "actor": 1,
+            "source": {
+              "kind": "wonder_stage",
+              "wonder_id": 13,
+              "stage": 1,
+              "event_id": "event-regular-1"
+            },
+            "resolution_id": "example-game:r12",
+            "status": "cancelled_abort",
+            "effect_event_id": null
+          }
+        ],
+        "receipts": [
+          {
+            "request_id": "req-regular-0",
+            "decision_id": "example-game:r12:regular:0",
+            "actor": 0,
+            "status": "applied",
+            "code": null,
+            "recorded_revision": 102,
+            "effect_event_id": "event-regular-0"
+          },
+          {
+            "request_id": "req-regular-1",
+            "decision_id": "example-game:r12:regular:1",
+            "actor": 1,
+            "status": "applied",
+            "code": null,
+            "recorded_revision": 102,
+            "effect_event_id": "event-regular-1"
+          },
+          {
+            "request_id": "req-regular-2",
+            "decision_id": "example-game:r12:regular:2",
+            "actor": 2,
+            "status": "applied",
+            "code": null,
+            "recorded_revision": 102,
+            "effect_event_id": "event-regular-2"
+          },
+          {
+            "request_id": null,
+            "decision_id": "example-game:r12:discard:0",
+            "actor": 1,
+            "status": "cancelled",
+            "code": "decision_timeout",
+            "recorded_revision": 103,
+            "effect_event_id": "event-timeout"
+          }
+        ],
+        "events": [
+          {
+            "event_id": "event-regular-0",
+            "kind": "regular_applied",
+            "actor": 0,
+            "decision_id": "example-game:r12:regular:0",
+            "grant_id": null,
+            "card_instance_id": "a2-aqueduct-0"
+          },
+          {
+            "event_id": "event-regular-1",
+            "kind": "regular_applied",
+            "actor": 1,
+            "decision_id": "example-game:r12:regular:1",
+            "grant_id": null,
+            "card_instance_id": "a2-loom-0"
+          },
+          {
+            "event_id": "event-regular-2",
+            "kind": "regular_applied",
+            "actor": 2,
+            "decision_id": "example-game:r12:regular:2",
+            "grant_id": null,
+            "card_instance_id": "a2-stables-0"
+          },
+          {
+            "event_id": "event-leftover-0",
+            "kind": "automatic_discard",
+            "actor": 0,
+            "decision_id": null,
+            "grant_id": null,
+            "card_instance_id": "a2-glassworks-0"
+          },
+          {
+            "event_id": "event-leftover-1",
+            "kind": "automatic_discard",
+            "actor": 1,
+            "decision_id": null,
+            "grant_id": null,
+            "card_instance_id": "a2-press-0"
+          },
+          {
+            "event_id": "event-timeout",
+            "kind": "game_aborted",
+            "actor": null,
+            "decision_id": "example-game:r12:discard:0",
+            "grant_id": null,
+            "card_instance_id": null
+          }
+        ],
+        "result": null,
+        "abort_reason": "decision_timeout"
+      },
+      "note": "Alternative branch from S-timed-discard after its deadline expires."
+    },
+    {
+      "id": "R-abort",
+      "kind": "control_request",
+      "payload": {
+        "protocol_version": 3,
+        "game_id": "example-game",
+        "request_id": "req-abort",
+        "control": "abort_game",
+        "reason": "window_closed"
+      },
+      "against_status": "S-discard"
+    },
+    {
+      "id": "S-aborted",
+      "kind": "status",
+      "payload": {
+        "protocol_version": 3,
+        "contract_id": "decision-v1-draft",
+        "game_id": "example-game",
+        "revision": 103,
+        "engine": {
+          "release": "unreleased-protocol3-proposal",
+          "ruleset": "bga-second-edition-development",
+          "source_commit": "example-future-commit",
+          "second_edition_implemented": false,
+          "capabilities": [
+            "regular_options_v1",
+            "discard_choice_v1",
+            "simultaneous_settlement_v1"
+          ]
+        },
+        "game": {
+          "turn": 12,
+          "age": 2,
+          "round_in_age": 6,
+          "round_kind": "regular",
+          "phase": "aborted",
+          "resolution_id": "example-game:r12",
+          "snapshot_id": "example-game:r12:base",
+          "scores_final": false
+        },
+        "waiting_for": [],
+        "decisions": [],
+        "players": {
+          "0": {
+            "resources": {
+              "coins": 4
+            },
+            "neighbors": {
+              "left": 2,
+              "right": 1
+            },
+            "wonder_id": 0,
+            "wonder_stage": 0,
+            "hand_cards": [],
+            "built_cards": [],
+            "available_abilities": []
+          },
+          "1": {
+            "resources": {
+              "coins": 2
+            },
+            "neighbors": {
+              "left": 0,
+              "right": 2
+            },
+            "wonder_id": 13,
+            "wonder_stage": 1,
+            "hand_cards": [],
+            "built_cards": [
+              {
+                "instance_id": "a1-press-0",
+                "type_id": 17,
+                "age": 1,
+                "name": "Press"
+              }
+            ],
+            "available_abilities": []
+          },
+          "2": {
+            "resources": {
+              "coins": 2
+            },
+            "neighbors": {
+              "left": 1,
+              "right": 0
+            },
+            "wonder_id": 8,
+            "wonder_stage": 1,
+            "hand_cards": [
+              {
+                "instance_id": "a2-library-0",
+                "type_id": 59,
+                "age": 2,
+                "name": "Library"
+              }
+            ],
+            "built_cards": [],
+            "available_abilities": [
+              {
+                "code": "play_seventh_card",
+                "availability": "next_round"
+              }
+            ]
+          }
+        },
+        "discard_count": 4,
+        "grants": [
+          {
+            "grant_id": "example-game:grant:halikarnassos:1:stage1",
+            "actor": 1,
+            "source": {
+              "kind": "wonder_stage",
+              "wonder_id": 13,
+              "stage": 1,
+              "event_id": "event-regular-1"
+            },
+            "resolution_id": "example-game:r12",
+            "status": "cancelled_abort",
+            "effect_event_id": null
+          }
+        ],
+        "receipts": [
+          {
+            "request_id": "req-regular-0",
+            "decision_id": "example-game:r12:regular:0",
+            "actor": 0,
+            "status": "applied",
+            "code": null,
+            "recorded_revision": 102,
+            "effect_event_id": "event-regular-0"
+          },
+          {
+            "request_id": "req-regular-1",
+            "decision_id": "example-game:r12:regular:1",
+            "actor": 1,
+            "status": "applied",
+            "code": null,
+            "recorded_revision": 102,
+            "effect_event_id": "event-regular-1"
+          },
+          {
+            "request_id": "req-regular-2",
+            "decision_id": "example-game:r12:regular:2",
+            "actor": 2,
+            "status": "applied",
+            "code": null,
+            "recorded_revision": 102,
+            "effect_event_id": "event-regular-2"
+          },
+          {
+            "request_id": null,
+            "decision_id": "example-game:r12:discard:0",
+            "actor": 1,
+            "status": "cancelled",
+            "code": "window_closed",
+            "recorded_revision": 103,
+            "effect_event_id": "event-abort"
+          },
+          {
+            "request_id": "req-abort",
+            "decision_id": null,
+            "actor": null,
+            "status": "applied",
+            "code": null,
+            "recorded_revision": 103,
+            "effect_event_id": "event-abort"
+          }
+        ],
+        "events": [
+          {
+            "event_id": "event-regular-0",
+            "kind": "regular_applied",
+            "actor": 0,
+            "decision_id": "example-game:r12:regular:0",
+            "grant_id": null,
+            "card_instance_id": "a2-aqueduct-0"
+          },
+          {
+            "event_id": "event-regular-1",
+            "kind": "regular_applied",
+            "actor": 1,
+            "decision_id": "example-game:r12:regular:1",
+            "grant_id": null,
+            "card_instance_id": "a2-loom-0"
+          },
+          {
+            "event_id": "event-regular-2",
+            "kind": "regular_applied",
+            "actor": 2,
+            "decision_id": "example-game:r12:regular:2",
+            "grant_id": null,
+            "card_instance_id": "a2-stables-0"
+          },
+          {
+            "event_id": "event-leftover-0",
+            "kind": "automatic_discard",
+            "actor": 0,
+            "decision_id": null,
+            "grant_id": null,
+            "card_instance_id": "a2-glassworks-0"
+          },
+          {
+            "event_id": "event-leftover-1",
+            "kind": "automatic_discard",
+            "actor": 1,
+            "decision_id": null,
+            "grant_id": null,
+            "card_instance_id": "a2-press-0"
+          },
+          {
+            "event_id": "event-abort",
+            "kind": "game_aborted",
+            "actor": null,
+            "decision_id": null,
+            "grant_id": null,
+            "card_instance_id": null
+          }
+        ],
+        "result": null,
+        "abort_reason": "window_closed"
+      },
+      "note": "Alternative branch: explicit coordinator abort after ordinary commit."
+    },
+    {
+      "id": "S-no-options",
+      "kind": "status",
+      "payload": {
+        "protocol_version": 3,
+        "contract_id": "decision-v1-draft",
+        "game_id": "example-game",
+        "revision": 103,
+        "engine": {
+          "release": "unreleased-protocol3-proposal",
+          "ruleset": "bga-second-edition-development",
+          "source_commit": "example-future-commit",
+          "second_edition_implemented": false,
+          "capabilities": [
+            "regular_options_v1",
+            "discard_choice_v1",
+            "simultaneous_settlement_v1"
+          ]
+        },
+        "game": {
+          "turn": 12,
+          "age": 2,
+          "round_in_age": 6,
+          "round_kind": "regular",
+          "phase": "advance",
+          "resolution_id": "example-game:r12",
+          "snapshot_id": "example-game:r12:base",
+          "scores_final": false
+        },
+        "waiting_for": [],
+        "decisions": [],
+        "players": {
+          "0": {
+            "resources": {
+              "coins": 4
+            },
+            "neighbors": {
+              "left": 2,
+              "right": 1
+            },
+            "wonder_id": 0,
+            "wonder_stage": 0,
+            "hand_cards": [],
+            "built_cards": [],
+            "available_abilities": []
+          },
+          "1": {
+            "resources": {
+              "coins": 2
+            },
+            "neighbors": {
+              "left": 0,
+              "right": 2
+            },
+            "wonder_id": 13,
+            "wonder_stage": 1,
+            "hand_cards": [],
+            "built_cards": [
+              {
+                "instance_id": "a1-press-0",
+                "type_id": 17,
+                "age": 1,
+                "name": "Press"
+              }
+            ],
+            "available_abilities": []
+          },
+          "2": {
+            "resources": {
+              "coins": 2
+            },
+            "neighbors": {
+              "left": 1,
+              "right": 0
+            },
+            "wonder_id": 8,
+            "wonder_stage": 1,
+            "hand_cards": [
+              {
+                "instance_id": "a2-library-0",
+                "type_id": 59,
+                "age": 2,
+                "name": "Library"
+              }
+            ],
+            "built_cards": [],
+            "available_abilities": [
+              {
+                "code": "play_seventh_card",
+                "availability": "next_round"
+              }
+            ]
+          }
+        },
+        "discard_count": 1,
+        "grants": [
+          {
+            "grant_id": "example-game:grant:halikarnassos:1:stage1",
+            "actor": 1,
+            "source": {
+              "kind": "wonder_stage",
+              "wonder_id": 13,
+              "stage": 1,
+              "event_id": "event-regular-1"
+            },
+            "resolution_id": "example-game:r12",
+            "status": "consumed_no_options",
+            "effect_event_id": "event-empty"
+          }
+        ],
+        "receipts": [
+          {
+            "request_id": "req-regular-1",
+            "decision_id": "example-game:r12:regular:1",
+            "actor": 1,
+            "status": "applied",
+            "code": null,
+            "recorded_revision": 102,
+            "effect_event_id": "event-regular-1"
+          },
+          {
+            "request_id": null,
+            "decision_id": "example-game:r12:discard:0",
+            "actor": 1,
+            "status": "skipped_no_options",
+            "code": null,
+            "recorded_revision": 103,
+            "effect_event_id": "event-empty"
+          }
+        ],
+        "events": [
+          {
+            "event_id": "event-regular-1",
+            "kind": "regular_applied",
+            "actor": 1,
+            "decision_id": "example-game:r12:regular:1",
+            "grant_id": null,
+            "card_instance_id": "a2-loom-0"
+          },
+          {
+            "event_id": "event-empty",
+            "kind": "grant_no_options",
+            "actor": 1,
+            "decision_id": "example-game:r12:discard:0",
+            "grant_id": "example-game:grant:halikarnassos:1:stage1",
+            "card_instance_id": null
+          }
+        ],
+        "result": null
+      },
+      "note": "Independent fixture: different regular inputs leave only the unbuildable Press duplicate. Its source-stage event and automatic receipt are shown; the main-trace sale/remainder events do not apply."
+    },
+    {
+      "id": "R-error-stale",
+      "kind": "request",
+      "payload": {
+        "protocol_version": 3,
+        "game_id": "example-game",
+        "request_id": "req-error-stale",
+        "actor": 1,
+        "decision_id": "example-game:r12:discard:0",
+        "offered_revision": 101,
+        "action": {
+          "kind": "build_discard_free",
+          "option_id": "dc-aqueduct",
+          "card_instance_id": "a2-aqueduct-0"
+        }
+      },
+      "against_status": "S-discard"
+    },
+    {
+      "id": "A-error-stale",
+      "kind": "receipt_fragment",
+      "payload": {
+        "request_id": "req-error-stale",
+        "decision_id": "example-game:r12:discard:0",
+        "actor": 1,
+        "status": "rejected",
+        "code": "stale_offer",
+        "recorded_revision": 103,
+        "effect_event_id": null
+      },
+      "note": "World, pile, hand and grant state unchanged; a rejection may publish a newer revision."
+    },
+    {
+      "id": "R-error-actor",
+      "kind": "request",
+      "payload": {
+        "protocol_version": 3,
+        "game_id": "example-game",
+        "request_id": "req-error-actor",
+        "actor": 0,
+        "decision_id": "example-game:r12:discard:0",
+        "offered_revision": 102,
+        "action": {
+          "kind": "build_discard_free",
+          "option_id": "dc-aqueduct",
+          "card_instance_id": "a2-aqueduct-0"
+        }
+      },
+      "against_status": "S-discard"
+    },
+    {
+      "id": "A-error-actor",
+      "kind": "receipt_fragment",
+      "payload": {
+        "request_id": "req-error-actor",
+        "decision_id": "example-game:r12:discard:0",
+        "actor": 0,
+        "status": "rejected",
+        "code": "wrong_actor",
+        "recorded_revision": 103,
+        "effect_event_id": null
+      },
+      "note": "World, pile, hand and grant state unchanged; a rejection may publish a newer revision."
+    },
+    {
+      "id": "R-error-game",
+      "kind": "request",
+      "payload": {
+        "protocol_version": 3,
+        "game_id": "older-game",
+        "request_id": "req-error-game",
+        "actor": 1,
+        "decision_id": "example-game:r12:discard:0",
+        "offered_revision": 102,
+        "action": {
+          "kind": "build_discard_free",
+          "option_id": "dc-aqueduct",
+          "card_instance_id": "a2-aqueduct-0"
+        }
+      },
+      "against_status": "S-discard"
+    },
+    {
+      "id": "A-error-game",
+      "kind": "receipt_fragment",
+      "payload": {
+        "request_id": "req-error-game",
+        "decision_id": "example-game:r12:discard:0",
+        "actor": 1,
+        "status": "rejected",
+        "code": "wrong_game",
+        "recorded_revision": 103,
+        "effect_event_id": null
+      },
+      "note": "World, pile, hand and grant state unchanged; a rejection may publish a newer revision."
+    },
+    {
+      "id": "R-error-closed",
+      "kind": "request",
+      "payload": {
+        "protocol_version": 3,
+        "game_id": "example-game",
+        "request_id": "req-error-closed",
+        "actor": 1,
+        "decision_id": "example-game:r12:discard:0",
+        "offered_revision": 102,
+        "action": {
+          "kind": "build_discard_free",
+          "option_id": "dc-aqueduct",
+          "card_instance_id": "a2-aqueduct-0"
+        }
+      },
+      "against_status": "S-after-discard"
+    },
+    {
+      "id": "A-error-closed",
+      "kind": "receipt_fragment",
+      "payload": {
+        "request_id": "req-error-closed",
+        "decision_id": "example-game:r12:discard:0",
+        "actor": 1,
+        "status": "rejected",
+        "code": "decision_closed",
+        "recorded_revision": 104,
+        "effect_event_id": null
+      },
+      "note": "World, pile, hand and grant state unchanged; a rejection may publish a newer revision."
+    },
+    {
+      "id": "R-error-conflict",
+      "kind": "request",
+      "payload": {
+        "protocol_version": 3,
+        "game_id": "example-game",
+        "request_id": "req-discard",
+        "actor": 1,
+        "decision_id": "example-game:r12:discard:0",
+        "offered_revision": 102,
+        "action": {
+          "kind": "build_discard_free",
+          "option_id": "dc-aqueduct",
+          "card_instance_id": "a2-glassworks-0"
+        }
+      },
+      "against_status": "S-after-discard"
+    },
+    {
+      "id": "A-error-conflict",
+      "kind": "receipt_fragment",
+      "payload": {
+        "request_id": "req-discard",
+        "decision_id": "example-game:r12:discard:0",
+        "actor": 1,
+        "status": "rejected",
+        "code": "request_id_conflict",
+        "recorded_revision": 104,
+        "effect_event_id": null
+      },
+      "note": "World, pile, hand and grant state unchanged; a rejection may publish a newer revision."
+    },
+    {
+      "id": "R-error-duplicate",
+      "kind": "request",
+      "payload": {
+        "protocol_version": 3,
+        "game_id": "example-game",
+        "request_id": "req-error-duplicate",
+        "actor": 1,
+        "decision_id": "example-game:r12:discard:0",
+        "offered_revision": 102,
+        "action": {
+          "kind": "build_discard_free",
+          "option_id": "dc-press",
+          "card_instance_id": "a2-press-0"
+        }
+      },
+      "against_status": "S-discard"
+    },
+    {
+      "id": "A-error-duplicate",
+      "kind": "receipt_fragment",
+      "payload": {
+        "request_id": "req-error-duplicate",
+        "decision_id": "example-game:r12:discard:0",
+        "actor": 1,
+        "status": "rejected",
+        "code": "duplicate_in_city",
+        "recorded_revision": 103,
+        "effect_event_id": null
+      }
+    },
+    {
+      "id": "B-regular",
+      "kind": "command_bundle",
+      "payload": {
+        "protocol_version": 3,
+        "game_id": "example-game",
+        "batch_id": "batch-regular",
+        "requests": [
+          {
+            "protocol_version": 3,
+            "game_id": "example-game",
+            "request_id": "req-regular-0",
+            "actor": 0,
+            "decision_id": "example-game:r12:regular:0",
+            "offered_revision": 100,
+            "action": {
+              "kind": "discard",
+              "option_id": "r12-s0-sell-aqueduct",
+              "card_instance_id": "a2-aqueduct-0"
+            }
+          },
+          {
+            "protocol_version": 3,
+            "game_id": "example-game",
+            "request_id": "req-regular-1",
+            "actor": 1,
+            "decision_id": "example-game:r12:regular:1",
+            "offered_revision": 100,
+            "action": {
+              "kind": "build_wonder",
+              "option_id": "r12-s1-build-stage",
+              "card_instance_id": "a2-loom-0"
+            }
+          },
+          {
+            "protocol_version": 3,
+            "game_id": "example-game",
+            "request_id": "req-regular-2",
+            "actor": 2,
+            "decision_id": "example-game:r12:regular:2",
+            "offered_revision": 100,
+            "action": {
+              "kind": "build_wonder",
+              "option_id": "r12-s2-build-stage",
+              "card_instance_id": "a2-stables-0"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "T-regular",
+      "kind": "ready_signal",
+      "payload": {
+        "protocol_version": 3,
+        "game_id": "example-game",
+        "batch_id": "batch-regular"
+      }
+    },
+    {
+      "id": "B-discard",
+      "kind": "command_bundle",
+      "payload": {
+        "protocol_version": 3,
+        "game_id": "example-game",
+        "batch_id": "batch-discard",
+        "requests": [
+          {
+            "protocol_version": 3,
+            "game_id": "example-game",
+            "request_id": "req-discard",
+            "actor": 1,
+            "decision_id": "example-game:r12:discard:0",
+            "offered_revision": 102,
+            "action": {
+              "kind": "build_discard_free",
+              "option_id": "dc-aqueduct",
+              "card_instance_id": "a2-aqueduct-0"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "T-discard",
+      "kind": "ready_signal",
+      "payload": {
+        "protocol_version": 3,
+        "game_id": "example-game",
+        "batch_id": "batch-discard"
+      }
+    }
+  ],
+  "acceptance_cases": [
+    {
+      "id": "D01",
+      "title": "Current-turn sale",
+      "preconditions": [
+        "ordinary sale of Aqueduct; Halikarnassos stage succeeds"
+      ],
+      "event": "open end-of-turn choice",
+      "expected": [
+        "Aqueduct offered by instance ID",
+        "no choice before all ordinary actions commit"
+      ],
+      "message_refs": [
+        "S-collect",
+        "S-discard"
+      ],
+      "status": "specified",
+      "rule_question": null
+    },
+    {
+      "id": "D02",
+      "title": "Sixth-card remainder",
+      "preconditions": [
+        "sixth regular turn; seat has no seventh-card right"
+      ],
+      "event": "classify remainder",
+      "expected": [
+        "remainder enters discard before end-of-turn choice",
+        "no sale coins for the remainder"
+      ],
+      "message_refs": [
+        "S-discard"
+      ],
+      "status": "specified",
+      "rule_question": null
+    },
+    {
+      "id": "D03",
+      "title": "Buried card excluded",
+      "preconditions": [
+        "a hand card constructs a wonder stage"
+      ],
+      "event": "publish discard choice",
+      "expected": [
+        "buried instance absent from pile and options",
+        "other hand cards never erased by discard index"
+      ],
+      "message_refs": [
+        "R-regular-1",
+        "S-discard"
+      ],
+      "status": "specified",
+      "rule_question": null
+    },
+    {
+      "id": "D04",
+      "title": "Duplicate type across ages",
+      "preconditions": [
+        "Press age I already built; Press age II in discard"
+      ],
+      "event": "choose Press age II",
+      "expected": [
+        "duplicate_in_city rejection",
+        "no mutation or grant consumption"
+      ],
+      "message_refs": [
+        "R-error-duplicate",
+        "A-error-duplicate"
+      ],
+      "status": "specified",
+      "rule_question": null
+    },
+    {
+      "id": "D05",
+      "title": "Physical copies",
+      "preconditions": [
+        "two distinct instances of one type are in a synthetic discard fixture"
+      ],
+      "event": "select one instance",
+      "expected": [
+        "exactly that instance leaves pile",
+        "other instance remains with the same ID"
+      ],
+      "message_refs": [],
+      "status": "specified",
+      "rule_question": null
+    },
+    {
+      "id": "D06",
+      "title": "Stale offer",
+      "preconditions": [
+        "open discard decision offered at revision 102"
+      ],
+      "event": "submit revision 101",
+      "expected": [
+        "stale_offer rejection",
+        "same grant remains active"
+      ],
+      "message_refs": [
+        "R-error-stale",
+        "A-error-stale"
+      ],
+      "status": "specified",
+      "rule_question": null
+    },
+    {
+      "id": "D07",
+      "title": "Wrong actor",
+      "preconditions": [
+        "discard decision belongs to seat 1"
+      ],
+      "event": "seat 0 submits",
+      "expected": [
+        "wrong_actor rejection",
+        "seat 1 retains its decision"
+      ],
+      "message_refs": [
+        "R-error-actor",
+        "A-error-actor"
+      ],
+      "status": "specified",
+      "rule_question": null
+    },
+    {
+      "id": "D08",
+      "title": "Identical replay",
+      "preconditions": [
+        "discard request already applied"
+      ],
+      "event": "resend exact request",
+      "expected": [
+        "same latest receipt",
+        "same card count, grant state, revision and effect event"
+      ],
+      "message_refs": [
+        "R-discard",
+        "R-replay",
+        "A-replay"
+      ],
+      "status": "specified",
+      "rule_question": null
+    },
+    {
+      "id": "D09",
+      "title": "Request identity conflict",
+      "preconditions": [
+        "req-discard already has stored content"
+      ],
+      "event": "reuse ID with another card",
+      "expected": [
+        "request_id_conflict",
+        "no second effect"
+      ],
+      "message_refs": [
+        "R-error-conflict",
+        "A-error-conflict"
+      ],
+      "status": "specified",
+      "rule_question": null
+    },
+    {
+      "id": "D10",
+      "title": "Closed decision with new request",
+      "preconditions": [
+        "discard decision already resolved"
+      ],
+      "event": "submit a new request ID for it",
+      "expected": [
+        "decision_closed",
+        "no remaining right reused"
+      ],
+      "message_refs": [
+        "R-error-closed",
+        "A-error-closed"
+      ],
+      "status": "specified",
+      "rule_question": null
+    },
+    {
+      "id": "D11",
+      "title": "Atomic failure",
+      "preconditions": [
+        "card in central pile and grant active"
+      ],
+      "event": "inject failure before commit",
+      "expected": [
+        "no hand/pile/city/coins/grant partial change",
+        "controlled resolution_error abort if internal invariant failed"
+      ],
+      "message_refs": [],
+      "status": "specified",
+      "rule_question": null
+    },
+    {
+      "id": "D12",
+      "title": "Empty discard",
+      "preconditions": [
+        "grant produced; discard is empty"
+      ],
+      "event": "resolve grant",
+      "expected": [
+        "automatic skipped_no_options",
+        "consumed_no_options exactly once",
+        "no invented coins or hand action"
+      ],
+      "message_refs": [],
+      "status": "specified",
+      "rule_question": null
+    },
+    {
+      "id": "D13",
+      "title": "Only duplicates",
+      "preconditions": [
+        "every discarded type already built by actor"
+      ],
+      "event": "recompute legal options",
+      "expected": [
+        "same no-options completion as empty pile",
+        "pile unchanged"
+      ],
+      "message_refs": [
+        "S-no-options"
+      ],
+      "status": "specified",
+      "rule_question": null
+    },
+    {
+      "id": "D14",
+      "title": "Optional decline",
+      "preconditions": [
+        "legal options exist"
+      ],
+      "event": "request skip",
+      "expected": [
+        "allowed only if explicitly offered with can_skip=true",
+        "otherwise rejected; no consumed grant"
+      ],
+      "message_refs": [],
+      "status": "conditional_on_rule_question",
+      "rule_question": "RQ-2"
+    },
+    {
+      "id": "D15",
+      "title": "Synthetic simultaneous grants",
+      "preconditions": [
+        "synthetic grants for seats 2 and 0, then two source events for seat 0"
+      ],
+      "event": "order queue",
+      "expected": [
+        "seat 0 before seat 2",
+        "within seat 0 source-event then effect-index order",
+        "not a claim of BGA expansion priority"
+      ],
+      "message_refs": [],
+      "status": "specified",
+      "rule_question": null
+    },
+    {
+      "id": "D16",
+      "title": "Refresh after preceding choice",
+      "preconditions": [
+        "two synthetic grants; first consumes instance X"
+      ],
+      "event": "open second choice",
+      "expected": [
+        "X absent",
+        "remaining instance IDs unchanged",
+        "old option IDs cannot select X again"
+      ],
+      "message_refs": [],
+      "status": "specified",
+      "rule_question": null
+    },
+    {
+      "id": "D17",
+      "title": "Fresh seventh-turn snapshot",
+      "preconditions": [
+        "Babylon right built on sixth regular turn; prior income and production now committed"
+      ],
+      "event": "finish all sixth-turn discard choices",
+      "expected": [
+        "new turn/snapshot for Babylon only",
+        "prior-turn resources and coins available",
+        "no early military conflict"
+      ],
+      "message_refs": [
+        "S-after-discard",
+        "S-seventh"
+      ],
+      "status": "specified",
+      "rule_question": null
+    },
+    {
+      "id": "D18",
+      "title": "No seventh-card actor",
+      "preconditions": [
+        "no eligible seat after sixth-turn queue"
+      ],
+      "event": "advance",
+      "expected": [
+        "skip seventh slot without input",
+        "next era or scoring after age_end",
+        "no fake RL action"
+      ],
+      "message_refs": [],
+      "status": "specified",
+      "rule_question": null
+    },
+    {
+      "id": "D19",
+      "title": "Last seventh-card grant",
+      "preconditions": [
+        "an age III seventh-card action triggers a discard choice in a controlled fixture"
+      ],
+      "event": "await choice",
+      "expected": [
+        "not finished",
+        "no final score or results.txt until grant closes"
+      ],
+      "message_refs": [],
+      "status": "specified",
+      "rule_question": null
+    },
+    {
+      "id": "D20",
+      "title": "Age/final barrier",
+      "preconditions": [
+        "all regular, remainder, seventh and grant work closed"
+      ],
+      "event": "age_end",
+      "expected": [
+        "military resolution once",
+        "finished only after age III end effects",
+        "result totals match player totals"
+      ],
+      "message_refs": [
+        "S-finished"
+      ],
+      "status": "specified",
+      "rule_question": null
+    },
+    {
+      "id": "D21",
+      "title": "Income cannot fund same turn",
+      "preconditions": [
+        "actor starts with 0 coins; another seat pays it 2 this turn; offered build costs 2"
+      ],
+      "event": "collect regular actions",
+      "expected": [
+        "build not offered",
+        "income added only by commit",
+        "no seat-order-dependent legality"
+      ],
+      "message_refs": [],
+      "status": "specified",
+      "rule_question": null
+    },
+    {
+      "id": "D22",
+      "title": "New producer cannot be bought",
+      "preconditions": [
+        "neighbor constructs Sawmill in same regular turn"
+      ],
+      "event": "quote buyer cost",
+      "expected": [
+        "new wood absent from all current purchase plans",
+        "available from following round snapshot"
+      ],
+      "message_refs": [],
+      "status": "specified",
+      "rule_question": null
+    },
+    {
+      "id": "D23",
+      "title": "New discount cannot finance source action",
+      "preconditions": [
+        "discount/free-build ability created by current action"
+      ],
+      "event": "quote current regular action",
+      "expected": [
+        "use only start-of-turn eligibility",
+        "new ability appears at correct later opportunity"
+      ],
+      "message_refs": [],
+      "status": "specified",
+      "rule_question": null
+    },
+    {
+      "id": "D24",
+      "title": "Independent choice production",
+      "preconditions": [
+        "owner uses Clay Pit; another seat buys its clay"
+      ],
+      "event": "resolve both frozen plans",
+      "expected": [
+        "both may succeed",
+        "choice allocation isolated per buying action",
+        "no cross-seat used-source leak"
+      ],
+      "message_refs": [],
+      "status": "specified",
+      "rule_question": null
+    },
+    {
+      "id": "D25",
+      "title": "Simultaneous color counts",
+      "preconditions": [
+        "neighbor builds brown while Vineyard is constructed; Lighthouse counts itself"
+      ],
+      "event": "evaluate ordinary immediate effects",
+      "expected": [
+        "ordinary neighbors same turn included",
+        "Lighthouse includes itself",
+        "all resulting coins wait until next round"
+      ],
+      "message_refs": [],
+      "status": "specified",
+      "rule_question": null
+    },
+    {
+      "id": "D26",
+      "title": "Later discard reconstruction counter",
+      "preconditions": [
+        "regular Vineyard; neighbor later rebuilds a brown card from discard"
+      ],
+      "event": "settle the two cohorts",
+      "expected": [
+        "no release of the affected BGA counting rule until RQ-1 is resolved",
+        "working interpretation is explicitly provisional"
+      ],
+      "message_refs": [],
+      "status": "conditional_on_rule_question",
+      "rule_question": "RQ-1"
+    },
+    {
+      "id": "D27",
+      "title": "Multiple decisions same turn",
+      "preconditions": [
+        "discard choice follows regular action without turn increment"
+      ],
+      "event": "poll status",
+      "expected": [
+        "higher revision observed",
+        "no wait for turn+1",
+        "ability/options read from engine instead of wonder ID"
+      ],
+      "message_refs": [
+        "S-collect",
+        "S-discard"
+      ],
+      "status": "specified",
+      "rule_question": null
+    },
+    {
+      "id": "D28",
+      "title": "History and collector",
+      "preconditions": [
+        "learner took a regular action then owns a discard choice at same turn"
+      ],
+      "event": "acknowledge both",
+      "expected": [
+        "distinct decision/request identity",
+        "no overwritten action frame",
+        "foreign choices do not create learner actions"
+      ],
+      "message_refs": [],
+      "status": "specified",
+      "rule_question": null
+    },
+    {
+      "id": "D29",
+      "title": "Decision timeout",
+      "preconditions": [
+        "configured 10000 ms deadline expires before discard choice"
+      ],
+      "event": "abort",
+      "expected": [
+        "aborted and result=null",
+        "grant cancelled_abort",
+        "no fake normal terminal reward"
+      ],
+      "message_refs": [
+        "S-timed-discard",
+        "S-timeout"
+      ],
+      "status": "specified",
+      "rule_question": null
+    },
+    {
+      "id": "D30",
+      "title": "Explicit abort after ordinary commit",
+      "preconditions": [
+        "ordinary actions already applied; discard still pending"
+      ],
+      "event": "abort_game",
+      "expected": [
+        "ordinary commit retained",
+        "pending choice cancelled",
+        "no normal result"
+      ],
+      "message_refs": [
+        "R-abort",
+        "S-aborted"
+      ],
+      "status": "specified",
+      "rule_question": null
+    },
+    {
+      "id": "D31",
+      "title": "Previous game command",
+      "preconditions": [
+        "same engine seed but a new game_id"
+      ],
+      "event": "deliver old-game request",
+      "expected": [
+        "wrong_game",
+        "no state or RNG action effect"
+      ],
+      "message_refs": [
+        "R-error-game",
+        "A-error-game"
+      ],
+      "status": "specified",
+      "rule_question": null
+    },
+    {
+      "id": "D32",
+      "title": "Accepted is not applied",
+      "preconditions": [
+        "one regular action accepted; other seats still missing"
+      ],
+      "event": "poll or retry",
+      "expected": [
+        "no money/card changes before batch resolution",
+        "accepted receipt advances to applied only on commit",
+        "accepted decision cannot be replaced"
+      ],
+      "message_refs": [
+        "A-accepted"
+      ],
+      "status": "specified",
+      "rule_question": null
+    },
+    {
+      "id": "D33",
+      "title": "Atomic bundle notification",
+      "preconditions": [
+        "complete commands bundle written; ready signal matches"
+      ],
+      "event": "process notification",
+      "expected": [
+        "consume only matching game/batch/version",
+        "deduplicate each request if bundle is redelivered"
+      ],
+      "message_refs": [
+        "B-regular",
+        "T-regular",
+        "B-discard",
+        "T-discard"
+      ],
+      "status": "specified",
+      "rule_question": null
+    },
+    {
+      "id": "D34",
+      "title": "Invalid/mismatched bundle",
+      "preconditions": [
+        "ready and commands batch IDs differ or JSON incomplete"
+      ],
+      "event": "read exchange",
+      "expected": [
+        "no request accepted",
+        "wait for consistent delivery or configured abort",
+        "no fallback discard"
+      ],
+      "message_refs": [],
+      "status": "specified",
+      "rule_question": null
+    },
+    {
+      "id": "D35",
+      "title": "Terminal replay",
+      "preconditions": [
+        "finished already published with receipts"
+      ],
+      "event": "read again or redeliver earlier request while process still serves it",
+      "expected": [
+        "no new effects, military conflict or results file write",
+        "cached receipt remains authoritative",
+        "no crash-recovery promise"
+      ],
+      "message_refs": [
+        "S-finished"
+      ],
+      "status": "specified",
+      "rule_question": null
+    },
+    {
+      "id": "D36",
+      "title": "No retained right next round",
+      "preconditions": [
+        "grant consumed, auto-closed or cancelled"
+      ],
+      "event": "read later state",
+      "expected": [
+        "no new grant from old wonder stage",
+        "only a new successful source event can create a new grant"
+      ],
+      "message_refs": [
+        "S-after-discard",
+        "S-no-options",
+        "S-aborted"
+      ],
+      "status": "specified",
+      "rule_question": null
+    }
+  ]
+}

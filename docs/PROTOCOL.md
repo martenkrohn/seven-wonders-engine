@@ -1,5 +1,11 @@
 # File protocol v2
 
+This page describes the implemented transport. Package 4a specifies a separate
+[decision/resolution draft](DECISION_PROTOCOL_DRAFT.md) with
+[message examples and acceptance cases](decision-protocol-examples.json).
+Its proposed protocol 3 is **not implemented**; the executable and
+`engine-contract.json` still use version 2. Use this page for current clients.
+
 The executable starts one three-player game. Arguments: `--seed UINT64`,
 `--poll-us 0..1000000` (default 1000), and `--quiet`. Use one isolated working
 directory per process. Create `io/`, `logs/` and `../logs/` first; inherited

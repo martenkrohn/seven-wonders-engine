@@ -10,6 +10,8 @@ still use the legacy data; the full second-edition/BGA rules are not implemented
 (`second_edition_implemented=false`). The versioned
 [engine contract](engine-contract.json) identifies this development ruleset
 separately from transport protocol 2. See the [science validation](docs/SCIENCE_SCORING.md).
+Package 4a adds a [decision/resolution specification](docs/DECISION_PROTOCOL_DRAFT.md)
+for later implementation; its proposed transport 3 is not active.
 
 The tagged `v0.1.1-legacy` release preserves the restored original Tk GUI and
 the simulator used by [Seven Wonders RL](https://github.com/martenkrohn/seven-wonders-rl).

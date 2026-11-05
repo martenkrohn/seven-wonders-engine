@@ -1,0 +1,165 @@
+{
+  "format_version": 1,
+  "checked_on": "2026-11-05",
+  "package": "4a",
+  "status": "specification_accepted_runtime_not_implemented",
+  "engine_baseline_commit": "71d4be74cc542a5b9be6efc5fbc471fdb9bec468",
+  "rl_commit": "a283d5897d01b8edd32021562271698f1d41a3ee",
+  "rl_pin": "f39c1d7ead271df437269b7f555a2c7a0d4b9ad1",
+  "engine_contract": {
+    "format_version": 1,
+    "release": "v0.2.0-dev",
+    "ruleset": "bga-second-edition-development",
+    "protocol_version": 2,
+    "players": 3,
+    "second_edition_implemented": false,
+    "upstream_repository": "https://github.com/dmag-ufsm/7Wonders",
+    "upstream_commit": "a0bc333a7a7f21f83156de8a2d522e7baa913f0a"
+  },
+  "proposed_contract": {
+    "contract_id": "decision-v1-draft",
+    "protocol_version": 3,
+    "implemented": false
+  },
+  "document_checks": {
+    "method": "One-off Python standard-library assertions over the documented messages, source data, links and Git differences; no runtime simulation. The checker was temporary, not a new engine test suite.",
+    "exit_code": 0,
+    "message_examples": 34,
+    "message_kinds": {
+      "status": 9,
+      "request": 12,
+      "receipt_fragment": 8,
+      "control_request": 1,
+      "command_bundle": 2,
+      "ready_signal": 2
+    },
+    "acceptance_cases": 36,
+    "conditional_cases": [
+      "D14",
+      "D26"
+    ],
+    "card_instances": 8,
+    "checked_local_links": 23,
+    "checks": [
+      "JSON syntax and unique IDs",
+      "case/message cross-references",
+      "status fields, phases and closure invariants",
+      "source grants and event/receipt links",
+      "card IDs/ages/names against frozen targets",
+      "stable physical references and duplicate-type exclusion",
+      "offered action/request/payment consistency",
+      "exact replay, request conflict and error codes",
+      "same-turn revisions and fresh seventh-turn snapshot",
+      "configured timeout vs unlimited offer",
+      "bundle/ready identity",
+      "terminal totals and pending/aborted result exclusion",
+      "local Markdown links",
+      "runtime, target data, RL pin and lock unchanged"
+    ],
+    "runtime_tests_executed": false
+  },
+  "checks": [
+    {
+      "command": "python3 scripts/audit_simulator.py --check",
+      "exit_code": 0,
+      "scoped_files": 50
+    },
+    {
+      "command": "python3 scripts/audit_bga_targets.py --check --workspace ..",
+      "exit_code": 0,
+      "card_rows": 80,
+      "card_types": 77,
+      "wonder_sides": 14
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0
+    }
+  ],
+  "runtime_tests": {
+    "executed": false,
+    "reason": "Documentation-only package: no runtime source, target data or build/test definition changed. Acceptance cases specify future tests; they have not been executed against a protocol-3 engine."
+  },
+  "source_verification": {
+    "official_rules": {
+      "url": "https://cdn.svc.asmodee.net/production-rprod/storage/downloads/games/7wonders/en/sev-en02-rules-1716388903zBEZx.pdf",
+      "local_path_relative_to_workspace": "references/bga-sevenwonders/rules-second-edition-en.pdf",
+      "sha256": "b65a797b0bf8ef586d0d6a7b2f74fbc04ad310cbd28a102ed90ba539f4ba6779",
+      "printed_pages": "4-7",
+      "method": "Read-only text extraction of existing local official PDF; hash agrees with frozen manifest."
+    },
+    "official_effects": {
+      "url": "https://cdn.svc.asmodee.net/production-rprod/storage/downloads/games/7wonders/en/sev-en02-effects-description-1716388911mLqDj.pdf",
+      "pages": "1-2",
+      "method": "Read official PDF with web tool."
+    },
+    "official_faq": {
+      "url": "https://www.rprod.com/en/7-wonders/faq",
+      "method": "Read official page with web tool."
+    },
+    "bga_server_code_available": false
+  },
+  "open_rule_questions": [
+    {
+      "id": "RQ-1",
+      "question": "Does an ordinary Vineyard/Bazar also count a neighbor building reconstructed by a later end-of-turn discard choice?",
+      "sources": [
+        "EFFECTS",
+        "BGA"
+      ],
+      "working_interpretation": "Ordinary cohort counts first, then discard effects, without retroactive ordinary coin payout.",
+      "bga_verified": false,
+      "release_gate": "Confirm before releasing affected coin settlement in 4b-II; does not block internal safe removal in 4b-I."
+    },
+    {
+      "id": "RQ-2",
+      "question": "May Halikarnassos voluntarily decline when at least one legal discard construction exists?",
+      "sources": [
+        "EFFECTS",
+        "BGA"
+      ],
+      "working_interpretation": "No claim: can_skip is explicit; examples use an unverified technical require-choice profile.",
+      "bga_verified": false,
+      "release_gate": "Confirm before enabling interactive discard_choice_v1; does not block internal safe removal in 4b-I."
+    }
+  ],
+  "unchanged_paths": [
+    "main.cpp",
+    "src",
+    "include",
+    "gui",
+    "Game.py",
+    "CMakeLists.txt",
+    "tests",
+    "scripts",
+    "engine-contract.json",
+    "data/bga-second-edition",
+    "docs/simulator"
+  ],
+  "unchanged_path_differences": [],
+  "preserved_rl_files_sha256": {
+    "engine.lock.json": "ccdc338dba3b39de6aa9694f4504cf61dd4eea80db741d7dfd856097369009d6"
+  },
+  "frozen_sources_sha256": {
+    "engine-contract.json": "826a7ecc0658eb288fb18a5892581789d6488cb22cfeb68cfa5f1c53dd7ce3b8",
+    "data/bga-second-edition/targets.json": "c654f36c96fdd325dc6e26cbe8ed9808ff9ea884a94d8e1eaa49284ac4a864b1",
+    "data/bga-second-edition/provenance.json": "3175d7903d5d9d24aa80f89626490b6775d371fd9356702e210dacdd57745e96",
+    "data/bga-second-edition/reference/card_types.json": "09c3e02f9c9a5643538bef0856769a34e09a6a65088ac8f26049884c96ae7f69",
+    "data/bga-second-edition/reference/wonders.json": "e7c45126492566869c6fd0c9c3a9b02d26cf9b0518cfefcab8cb5e2d81ed3080",
+    "data/bga-second-edition/reference/manifest.json": "a324da4e3571a95df031ac03cda786d320ebaacbcec1e5485db2b5a8f2bff654"
+  },
+  "artifacts_sha256": {
+    "README.md": "ff03cec32c44df2deca348a412bd3caa3c760a2b7180f969e8c2577aa85559dc",
+    "docs/KNOWN_ISSUES.md": "80a41f4ab21c78b02ff27173ed40035b98b36331bfc9fe910b01a4375872e27b",
+    "docs/PROTOCOL.md": "ef3d39b0fc1c07b521fe49e801bcc82349a428d3e2a2dce74005a97e544ed131",
+    "docs/DECISION_PROTOCOL_DRAFT.md": "8b7c8ebb93ad9439aadfc776cf833c8f964576b4f9d795bedde1d3b314d701ee",
+    "docs/decision-protocol-examples.json": "986d4f0b1358b17870a78aa5299d499bf8bd575661ae3b2c94d92ae8d3dcf174"
+  },
+  "limits": [
+    "Specification and message examples only; implemented transport remains 2 and second_edition_implemented=false.",
+    "No C++, GUI, RL, cards/wonders, science, exports, features or training changes.",
+    "Two specific BGA rule questions remain explicit release gates; no unverified BGA server behavior is asserted.",
+    "No push/release, parent submodule pin update, engine.lock update or checkpoint migration.",
+    "Only package 4b-I safe discard removal is prepared next; no implementation package started."
+  ]
+}

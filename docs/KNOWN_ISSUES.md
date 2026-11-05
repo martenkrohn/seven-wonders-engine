@@ -25,3 +25,6 @@ The RL repository contains the detailed evidence in
 successful smoke game establishes protocol usability, not rule completeness.
 See [SCIENCE_SCORING.md](SCIENCE_SCORING.md) for the tested scoring boundary
 and the separate Python heuristic limitation before RL adoption.
+Package 4a documents the future [decision/resolution contract](DECISION_PROTOCOL_DRAFT.md),
+including two unresolved BGA timing/decline questions. It changes no runtime
+behavior and does not close the discard or simultaneous-resolution limitations.
