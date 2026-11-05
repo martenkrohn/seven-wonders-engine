@@ -148,11 +148,11 @@ class CompletedGizah : public Gizah_a { public: CompletedGizah() { stage=3; } };
 void deferred_and_identity() {
     expect(!FindCardDefinition(73,3),"Reserved ID reused");
     expect(CARD_ID::ludus==76 && CARD_ID::castrum==77 && CARD_ID::decorators==78,"New IDs shifted");
-    for(int id:{76,78}) expect(!Card::FromDefinition(id,3).GetEffects().runtime_complete,"Deferred effect silently advertised");
+    for(int id:{78}) expect(!Card::FromDefinition(id,3).GetEffects().runtime_complete,"Deferred effect silently advertised");
     DecisionFixture f;build_free(f.players[0],physical(CARD_ID::stockade,1));
     build_free(f.players[0],physical(CARD_ID::ludus,3));
-    expect(f.players[0].GetResources()[RESOURCE::coins]==3 && f.players[0].CalculateCommercialScore()==1,
-           "Ludus algorithm started inside table package");
+    expect(f.players[0].GetResources()[RESOURCE::coins]==6 && f.players[0].CalculateCommercialScore()==3,
+           "Ludus count effect missing");
     CompletedGizah completed;f.players[0].SetWonder(&completed);
     build_free(f.players[0],physical(CARD_ID::decorators,3));
     expect(f.players[0].CalculateGuildScore()==0,"Decorators algorithm started inside table package");

@@ -7,6 +7,11 @@
 namespace DMAG {
 
 const std::vector<CardDefinition>& CardDefinitions() { return GENERATED_CARD_DEFINITIONS; }
+std::vector<int> IncompleteCardEffects() {
+    std::vector<int> result;
+    for(const auto& d:CardDefinitions()) if(!d.effects.runtime_complete) result.push_back(d.id);
+    return result;
+}
 const char* CardDataHash() { return GENERATED_CARD_DATA_SHA256; }
 const CardDefinition* FindCardDefinition(int id,int age) {
     for(const auto& d:CardDefinitions()) if(d.id==id && d.age==age) return &d;

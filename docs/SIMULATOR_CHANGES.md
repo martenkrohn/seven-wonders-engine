@@ -324,6 +324,16 @@ Inventar. Historischer Workspace-Audit nutzt unveränderte Originalbytes aus
 dem Legacy-Commit, keine aktualisierten Herkunftshashes. Details:
 [CARD_DATA.md](CARD_DATA.md), [card-data-validation.json](card-data-validation.json).
 
+## ENG-016 – Ludus (Paket 5-IIa)
+
+Ludus aktiviert die generierten eigenen Militärzähler: drei Münzen je roter
+Karte beim Bau, ein Endpunkt je eigener roter Karte. Regulärer Bau und freier
+Ablagebau zahlen genau einmal; spätere rote Karten verändern nur die Wertung.
+Der neue Test zeigte vor der Aktivierung fehlende spätere Endpunkte. Null bis
+drei eigene und fremde rote Karten, Replay und Ablageentnahme sind geprüft.
+Alle 13 CTests bestehen. Decorators bleibt hier ausdrücklich offen. CMake
+kompiliert den gemeinsamen Kern einmal als Bibliothek für alle Programme.
+
 ## Abgrenzung
 
 Es findet keine pauschale Behauptung vollständiger Regelkorrektheit statt. Insbesondere werden die Wunder-Ausbauschritte nicht zur neuen Edition migriert. Die Kartentabellenmigration in ENG-015 bleibt von den noch offenen neuen Sondereffekten getrennt. Falls frühere Kartenänderungen nicht im exakten Unterschied zu diesem Upstream-Commit erscheinen, werden sie nicht ohne Nachweis als Änderungen dieser C++-Fassung behauptet. Für jede zukünftige Änderung ist ein neuer Eintrag mit Anlass, genauer Funktion, Wirkung, Test und Grenzen anzulegen und der exakte Nachweis neu zu erzeugen.

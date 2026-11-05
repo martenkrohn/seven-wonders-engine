@@ -30,6 +30,7 @@ struct CardDefinition {
 const std::vector<CardDefinition>& CardDefinitions();
 const CardDefinition* FindCardDefinition(int id,int age);
 const char* CardDataHash();
+std::vector<int> IncompleteCardEffects();
 constexpr int CARD_DATA_FORMAT_VERSION=1;
 }
 #endif

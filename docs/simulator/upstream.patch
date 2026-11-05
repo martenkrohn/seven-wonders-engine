@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index add0c31aea13d74f44b3e843977cf13e0ca4eec2..d5ce38e0fdac2d308fc79085a00f27026cc2196f 100644
+index add0c31aea13d74f44b3e843977cf13e0ca4eec2..cf20d89a29052d8380afee7273f7e17307c7ff2e 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -1,3 +1,4 @@
@@ -21,10 +21,11 @@ index add0c31aea13d74f44b3e843977cf13e0ca4eec2..d5ce38e0fdac2d308fc79085a00f2702
  	src/player.cpp
      src/wonder.cpp
  	src/filer.cpp
-@@ -27,6 +29,107 @@ set(HEADERS
+@@ -27,6 +29,51 @@ set(HEADERS
  	include/nlohmann/json.hpp
  	)
  
+-add_executable(7Wonders ${SOURCES} ${HEADERS})
 +execute_process(COMMAND git rev-parse HEAD WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
 +    OUTPUT_VARIABLE ENGINE_COMMIT OUTPUT_STRIP_TRAILING_WHITESPACE)
 +execute_process(COMMAND git diff --quiet WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
@@ -38,80 +39,24 @@ index add0c31aea13d74f44b3e843977cf13e0ca4eec2..d5ce38e0fdac2d308fc79085a00f2702
 +    set(ENGINE_DIRTY_VALUE true)
 +endif()
 +add_definitions(-DENGINE_SOURCE_COMMIT="${ENGINE_COMMIT}" -DENGINE_SOURCE_DIRTY=${ENGINE_DIRTY_VALUE})
- add_executable(7Wonders ${SOURCES} ${HEADERS})
++# Build the common core once; every executable runs the same implementation.
++add_library(engine_core STATIC src/card.cpp src/decision.cpp src/player.cpp src/wonder.cpp src/filer.cpp)
++add_executable(7Wonders main.cpp)
++target_link_libraries(7Wonders engine_core)
++enable_testing()
++foreach(name card_tables card_effects decision_resolution choice_simple choice_once_per_turn final_status joint_action_resources science_scoring discard_safety)
++    add_executable(test_${name} tests/test_${name}.cpp)
++    target_link_libraries(test_${name} engine_core)
++    add_test(NAME ${name} COMMAND test_${name})
++    file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/${name}_runtime/io" "${CMAKE_BINARY_DIR}/${name}_runtime/logs")
++    set_tests_properties(${name} PROPERTIES WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/${name}_runtime" TIMEOUT 30)
++    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
++        target_compile_options(test_${name} PRIVATE -UNDEBUG)
++    endif()
++endforeach()
++file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/io" "${CMAKE_BINARY_DIR}/logs")
  
 -file(MAKE_DIRECTORY ./build/io ./io ./logs)
-+add_executable(test_card_tables tests/test_card_tables.cpp
-+    src/card.cpp src/decision.cpp src/player.cpp src/wonder.cpp src/filer.cpp)
-+add_test(NAME card_tables COMMAND test_card_tables)
-+set_tests_properties(card_tables PROPERTIES TIMEOUT 30)
-+
-+add_executable(test_decision_resolution tests/test_decision_resolution.cpp
-+    src/card.cpp src/decision.cpp src/player.cpp src/wonder.cpp src/filer.cpp)
-+add_test(NAME decision_resolution COMMAND test_decision_resolution)
-+set_tests_properties(decision_resolution PROPERTIES TIMEOUT 30)
-+
-+# Test executable for choice-once-per-turn verification (simple, no card loading)
-+add_executable(test_choice_simple
-+    tests/test_choice_simple.cpp
-+    src/player.cpp
-+    src/wonder.cpp
-+    src/card.cpp
-+    src/decision.cpp
-+    src/filer.cpp
-+)
-+
-+# Test executable for choice-once-per-turn verification (full integration)
-+add_executable(test_choice_once_per_turn
-+    tests/test_choice_once_per_turn.cpp
-+    src/card.cpp
-+    src/decision.cpp
-+    src/player.cpp
-+    src/wonder.cpp
-+    src/filer.cpp
-+)
-+
-+file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/io" "${CMAKE_CURRENT_BINARY_DIR}/logs")
-+
-+# Register the existing regression executables for local checks and CI.
-+enable_testing()
-+add_test(NAME choice_simple COMMAND test_choice_simple)
-+add_test(NAME choice_once_per_turn COMMAND test_choice_once_per_turn)
-+
-+add_executable(test_final_status tests/test_final_status.cpp
-+    src/card.cpp src/decision.cpp src/player.cpp src/wonder.cpp src/filer.cpp)
-+file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/final_status_runtime")
-+add_test(NAME final_status COMMAND test_final_status)
-+set_tests_properties(final_status PROPERTIES
-+    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/final_status_runtime" TIMEOUT 10)
-+
-+add_executable(test_joint_action_resources tests/test_joint_action_resources.cpp
-+    src/card.cpp src/decision.cpp src/player.cpp src/wonder.cpp src/filer.cpp)
-+file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/joint_action_resources_runtime")
-+add_test(NAME joint_action_resources COMMAND test_joint_action_resources)
-+set_tests_properties(joint_action_resources PROPERTIES
-+    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/joint_action_resources_runtime" TIMEOUT 10)
-+
-+add_executable(test_science_scoring tests/test_science_scoring.cpp
-+    src/card.cpp src/decision.cpp src/player.cpp src/wonder.cpp src/filer.cpp)
-+file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/science_scoring_runtime")
-+add_test(NAME science_scoring COMMAND test_science_scoring)
-+set_tests_properties(science_scoring PROPERTIES
-+    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/science_scoring_runtime" TIMEOUT 10)
-+
-+add_executable(test_discard_safety tests/test_discard_safety.cpp
-+    src/card.cpp src/decision.cpp src/player.cpp src/wonder.cpp src/filer.cpp)
-+file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/discard_safety_runtime")
-+add_test(NAME discard_safety COMMAND test_discard_safety)
-+set_tests_properties(discard_safety PROPERTIES
-+    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/discard_safety_runtime" TIMEOUT 15)
-+
-+# The regression programs use assert(), including when the engine is built Release.
-+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-+    target_compile_options(test_choice_simple PRIVATE -UNDEBUG)
-+    target_compile_options(test_choice_once_per_turn PRIVATE -UNDEBUG)
-+endif()
-+
 +# Optional standalone client: standard library only, no RL dependencies.
 +find_package(Python3 3.10 COMPONENTS Interpreter QUIET)
 +if(Python3_Interpreter_FOUND)
@@ -196,6 +141,145 @@ index 607ae4d0676afce74abea6e42479f732b4409ec6..e489a79b8b3f266d691eed1b0b3651ab
      bool Equal(Card c);
      bool CanBePlayed(std::map<int, int> resources);
      std::map<int, int> MissingCards(std::map<int, int> resources);
+diff --git a/include/card_data.generated.h b/include/card_data.generated.h
+new file mode 100644
+index 0000000000000000000000000000000000000000..71d7f6539fa78545eb9de593349a6ad0b1984e04
+--- /dev/null
++++ b/include/card_data.generated.h
+@@ -0,0 +1,91 @@
++// Generated by scripts/generate_card_data.py; do not edit.
++// Source: data/bga-second-edition/targets.json, SHA-256 c654f36c96fdd325dc6e26cbe8ed9808ff9ea884a94d8e1eaa49284ac4a864b1
++#ifndef CARD_DATA_GENERATED_H
++#define CARD_DATA_GENERATED_H
++#include "card_data.h"
++namespace DMAG {
++inline constexpr const char* GENERATED_CARD_DATA_SHA256 = "c654f36c96fdd325dc6e26cbe8ed9808ff9ea884a94d8e1eaa49284ac4a864b1";
++inline const std::vector<CardDefinition> GENERATED_CARD_DEFINITIONS = {
++    {"lumber_yard_age1", "Lumber Yard", 1, 0, 1, {0, 0, 0, 0, 0, 0, 0, 0}, {1, 2, 2, 2, 2}, {}, {{1, 0, 0, 0, 0, 0, 0}, {}, true, 0, 0, 0, "", "", 0, 0, "", "", false, "", true}},
++    {"stone_pit_age1", "Stone Pit", 2, 0, 1, {0, 0, 0, 0, 0, 0, 0, 0}, {1, 1, 2, 2, 2}, {}, {{0, 0, 0, 1, 0, 0, 0}, {}, true, 0, 0, 0, "", "", 0, 0, "", "", false, "", true}},
++    {"clay_pool_age1", "Clay Pool", 3, 0, 1, {0, 0, 0, 0, 0, 0, 0, 0}, {1, 1, 2, 2, 2}, {}, {{0, 0, 1, 0, 0, 0, 0}, {}, true, 0, 0, 0, "", "", 0, 0, "", "", false, "", true}},
++    {"ore_vein_age1", "Ore Vein", 4, 0, 1, {0, 0, 0, 0, 0, 0, 0, 0}, {1, 2, 2, 2, 2}, {}, {{0, 1, 0, 0, 0, 0, 0}, {}, true, 0, 0, 0, "", "", 0, 0, "", "", false, "", true}},
++    {"tree_farm_age1", "Tree Farm", 5, 0, 1, {0, 0, 0, 0, 0, 0, 0, 1}, {0, 0, 0, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {2, 0}, true, 0, 0, 0, "", "", 0, 0, "", "", false, "", true}},
++    {"excavation_age1", "Excavation", 6, 0, 1, {0, 0, 0, 0, 0, 0, 0, 1}, {0, 1, 1, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {2, 3}, true, 0, 0, 0, "", "", 0, 0, "", "", false, "", true}},
++    {"clay_pit_age1", "Clay Pit", 7, 0, 1, {0, 0, 0, 0, 0, 0, 0, 1}, {1, 1, 1, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {2, 1}, true, 0, 0, 0, "", "", 0, 0, "", "", false, "", true}},
++    {"timber_yard_age1", "Timber Yard", 8, 0, 1, {0, 0, 0, 0, 0, 0, 0, 1}, {1, 1, 1, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {3, 0}, true, 0, 0, 0, "", "", 0, 0, "", "", false, "", true}},
++    {"forest_cave_age1", "Forest Cave", 9, 0, 1, {0, 0, 0, 0, 0, 0, 0, 1}, {0, 0, 1, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {1, 0}, true, 0, 0, 0, "", "", 0, 0, "", "", false, "", true}},
++    {"mine_age1", "Mine", 10, 0, 1, {0, 0, 0, 0, 0, 0, 0, 1}, {0, 0, 0, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {1, 3}, true, 0, 0, 0, "", "", 0, 0, "", "", false, "", true}},
++    {"loom_age1", "Loom", 15, 1, 1, {0, 0, 0, 0, 0, 0, 0, 0}, {1, 1, 1, 2, 2}, {}, {{0, 0, 0, 0, 1, 0, 0}, {}, true, 0, 0, 0, "", "", 0, 0, "", "", false, "", true}},
++    {"glassworks_age1", "Glassworks", 16, 1, 1, {0, 0, 0, 0, 0, 0, 0, 0}, {1, 1, 1, 2, 2}, {}, {{0, 0, 0, 0, 0, 1, 0}, {}, true, 0, 0, 0, "", "", 0, 0, "", "", false, "", true}},
++    {"press_age1", "Press", 17, 1, 1, {0, 0, 0, 0, 0, 0, 0, 0}, {1, 1, 1, 2, 2}, {}, {{0, 0, 0, 0, 0, 0, 1}, {}, true, 0, 0, 0, "", "", 0, 0, "", "", false, "", true}},
++    {"well_age1", "Well", 20, 2, 1, {0, 0, 0, 0, 0, 0, 0, 0}, {0, 1, 1, 1, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 3, 0, 0, "", "", 0, 0, "", "", false, "", true}},
++    {"baths_age1", "Baths", 21, 2, 1, {0, 0, 0, 1, 0, 0, 0, 0}, {1, 1, 1, 1, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 3, 0, 0, "", "", 0, 0, "", "", false, "", true}},
++    {"altar_age1", "Altar", 18, 2, 1, {0, 0, 0, 0, 0, 0, 0, 0}, {1, 1, 2, 2, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 3, 0, 0, "", "", 0, 0, "", "", false, "", true}},
++    {"theater_age1", "Theater", 19, 2, 1, {0, 0, 0, 0, 0, 0, 0, 0}, {1, 1, 1, 2, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 3, 0, 0, "", "", 0, 0, "", "", false, "", true}},
++    {"tavern_age1", "Tavern", 31, 3, 1, {0, 0, 0, 0, 0, 0, 0, 0}, {0, 1, 2, 2, 3}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 5, 0, "", "", 0, 0, "", "", false, "", true}},
++    {"east_trading_post_age1", "East Trading Post", 32, 3, 1, {0, 0, 0, 0, 0, 0, 0, 0}, {1, 1, 1, 1, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "", "raw_right", 0, 0, "", "", false, "", true}},
++    {"west_trading_post_age1", "West Trading Post", 33, 3, 1, {0, 0, 0, 0, 0, 0, 0, 0}, {1, 1, 1, 1, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "", "raw_left", 0, 0, "", "", false, "", true}},
++    {"marketplace_age1", "Marketplace", 34, 3, 1, {0, 0, 0, 0, 0, 0, 0, 0}, {1, 1, 1, 2, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "", "manufactured_both", 0, 0, "", "", false, "", true}},
++    {"stockade_age1", "Stockade", 43, 4, 1, {1, 0, 0, 0, 0, 0, 0, 0}, {1, 1, 1, 1, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 1, "", "", 0, 0, "", "", false, "", true}},
++    {"barracks_age1", "Barracks", 44, 4, 1, {0, 1, 0, 0, 0, 0, 0, 0}, {1, 1, 2, 2, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 1, "", "", 0, 0, "", "", false, "", true}},
++    {"guard_tower_age1", "Guard Tower", 45, 4, 1, {0, 0, 1, 0, 0, 0, 0, 0}, {1, 2, 2, 2, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 1, "", "", 0, 0, "", "", false, "", true}},
++    {"apothecary_age1", "Apothecary", 54, 5, 1, {0, 0, 0, 0, 1, 0, 0, 0}, {1, 1, 2, 2, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "compass", "", 0, 0, "", "", false, "", true}},
++    {"workshop_age1", "Workshop", 55, 5, 1, {0, 0, 0, 0, 0, 1, 0, 0}, {1, 1, 1, 1, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "gear", "", 0, 0, "", "", false, "", true}},
++    {"scriptorium_age1", "Scriptorium", 56, 5, 1, {0, 0, 0, 0, 0, 0, 1, 0}, {1, 2, 2, 2, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "tablet", "", 0, 0, "", "", false, "", true}},
++    {"sawmill_age2", "Sawmill", 11, 0, 2, {0, 0, 0, 0, 0, 0, 0, 1}, {1, 2, 2, 2, 2}, {}, {{2, 0, 0, 0, 0, 0, 0}, {}, true, 0, 0, 0, "", "", 0, 0, "", "", false, "", true}},
++    {"quarry_age2", "Quarry", 12, 0, 2, {0, 0, 0, 0, 0, 0, 0, 1}, {1, 2, 2, 2, 2}, {}, {{0, 0, 0, 2, 0, 0, 0}, {}, true, 0, 0, 0, "", "", 0, 0, "", "", false, "", true}},
++    {"brickyard_age2", "Brickyard", 13, 0, 2, {0, 0, 0, 0, 0, 0, 0, 1}, {1, 2, 2, 2, 2}, {}, {{0, 0, 2, 0, 0, 0, 0}, {}, true, 0, 0, 0, "", "", 0, 0, "", "", false, "", true}},
++    {"foundry_age2", "Foundry", 14, 0, 2, {0, 0, 0, 0, 0, 0, 0, 1}, {1, 2, 2, 2, 2}, {}, {{0, 2, 0, 0, 0, 0, 0}, {}, true, 0, 0, 0, "", "", 0, 0, "", "", false, "", true}},
++    {"loom_age2", "Loom", 15, 1, 2, {0, 0, 0, 0, 0, 0, 0, 0}, {1, 1, 2, 2, 2}, {}, {{0, 0, 0, 0, 1, 0, 0}, {}, true, 0, 0, 0, "", "", 0, 0, "", "", false, "", true}},
++    {"glassworks_age2", "Glassworks", 16, 1, 2, {0, 0, 0, 0, 0, 0, 0, 0}, {1, 1, 2, 2, 2}, {}, {{0, 0, 0, 0, 0, 1, 0}, {}, true, 0, 0, 0, "", "", 0, 0, "", "", false, "", true}},
++    {"press_age2", "Press", 17, 1, 2, {0, 0, 0, 0, 0, 0, 0, 0}, {1, 1, 2, 2, 2}, {}, {{0, 0, 0, 0, 0, 0, 1}, {}, true, 0, 0, 0, "", "", 0, 0, "", "", false, "", true}},
++    {"aqueduct_age2", "Aqueduct", 25, 2, 2, {0, 0, 0, 3, 0, 0, 0, 0}, {1, 1, 1, 1, 2}, {{21, 1}}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 5, 0, 0, "", "", 0, 0, "", "", false, "", true}},
++    {"temple_age2", "Temple", 22, 2, 2, {1, 0, 1, 0, 0, 1, 0, 0}, {1, 1, 1, 2, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 4, 0, 0, "", "", 0, 0, "", "", false, "", true}},
++    {"statue_age2", "Statue", 24, 2, 2, {1, 2, 0, 0, 0, 0, 0, 0}, {1, 1, 1, 1, 2}, {{20, 1}}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 4, 0, 0, "", "", 0, 0, "", "", false, "", true}},
++    {"courthouse_age2", "Courthouse", 23, 2, 2, {0, 0, 2, 0, 1, 0, 0, 0}, {1, 1, 2, 2, 2}, {{56, 1}}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 4, 0, 0, "", "", 0, 0, "", "", false, "", true}},
++    {"forum_age2", "Forum", 35, 3, 2, {0, 0, 2, 0, 0, 0, 0, 0}, {1, 1, 1, 2, 3}, {{32, 1}, {33, 1}}, {{0, 0, 0, 0, 0, 0, 0}, {5, 4, 6}, false, 0, 0, 0, "", "", 0, 0, "", "", false, "", true}},
++    {"caravansery_age2", "Caravansery", 36, 3, 2, {2, 0, 0, 0, 0, 0, 0, 0}, {1, 1, 2, 3, 3}, {{34, 1}}, {{0, 0, 0, 0, 0, 0, 0}, {2, 1, 3, 0}, false, 0, 0, 0, "", "", 0, 0, "", "", false, "", true}},
++    {"vineyard_age2", "Vineyard", 37, 3, 2, {0, 0, 0, 0, 0, 0, 0, 0}, {1, 1, 1, 2, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "", "", 0, 1, "brown", "self_and_neighbors", false, "", true}},
++    {"bazar_age2", "Bazar", 38, 3, 2, {0, 0, 0, 0, 0, 0, 0, 0}, {0, 1, 1, 1, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "", "", 0, 2, "grey", "self_and_neighbors", false, "", true}},
++    {"walls_age2", "Walls", 46, 4, 2, {0, 0, 0, 3, 0, 0, 0, 0}, {1, 1, 1, 1, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 2, "", "", 0, 0, "", "", false, "", true}},
++    {"training_ground_age2", "Training Ground", 47, 4, 2, {1, 2, 0, 0, 0, 0, 0, 0}, {0, 1, 1, 2, 3}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 2, "", "", 0, 0, "", "", false, "", true}},
++    {"stables_age2", "Stables", 48, 4, 2, {1, 1, 1, 0, 0, 0, 0, 0}, {1, 1, 2, 2, 2}, {{54, 1}}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 2, "", "", 0, 0, "", "", false, "", true}},
++    {"archery_range_age2", "Archery Range", 49, 4, 2, {2, 1, 0, 0, 0, 0, 0, 0}, {1, 1, 1, 2, 2}, {{55, 1}}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 2, "", "", 0, 0, "", "", false, "", true}},
++    {"dispensary_age2", "Dispensary", 57, 5, 2, {0, 2, 0, 0, 0, 1, 0, 0}, {1, 2, 2, 2, 2}, {{54, 1}}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "compass", "", 0, 0, "", "", false, "", true}},
++    {"laboratory_age2", "Laboratory", 58, 5, 2, {0, 0, 2, 0, 0, 0, 1, 0}, {1, 1, 2, 2, 2}, {{55, 1}}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "gear", "", 0, 0, "", "", false, "", true}},
++    {"library_age2", "Library", 59, 5, 2, {0, 0, 0, 2, 1, 0, 0, 0}, {1, 1, 1, 2, 2}, {{56, 1}}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "tablet", "", 0, 0, "", "", false, "", true}},
++    {"school_age2", "School", 60, 5, 2, {1, 0, 0, 0, 0, 0, 1, 0}, {1, 1, 1, 1, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "tablet", "", 0, 0, "", "", false, "", true}},
++    {"workers_guild_age3", "Workers Guild", 66, 6, 3, {1, 2, 1, 1, 0, 0, 0, 0}, {1, 1, 1, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "", "", 1, 0, "brown", "neighbors", false, "", true}},
++    {"craftsmens_guild_age3", "Craftsmens Guild", 67, 6, 3, {0, 2, 0, 2, 0, 0, 0, 0}, {1, 1, 1, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "", "", 2, 0, "grey", "neighbors", false, "", true}},
++    {"traders_guild_age3", "Traders Guild", 68, 6, 3, {0, 0, 0, 0, 1, 1, 1, 0}, {1, 1, 1, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "", "", 1, 0, "yellow", "neighbors", false, "", true}},
++    {"philosophers_guild_age3", "Philosophers Guild", 69, 6, 3, {0, 0, 3, 0, 1, 0, 1, 0}, {1, 1, 1, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "", "", 1, 0, "green", "neighbors", false, "", true}},
++    {"spies_guild_age3", "Spies Guild", 70, 6, 3, {0, 0, 2, 0, 0, 1, 0, 0}, {1, 1, 1, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "", "", 1, 0, "red", "neighbors", false, "", true}},
++    {"decorators_guild_age3", "Decorators Guild", 78, 6, 3, {0, 2, 0, 1, 1, 0, 0, 0}, {1, 1, 1, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 7, 0, 0, "", "", 0, 0, "", "", false, "wonder_complete", false}},
++    {"shipowners_guild_age3", "Shipowners Guild", 72, 6, 3, {3, 0, 0, 0, 0, 1, 1, 0}, {1, 1, 1, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "", "", 1, 0, "brown_grey_purple", "self", true, "", true}},
++    {"scientists_guild_age3", "Scientists Guild", 74, 6, 3, {2, 2, 0, 0, 0, 0, 1, 0}, {1, 1, 1, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "joker", "", 0, 0, "", "", false, "", true}},
++    {"magistrates_guild_age3", "Magistrates Guild", 71, 6, 3, {3, 0, 0, 1, 1, 0, 0, 0}, {1, 1, 1, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "", "", 1, 0, "blue", "neighbors", false, "", true}},
++    {"builders_guild_age3", "Builders Guild", 75, 6, 3, {0, 0, 2, 3, 0, 1, 0, 0}, {1, 1, 1, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "", "", 1, 0, "wonder_stages", "self_and_neighbors", false, "", true}},
++    {"pantheon_age3", "Pantheon", 29, 2, 3, {0, 1, 2, 0, 1, 1, 1, 0}, {1, 1, 1, 2, 2}, {{18, 1}}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 7, 0, 0, "", "", 0, 0, "", "", false, "", true}},
++    {"gardens_age3", "Gardens", 26, 2, 3, {1, 0, 2, 0, 0, 0, 0, 0}, {1, 2, 2, 2, 2}, {{19, 1}}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 5, 0, 0, "", "", 0, 0, "", "", false, "", true}},
++    {"town_hall_age3", "Town Hall", 27, 2, 3, {0, 1, 0, 2, 0, 1, 0, 0}, {1, 1, 1, 2, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 6, 0, 0, "", "", 0, 0, "", "", false, "", true}},
++    {"palace_age3", "Palace", 30, 2, 3, {1, 1, 1, 1, 1, 1, 1, 0}, {1, 1, 1, 1, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 8, 0, 0, "", "", 0, 0, "", "", false, "", true}},
++    {"senate_age3", "Senate", 28, 2, 3, {2, 1, 0, 1, 0, 0, 0, 0}, {1, 1, 2, 2, 2}, {{59, 2}}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 6, 0, 0, "", "", 0, 0, "", "", false, "", true}},
++    {"haven_age3", "Haven", 39, 3, 3, {1, 1, 0, 0, 1, 0, 0, 0}, {1, 2, 2, 2, 2}, {{35, 2}}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "", "", 1, 1, "brown", "self", false, "", true}},
++    {"lighthouse_age3", "Lighthouse", 40, 3, 3, {0, 0, 0, 1, 0, 1, 0, 0}, {1, 1, 1, 2, 2}, {{36, 2}}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "", "", 1, 1, "yellow", "self", true, "", true}},
++    {"chamber_of_commerce_age3", "Chamber of Commerce", 41, 3, 3, {0, 0, 2, 0, 0, 0, 1, 0}, {0, 1, 1, 2, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "", "", 2, 2, "grey", "self", false, "", true}},
++    {"arena_age3", "Arena", 42, 3, 3, {0, 1, 0, 2, 0, 0, 0, 0}, {1, 1, 2, 2, 2}, {{57, 2}}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "", "", 1, 3, "wonder_stages", "self", false, "", true}},
++    {"fortifications_age3", "Fortifications", 50, 4, 3, {0, 3, 1, 0, 0, 0, 0, 0}, {1, 1, 1, 1, 2}, {{46, 2}}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 3, "", "", 0, 0, "", "", false, "", true}},
++    {"circus_age3", "Circus", 51, 4, 3, {0, 1, 0, 3, 0, 0, 0, 0}, {0, 1, 1, 2, 2}, {{47, 2}}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 3, "", "", 0, 0, "", "", false, "", true}},
++    {"arsenal_age3", "Arsenal", 52, 4, 3, {2, 1, 0, 0, 1, 0, 0, 0}, {1, 1, 2, 2, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 3, "", "", 0, 0, "", "", false, "", true}},
++    {"siege_workshop_age3", "Siege Workshop", 53, 4, 3, {1, 0, 3, 0, 0, 0, 0, 0}, {1, 1, 2, 2, 2}, {{58, 2}}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 3, "", "", 0, 0, "", "", false, "", true}},
++    {"lodge_age3", "Lodge", 61, 5, 3, {0, 0, 2, 0, 1, 0, 1, 0}, {1, 1, 1, 2, 2}, {{57, 2}}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "compass", "", 0, 0, "", "", false, "", true}},
++    {"observatory_age3", "Observatory", 62, 5, 3, {0, 2, 0, 0, 1, 1, 0, 0}, {1, 1, 1, 1, 2}, {{58, 2}}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "gear", "", 0, 0, "", "", false, "", true}},
++    {"university_age3", "University", 63, 5, 3, {2, 0, 0, 0, 0, 1, 1, 0}, {1, 2, 2, 2, 2}, {{59, 2}}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "tablet", "", 0, 0, "", "", false, "", true}},
++    {"academy_age3", "Academy", 64, 5, 3, {0, 0, 0, 3, 0, 1, 0, 0}, {1, 1, 1, 1, 2}, {{60, 2}}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "compass", "", 0, 0, "", "", false, "", true}},
++    {"study_age3", "Study", 65, 5, 3, {1, 0, 0, 0, 1, 0, 1, 0}, {1, 1, 2, 2, 2}, {{60, 2}}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "gear", "", 0, 0, "", "", false, "", true}},
++    {"ludus_age3", "Ludus", 76, 3, 3, {0, 1, 0, 1, 0, 0, 0, 0}, {0, 0, 1, 1, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "", "", 1, 3, "red", "self", false, "", true}},
++    {"castrum_age3", "Castrum", 77, 4, 3, {1, 0, 2, 0, 0, 0, 1, 0}, {0, 1, 1, 1, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 3, "", "", 0, 0, "", "", false, "", true}},
++};
++}
++#endif
+diff --git a/include/card_data.h b/include/card_data.h
+new file mode 100644
+index 0000000000000000000000000000000000000000..6f2744caa68dda332e0060206321b834ab07d845
+--- /dev/null
++++ b/include/card_data.h
+@@ -0,0 +1,36 @@
++#ifndef CARD_DATA_H
++#define CARD_DATA_H
++#include <array>
++#include <string>
++#include <utility>
++#include <vector>
++
++namespace DMAG {
++struct CardEffects {
++    std::array<int,7> production{};
++    std::vector<int> choice;
++    bool tradable=false;
++    int vp=0, coins=0, shields=0;
++    std::string science, discount;
++    int vp_per=0, coins_per=0;
++    std::string count, target;
++    bool includes_self=false;
++    std::string condition;
++    // Target metadata is retained even when its new algorithm is deferred.
++    bool runtime_complete=true;
++};
++struct CardDefinition {
++    std::string key, name;
++    int id, type, age;
++    std::array<int,8> cost;
++    std::array<int,5> quantities;
++    std::vector<std::pair<int,int>> chain_from; // (type ID, age), alternatives
++    CardEffects effects;
++};
++const std::vector<CardDefinition>& CardDefinitions();
++const CardDefinition* FindCardDefinition(int id,int age);
++const char* CardDataHash();
++std::vector<int> IncompleteCardEffects();
++constexpr int CARD_DATA_FORMAT_VERSION=1;
++}
++#endif
 diff --git a/include/decision.h b/include/decision.h
 new file mode 100644
 index 0000000000000000000000000000000000000000..3b8da1ab9761c6794a18cc914753e23c7dbc6811
@@ -1055,10 +1139,10 @@ index 81c519daf5454fb08161015c17463be4137f5e97..a43891c7ed11ed57674ddc7652aea5d5
 +    }
  }
 diff --git a/src/card.cpp b/src/card.cpp
-index 1b4b3aaf79754b900cf62605d34244f8ddda11a4..99ddad47d038401293756d5f2086ac20064e1e27 100644
+index 1b4b3aaf79754b900cf62605d34244f8ddda11a4..3369f43d53a55e6aa2035d08d082c052d631f404 100644
 --- a/src/card.cpp
 +++ b/src/card.cpp
-@@ -1,10 +1,44 @@
+@@ -1,10 +1,49 @@
  #include <card.h>
  #include <string>
  #include <utility>
@@ -1069,6 +1153,11 @@ index 1b4b3aaf79754b900cf62605d34244f8ddda11a4..99ddad47d038401293756d5f2086ac20
  
 -Card::Card(){}
 +const std::vector<CardDefinition>& CardDefinitions() { return GENERATED_CARD_DEFINITIONS; }
++std::vector<int> IncompleteCardEffects() {
++    std::vector<int> result;
++    for(const auto& d:CardDefinitions()) if(!d.effects.runtime_complete) result.push_back(d.id);
++    return result;
++}
 +const char* CardDataHash() { return GENERATED_CARD_DATA_SHA256; }
 +const CardDefinition* FindCardDefinition(int id,int age) {
 +    for(const auto& d:CardDefinitions()) if(d.id==id && d.age==age) return &d;
@@ -1104,7 +1193,7 @@ index 1b4b3aaf79754b900cf62605d34244f8ddda11a4..99ddad47d038401293756d5f2086ac20
  
  Card::Card(int id, std::string name, int type, int era, int freeWithId, std::vector<int> cost, std::vector<int> amountPerPlayers){
      this->id = id;
-@@ -12,6 +46,17 @@ Card::Card(int id, std::string name, int type, int era, int freeWithId, std::vec
+@@ -12,6 +51,17 @@ Card::Card(int id, std::string name, int type, int era, int freeWithId, std::vec
      this->type = type;
      this->era = era;
      this->freeWithId = freeWithId;
@@ -1122,7 +1211,7 @@ index 1b4b3aaf79754b900cf62605d34244f8ddda11a4..99ddad47d038401293756d5f2086ac20
  
      // must have a better way to deal with the cost and quantity of units by number of players
      // (but this one is working)
-@@ -34,6 +79,18 @@ int Card::GetId() const{
+@@ -34,6 +84,18 @@ int Card::GetId() const{
      return this->id;
  }
  
@@ -1143,7 +1232,7 @@ index 1b4b3aaf79754b900cf62605d34244f8ddda11a4..99ddad47d038401293756d5f2086ac20
  }
 diff --git a/src/decision.cpp b/src/decision.cpp
 new file mode 100644
-index 0000000000000000000000000000000000000000..7a18730a2b430840040198f570f782c5fde5943f
+index 0000000000000000000000000000000000000000..47492a1f4eb0b1bd00e1057cecead8cb4372160e
 --- /dev/null
 +++ b/src/decision.cpp
 @@ -0,0 +1,586 @@
@@ -1629,7 +1718,7 @@ index 0000000000000000000000000000000000000000..7a18730a2b430840040198f570f782c5
 +          {"engine",{{"release","v0.2.0-dev"},{"source_commit",ENGINE_SOURCE_COMMIT},{"source_dirty",ENGINE_SOURCE_DIRTY},
 +            {"ruleset","bga-second-edition-development"},{"second_edition_implemented",false},
 +            {"card_data",{{"format_version",CARD_DATA_FORMAT_VERSION},{"source_sha256",CardDataHash()},
-+              {"tables_complete",true},{"effects_complete",false},{"deferred_effect_ids",{76,78}}}},
++              {"tables_complete",true},{"effects_complete",IncompleteCardEffects().empty()},{"deferred_effect_ids",IncompleteCardEffects()}}},
 +            {"capabilities",{"card_tables_v1","regular_options_v1","discard_choice_v1","simultaneous_settlement_v1","legacy_wonder_abilities_v1"}}}},
 +          {"game",{{"turn",turn},{"age",Age()},{"round_in_age",turn==21?json(nullptr):json(Round())},
 +            {"round_kind",turn==21?json(nullptr):json(Round()==7?"seventh":"regular")},{"phase",phase},
@@ -2596,6 +2685,220 @@ index 0000000000000000000000000000000000000000..a7da49075ec6c3f2f8087e28a23e485d
 +    for(const auto& r:actions) applied(e,r);
 +}
 +#endif
+diff --git a/tests/test_card_tables.cpp b/tests/test_card_tables.cpp
+new file mode 100644
+index 0000000000000000000000000000000000000000..43cf8d23b12733d30b64b53ca1ad0587a7326a3e
+--- /dev/null
++++ b/tests/test_card_tables.cpp
+@@ -0,0 +1,208 @@
++// Runtime regressions first exercised against the pre-migration tables.
++#define main sevenwonders_engine_main
++#include "../main.cpp"
++#undef main
++#include "decision_helpers.h"
++
++struct GameTestAccess {
++    static const std::vector<Card>& deck(const Game& g,int age) { return g.deck[age-1]; }
++};
++Card in_deck(const Game& g,int id,int age) {
++    for(const auto& c:GameTestAccess::deck(g,age)) if(c.GetId()==id) return c;
++    throw std::runtime_error("Missing deck card");
++}
++json dump_tables() {
++    const std::array<std::string,8> resources={"wood","ore","clay","stone","loom","glass","papyrus","coins"};
++    const std::array<std::string,7> colors={"brown","grey","blue","yellow","red","green","purple"};
++    json rows=json::array();
++    for(const auto& d:CardDefinitions()) {
++        const auto c=Card::FromDefinition(d.id,d.age);
++        const auto& e=c.GetEffects();json effects=json::object(), cost=json::object();
++        for(int r=0;r<8;++r) {
++            const int index=r==7?RESOURCE::coins:r;
++            if(c.GetCost().at(index)) cost[resources[r]]=c.GetCost().at(index);
++            if(r<7 && e.production[r]) effects["production"][resources[r]]=e.production[r];
++        }
++        if(!e.choice.empty()) { effects["choice"]=json::array();for(int r:e.choice) effects["choice"].push_back(resources[r]); }
++        if(effects.contains("production") || effects.contains("choice")) effects["tradable"]=e.tradable;
++        if(e.vp) effects["vp"]=e.vp;
++        if(e.coins) effects["coins"]=e.coins;
++        if(e.shields) effects["shields"]=e.shields;
++        if(!e.science.empty()) effects["science"]=e.science;
++        if(!e.discount.empty()) effects["discount"]=e.discount;
++        if(e.vp_per) effects["vp_per"]=e.vp_per;
++        if(e.coins_per) effects["coins_per"]=e.coins_per;
++        if(!e.count.empty()) effects["count"]=e.count;
++        if(!e.target.empty()) effects["target"]=e.target;
++        if(e.includes_self) effects["includes_self"]=true;
++        if(!e.condition.empty()) effects["condition"]=e.condition;
++        json quantities=json::object(), chains=json::array();
++        for(int n=3;n<=7;++n) quantities[std::to_string(n)]=c.GetAmount(n);
++        for(const auto& predecessor:c.GetChainFrom())
++            chains.push_back(FindCardDefinition(predecessor.first,predecessor.second)->key);
++        rows.push_back({{"key",d.key},{"name",c.GetName()},{"engine_id",c.GetId()},
++            {"color",colors[c.GetType()]},{"age",c.GetEra()},{"cost",cost},{"effects",effects},
++            {"counts_by_players",quantities},{"chain_from",chains},{"runtime_effects_complete",e.runtime_complete}});
++    }
++    json decks=json::array();
++    for(int seed=0;seed<40;++seed) {
++        Game g(seed);g.Init();g.NewGame(3);json ages=json::array();
++        for(int age=1;age<=3;++age) {
++            json cards=json::array();
++            for(const auto& c:GameTestAccess::deck(g,age))
++                cards.push_back({{"id",c.GetId()},{"age",c.GetEra()},{"instance",c.GetInstanceId()}});
++            ages.push_back(cards);
++        }
++        decks.push_back(ages);
++    }
++    return {{"source_sha256",CardDataHash()},{"format_version",CARD_DATA_FORMAT_VERSION},{"cards",rows},{"decks",decks}};
++}
++Card physical(int id,int age) {
++    static std::uint64_t next=900000;
++    return Card::FromDefinition(id,age).CreateInstance(next++);
++}
++void build_free(Player& p,const Card& c) {
++    p.ReceiveCards({c});expect(p.BuildStructure(c,{c},true),"Setup construction failed");
++}
++void all_runtime_rows() {
++    for(const auto& d:CardDefinitions()) {
++        DecisionFixture f;
++        auto resources=f.players[0].GetResources();
++        for(int r=0;r<7;++r) resources[r]=10;
++        resources[RESOURCE::coins]=20;f.players[0].SetResources(resources);
++        auto c=physical(d.id,d.age);
++        f.players[0].ReceiveCards({c,test_card(d.id==CARD_ID::altar?CARD_ID::theater:CARD_ID::altar)});
++        auto e=f.Engine();
++        auto build=choose(*e,0,"build_structure",d.id);
++        finish_cohort(*e,{build,choose(*e,1,"discard"),choose(*e,2,"discard")});
++        const auto after=e->Status();const auto& p=after["players"]["0"];
++        const std::array<std::string,7> names={"wood","ore","clay","stone","loom","glass","papyrus"};
++        for(int r=0;r<7;++r)
++            expect(p["resources"][names[r]]==10+d.effects.production[r],d.key+": production application");
++        expect(p["resources"]["shields"]==d.effects.shields,d.key+": shield application");
++        int coins=d.effects.runtime_complete?d.effects.coins:0;
++        if(d.id==CARD_ID::lighthouse) coins=1;
++        expect(p["resources"]["coins"]==20-d.cost[7]+coins,d.key+": bank or immediate coins");
++        if(d.type==CARD_TYPE::civilian)
++            expect(p["points"]["civilian"]==d.effects.vp,d.key+": civilian points");
++    }
++}
++void all_chains() {
++    int chains=0;
++    for(const auto& d:CardDefinitions()) for(const auto& prerequisite:d.chain_from) {
++        ++chains;DecisionFixture f;
++        build_free(f.players[0],physical(prerequisite.first,prerequisite.second));
++        auto target=physical(d.id,d.age);
++        expect(f.players[0].CheckFreeCard(target),d.key+": chain not recognized");
++        f.players[0].ReceiveCards({target,test_card(CARD_ID::altar)});
++        auto e=f.Engine();
++        finish_cohort(*e,{choose(*e,0,"build_structure",d.id,"chain"),choose(*e,1,"discard"),choose(*e,2,"discard")});
++        expect(e->Status()["players"]["0"]["resources"]["coins"]==(d.id==CARD_ID::lighthouse?5:3),
++               d.key+": chain cost or immediate coins");
++    }
++    expect(chains==25,"Missing chain edges");
++    DecisionFixture f;build_free(f.players[0],physical(CARD_ID::altar,1));
++    expect(!f.players[0].CheckFreeCard(physical(CARD_ID::temple,2)),"Obsolete Temple chain survived");
++    build_free(f.players[0],physical(CARD_ID::temple,2));
++    DecisionFixture old;build_free(old.players[0],physical(CARD_ID::temple,2));
++    expect(!old.players[0].CheckFreeCard(physical(CARD_ID::pantheon,3)),"Obsolete Pantheon chain survived");
++}
++void all_production() {
++    for(const auto& d:CardDefinitions()) {
++        if(d.effects.choice.empty() && std::all_of(d.effects.production.begin(),d.effects.production.end(),[](int n){return n==0;})) continue;
++        DecisionFixture f;build_free(f.players[0],physical(d.id,d.age));
++        auto cash=f.players[0].GetResources();cash[RESOURCE::coins]=0;f.players[0].SetResources(cash);
++        for(int r=0;r<7;++r) {
++            const int expected=d.effects.production[r]+(std::find(d.effects.choice.begin(),d.effects.choice.end(),r)!=d.effects.choice.end());
++            if(!expected) continue;
++            std::vector<int> cost(8,0);cost[r]=expected;
++            f.players[0].ReceiveCards({test_card(CARD_ID::palace,CARD_TYPE::civilian,3,cost),test_card(CARD_ID::altar)});
++            auto e=f.Engine();expect(offered(*e,0,"build_structure",CARD_ID::palace),d.key+": planner lost production");
++            ++cost[r];f.players[0].ReceiveCards({test_card(CARD_ID::palace,CARD_TYPE::civilian,3,cost),test_card(CARD_ID::altar)});
++            auto over=f.Engine();expect(!offered(*over,0,"build_structure",CARD_ID::palace),d.key+": planner overproduced");
++        }
++        if(d.effects.choice.size()>1) {
++            std::vector<int> cost(8,0);for(int r:d.effects.choice) cost[r]=1;
++            f.players[0].ReceiveCards({test_card(CARD_ID::palace,CARD_TYPE::civilian,3,cost),test_card(CARD_ID::altar)});
++            auto e=f.Engine();expect(!offered(*e,0,"build_structure",CARD_ID::palace),d.key+": choice used more than once");
++        }
++    }
++}
++void exact_cost_offers() {
++    for(const auto& d:CardDefinitions()) {
++        DecisionFixture f;
++        auto resources=f.players[0].GetResources();
++        for(int r=0;r<7;++r) resources[r]=d.cost[r];
++        resources[RESOURCE::coins]=d.cost[7];f.players[0].SetResources(resources);
++        auto target=physical(d.id,d.age);
++        f.players[0].ReceiveCards({target,test_card(d.id==CARD_ID::altar?CARD_ID::theater:CARD_ID::altar)});
++        auto e=f.Engine();expect(offered(*e,0,"build_structure",d.id),d.key+": exact resources rejected");
++        for(int r=0;r<8;++r) if(d.cost[r]) {
++            auto missing=resources;--missing[r==7?RESOURCE::coins:r];f.players[0].SetResources(missing);
++            auto insufficient=f.Engine();
++            expect(!offered(*insufficient,0,"build_structure",d.id),d.key+": missing resource accepted");
++        }
++    }
++}
++class CompletedGizah : public Gizah_a { public: CompletedGizah() { stage=3; } };
++void deferred_and_identity() {
++    expect(!FindCardDefinition(73,3),"Reserved ID reused");
++    expect(CARD_ID::ludus==76 && CARD_ID::castrum==77 && CARD_ID::decorators==78,"New IDs shifted");
++    for(int id:{78}) expect(!Card::FromDefinition(id,3).GetEffects().runtime_complete,"Deferred effect silently advertised");
++    DecisionFixture f;build_free(f.players[0],physical(CARD_ID::stockade,1));
++    build_free(f.players[0],physical(CARD_ID::ludus,3));
++    expect(f.players[0].GetResources()[RESOURCE::coins]==6 && f.players[0].CalculateCommercialScore()==3,
++           "Ludus count effect missing");
++    CompletedGizah completed;f.players[0].SetWonder(&completed);
++    build_free(f.players[0],physical(CARD_ID::decorators,3));
++    expect(f.players[0].CalculateGuildScore()==0,"Decorators algorithm started inside table package");
++    bool rejected=false;try { Card::FromDefinition(CARD_ID::loom,3); } catch(const std::invalid_argument&) { rejected=true; }
++    expect(rejected,"Invalid grey age accepted");
++    Game game(8);game.Init();game.NewGame(3);
++    expect(game.GetCardByName("Loom").GetId()==CARD_ID::none && game.GetCardByName("Loom",2).GetEra()==2,
++           "Name-only lookup silently selected a grey age");
++}
++void check_case(const std::string& which) {
++    Game game(8);game.Init();game.NewGame(3);
++    if(which=="points") {
++        DecisionFixture f;
++        auto c=in_deck(game,CARD_ID::altar,1);f.players[0].ReceiveCards({c});
++        expect(f.players[0].BuildStructure(c,{c},true),"Altar build failed");
++        expect(f.players[0].CalculateCivilianScore()==3,"Altar: expected 3 VP");
++    } else if(which=="cost") {
++        expect(in_deck(game,CARD_ID::aqueduct,2).MissingCards({})[RESOURCE::stone]==3,
++               "Aqueduct: expected three stone, not clay");
++        expect(in_deck(game,CARD_ID::town_hall,3).MissingCards({})[RESOURCE::glass]==1,
++               "Town Hall: expected glass, not papyrus");
++    } else if(which=="chain") {
++        expect(in_deck(game,CARD_ID::pantheon,3).GetFreeWith()==CARD_ID::altar,
++               "Pantheon: expected direct Altar chain");
++        expect(in_deck(game,CARD_ID::temple,2).GetFreeWith()==CARD_ID::none,
++               "Temple: obsolete Altar chain");
++    } else if(which=="grey") {
++        auto a=in_deck(game,CARD_ID::loom,1),b=in_deck(game,CARD_ID::loom,2);
++        expect(a.GetEra()==1 && b.GetEra()==2 && a.GetAmount(5)==1 && b.GetAmount(5)==2,
++               "Grey age variants collapsed");
++    } else if(which=="quantities") {
++        expect(in_deck(game,CARD_ID::town_hall,3).GetAmount(5)==1,
++               "Town Hall: expected one copy at five players");
++    } else if(which=="guilds") {
++        for(int seed=0;seed<40;++seed) {
++            Game g(seed);g.Init();g.NewGame(3);
++            for(const auto& c:GameTestAccess::deck(g,3))
++                expect(c.GetId()!=CARD_ID::strategists,"Retired Strategists in guild pool");
++        }
++    } else throw std::runtime_error("Unknown test case");
++}
++int main(int argc,char** argv) {
++    if(argc>1 && std::string(argv[1])=="--dump") { std::cout<<dump_tables().dump()<<'\n';return 0; }
++    int failures=0;
++    for(const std::string name:{"points","cost","chain","grey","quantities","guilds"}) {
++        if(argc>1 && argv[1]!=name) continue;
++        try { check_case(name);std::cout<<name<<": OK\n"; }
++        catch(const std::exception& e) { ++failures;std::cerr<<name<<": "<<e.what()<<'\n'; }
++    }
++    if(argc==1) try { all_runtime_rows();all_chains();all_production();exact_cost_offers();deferred_and_identity(); }
++    catch(const std::exception& e) { ++failures;std::cerr<<e.what()<<'\n'; }
++    return failures?1:0;
++}
 diff --git a/tests/test_choice_once_per_turn.cpp b/tests/test_choice_once_per_turn.cpp
 new file mode 100644
 index 0000000000000000000000000000000000000000..af73c0f0501583e2b4a2303b520fc818c07216da
@@ -4208,355 +4511,45 @@ index 0000000000000000000000000000000000000000..82b0b41bb01587e69f15d8b808cc97c0
 +        return 1;
 +    }
 +}
-diff --git a/include/card_data.generated.h b/include/card_data.generated.h
+diff --git a/tests/test_card_effects.cpp b/tests/test_card_effects.cpp
 new file mode 100644
-index 0000000000000000000000000000000000000000..6aa4c0dfd20bafadee8e32de8cf71ddbad80b9fe
+index 0000000000000000000000000000000000000000..994799bd158cf841d70b8eba1bdab20dad0ac93e
 --- /dev/null
-+++ b/include/card_data.generated.h
-@@ -0,0 +1,91 @@
-+// Generated by scripts/generate_card_data.py; do not edit.
-+// Source: data/bga-second-edition/targets.json, SHA-256 c654f36c96fdd325dc6e26cbe8ed9808ff9ea884a94d8e1eaa49284ac4a864b1
-+#ifndef CARD_DATA_GENERATED_H
-+#define CARD_DATA_GENERATED_H
-+#include "card_data.h"
-+namespace DMAG {
-+inline constexpr const char* GENERATED_CARD_DATA_SHA256 = "c654f36c96fdd325dc6e26cbe8ed9808ff9ea884a94d8e1eaa49284ac4a864b1";
-+inline const std::vector<CardDefinition> GENERATED_CARD_DEFINITIONS = {
-+    {"lumber_yard_age1", "Lumber Yard", 1, 0, 1, {0, 0, 0, 0, 0, 0, 0, 0}, {1, 2, 2, 2, 2}, {}, {{1, 0, 0, 0, 0, 0, 0}, {}, true, 0, 0, 0, "", "", 0, 0, "", "", false, "", true}},
-+    {"stone_pit_age1", "Stone Pit", 2, 0, 1, {0, 0, 0, 0, 0, 0, 0, 0}, {1, 1, 2, 2, 2}, {}, {{0, 0, 0, 1, 0, 0, 0}, {}, true, 0, 0, 0, "", "", 0, 0, "", "", false, "", true}},
-+    {"clay_pool_age1", "Clay Pool", 3, 0, 1, {0, 0, 0, 0, 0, 0, 0, 0}, {1, 1, 2, 2, 2}, {}, {{0, 0, 1, 0, 0, 0, 0}, {}, true, 0, 0, 0, "", "", 0, 0, "", "", false, "", true}},
-+    {"ore_vein_age1", "Ore Vein", 4, 0, 1, {0, 0, 0, 0, 0, 0, 0, 0}, {1, 2, 2, 2, 2}, {}, {{0, 1, 0, 0, 0, 0, 0}, {}, true, 0, 0, 0, "", "", 0, 0, "", "", false, "", true}},
-+    {"tree_farm_age1", "Tree Farm", 5, 0, 1, {0, 0, 0, 0, 0, 0, 0, 1}, {0, 0, 0, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {2, 0}, true, 0, 0, 0, "", "", 0, 0, "", "", false, "", true}},
-+    {"excavation_age1", "Excavation", 6, 0, 1, {0, 0, 0, 0, 0, 0, 0, 1}, {0, 1, 1, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {2, 3}, true, 0, 0, 0, "", "", 0, 0, "", "", false, "", true}},
-+    {"clay_pit_age1", "Clay Pit", 7, 0, 1, {0, 0, 0, 0, 0, 0, 0, 1}, {1, 1, 1, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {2, 1}, true, 0, 0, 0, "", "", 0, 0, "", "", false, "", true}},
-+    {"timber_yard_age1", "Timber Yard", 8, 0, 1, {0, 0, 0, 0, 0, 0, 0, 1}, {1, 1, 1, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {3, 0}, true, 0, 0, 0, "", "", 0, 0, "", "", false, "", true}},
-+    {"forest_cave_age1", "Forest Cave", 9, 0, 1, {0, 0, 0, 0, 0, 0, 0, 1}, {0, 0, 1, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {1, 0}, true, 0, 0, 0, "", "", 0, 0, "", "", false, "", true}},
-+    {"mine_age1", "Mine", 10, 0, 1, {0, 0, 0, 0, 0, 0, 0, 1}, {0, 0, 0, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {1, 3}, true, 0, 0, 0, "", "", 0, 0, "", "", false, "", true}},
-+    {"loom_age1", "Loom", 15, 1, 1, {0, 0, 0, 0, 0, 0, 0, 0}, {1, 1, 1, 2, 2}, {}, {{0, 0, 0, 0, 1, 0, 0}, {}, true, 0, 0, 0, "", "", 0, 0, "", "", false, "", true}},
-+    {"glassworks_age1", "Glassworks", 16, 1, 1, {0, 0, 0, 0, 0, 0, 0, 0}, {1, 1, 1, 2, 2}, {}, {{0, 0, 0, 0, 0, 1, 0}, {}, true, 0, 0, 0, "", "", 0, 0, "", "", false, "", true}},
-+    {"press_age1", "Press", 17, 1, 1, {0, 0, 0, 0, 0, 0, 0, 0}, {1, 1, 1, 2, 2}, {}, {{0, 0, 0, 0, 0, 0, 1}, {}, true, 0, 0, 0, "", "", 0, 0, "", "", false, "", true}},
-+    {"well_age1", "Well", 20, 2, 1, {0, 0, 0, 0, 0, 0, 0, 0}, {0, 1, 1, 1, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 3, 0, 0, "", "", 0, 0, "", "", false, "", true}},
-+    {"baths_age1", "Baths", 21, 2, 1, {0, 0, 0, 1, 0, 0, 0, 0}, {1, 1, 1, 1, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 3, 0, 0, "", "", 0, 0, "", "", false, "", true}},
-+    {"altar_age1", "Altar", 18, 2, 1, {0, 0, 0, 0, 0, 0, 0, 0}, {1, 1, 2, 2, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 3, 0, 0, "", "", 0, 0, "", "", false, "", true}},
-+    {"theater_age1", "Theater", 19, 2, 1, {0, 0, 0, 0, 0, 0, 0, 0}, {1, 1, 1, 2, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 3, 0, 0, "", "", 0, 0, "", "", false, "", true}},
-+    {"tavern_age1", "Tavern", 31, 3, 1, {0, 0, 0, 0, 0, 0, 0, 0}, {0, 1, 2, 2, 3}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 5, 0, "", "", 0, 0, "", "", false, "", true}},
-+    {"east_trading_post_age1", "East Trading Post", 32, 3, 1, {0, 0, 0, 0, 0, 0, 0, 0}, {1, 1, 1, 1, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "", "raw_right", 0, 0, "", "", false, "", true}},
-+    {"west_trading_post_age1", "West Trading Post", 33, 3, 1, {0, 0, 0, 0, 0, 0, 0, 0}, {1, 1, 1, 1, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "", "raw_left", 0, 0, "", "", false, "", true}},
-+    {"marketplace_age1", "Marketplace", 34, 3, 1, {0, 0, 0, 0, 0, 0, 0, 0}, {1, 1, 1, 2, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "", "manufactured_both", 0, 0, "", "", false, "", true}},
-+    {"stockade_age1", "Stockade", 43, 4, 1, {1, 0, 0, 0, 0, 0, 0, 0}, {1, 1, 1, 1, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 1, "", "", 0, 0, "", "", false, "", true}},
-+    {"barracks_age1", "Barracks", 44, 4, 1, {0, 1, 0, 0, 0, 0, 0, 0}, {1, 1, 2, 2, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 1, "", "", 0, 0, "", "", false, "", true}},
-+    {"guard_tower_age1", "Guard Tower", 45, 4, 1, {0, 0, 1, 0, 0, 0, 0, 0}, {1, 2, 2, 2, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 1, "", "", 0, 0, "", "", false, "", true}},
-+    {"apothecary_age1", "Apothecary", 54, 5, 1, {0, 0, 0, 0, 1, 0, 0, 0}, {1, 1, 2, 2, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "compass", "", 0, 0, "", "", false, "", true}},
-+    {"workshop_age1", "Workshop", 55, 5, 1, {0, 0, 0, 0, 0, 1, 0, 0}, {1, 1, 1, 1, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "gear", "", 0, 0, "", "", false, "", true}},
-+    {"scriptorium_age1", "Scriptorium", 56, 5, 1, {0, 0, 0, 0, 0, 0, 1, 0}, {1, 2, 2, 2, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "tablet", "", 0, 0, "", "", false, "", true}},
-+    {"sawmill_age2", "Sawmill", 11, 0, 2, {0, 0, 0, 0, 0, 0, 0, 1}, {1, 2, 2, 2, 2}, {}, {{2, 0, 0, 0, 0, 0, 0}, {}, true, 0, 0, 0, "", "", 0, 0, "", "", false, "", true}},
-+    {"quarry_age2", "Quarry", 12, 0, 2, {0, 0, 0, 0, 0, 0, 0, 1}, {1, 2, 2, 2, 2}, {}, {{0, 0, 0, 2, 0, 0, 0}, {}, true, 0, 0, 0, "", "", 0, 0, "", "", false, "", true}},
-+    {"brickyard_age2", "Brickyard", 13, 0, 2, {0, 0, 0, 0, 0, 0, 0, 1}, {1, 2, 2, 2, 2}, {}, {{0, 0, 2, 0, 0, 0, 0}, {}, true, 0, 0, 0, "", "", 0, 0, "", "", false, "", true}},
-+    {"foundry_age2", "Foundry", 14, 0, 2, {0, 0, 0, 0, 0, 0, 0, 1}, {1, 2, 2, 2, 2}, {}, {{0, 2, 0, 0, 0, 0, 0}, {}, true, 0, 0, 0, "", "", 0, 0, "", "", false, "", true}},
-+    {"loom_age2", "Loom", 15, 1, 2, {0, 0, 0, 0, 0, 0, 0, 0}, {1, 1, 2, 2, 2}, {}, {{0, 0, 0, 0, 1, 0, 0}, {}, true, 0, 0, 0, "", "", 0, 0, "", "", false, "", true}},
-+    {"glassworks_age2", "Glassworks", 16, 1, 2, {0, 0, 0, 0, 0, 0, 0, 0}, {1, 1, 2, 2, 2}, {}, {{0, 0, 0, 0, 0, 1, 0}, {}, true, 0, 0, 0, "", "", 0, 0, "", "", false, "", true}},
-+    {"press_age2", "Press", 17, 1, 2, {0, 0, 0, 0, 0, 0, 0, 0}, {1, 1, 2, 2, 2}, {}, {{0, 0, 0, 0, 0, 0, 1}, {}, true, 0, 0, 0, "", "", 0, 0, "", "", false, "", true}},
-+    {"aqueduct_age2", "Aqueduct", 25, 2, 2, {0, 0, 0, 3, 0, 0, 0, 0}, {1, 1, 1, 1, 2}, {{21, 1}}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 5, 0, 0, "", "", 0, 0, "", "", false, "", true}},
-+    {"temple_age2", "Temple", 22, 2, 2, {1, 0, 1, 0, 0, 1, 0, 0}, {1, 1, 1, 2, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 4, 0, 0, "", "", 0, 0, "", "", false, "", true}},
-+    {"statue_age2", "Statue", 24, 2, 2, {1, 2, 0, 0, 0, 0, 0, 0}, {1, 1, 1, 1, 2}, {{20, 1}}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 4, 0, 0, "", "", 0, 0, "", "", false, "", true}},
-+    {"courthouse_age2", "Courthouse", 23, 2, 2, {0, 0, 2, 0, 1, 0, 0, 0}, {1, 1, 2, 2, 2}, {{56, 1}}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 4, 0, 0, "", "", 0, 0, "", "", false, "", true}},
-+    {"forum_age2", "Forum", 35, 3, 2, {0, 0, 2, 0, 0, 0, 0, 0}, {1, 1, 1, 2, 3}, {{32, 1}, {33, 1}}, {{0, 0, 0, 0, 0, 0, 0}, {5, 4, 6}, false, 0, 0, 0, "", "", 0, 0, "", "", false, "", true}},
-+    {"caravansery_age2", "Caravansery", 36, 3, 2, {2, 0, 0, 0, 0, 0, 0, 0}, {1, 1, 2, 3, 3}, {{34, 1}}, {{0, 0, 0, 0, 0, 0, 0}, {2, 1, 3, 0}, false, 0, 0, 0, "", "", 0, 0, "", "", false, "", true}},
-+    {"vineyard_age2", "Vineyard", 37, 3, 2, {0, 0, 0, 0, 0, 0, 0, 0}, {1, 1, 1, 2, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "", "", 0, 1, "brown", "self_and_neighbors", false, "", true}},
-+    {"bazar_age2", "Bazar", 38, 3, 2, {0, 0, 0, 0, 0, 0, 0, 0}, {0, 1, 1, 1, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "", "", 0, 2, "grey", "self_and_neighbors", false, "", true}},
-+    {"walls_age2", "Walls", 46, 4, 2, {0, 0, 0, 3, 0, 0, 0, 0}, {1, 1, 1, 1, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 2, "", "", 0, 0, "", "", false, "", true}},
-+    {"training_ground_age2", "Training Ground", 47, 4, 2, {1, 2, 0, 0, 0, 0, 0, 0}, {0, 1, 1, 2, 3}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 2, "", "", 0, 0, "", "", false, "", true}},
-+    {"stables_age2", "Stables", 48, 4, 2, {1, 1, 1, 0, 0, 0, 0, 0}, {1, 1, 2, 2, 2}, {{54, 1}}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 2, "", "", 0, 0, "", "", false, "", true}},
-+    {"archery_range_age2", "Archery Range", 49, 4, 2, {2, 1, 0, 0, 0, 0, 0, 0}, {1, 1, 1, 2, 2}, {{55, 1}}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 2, "", "", 0, 0, "", "", false, "", true}},
-+    {"dispensary_age2", "Dispensary", 57, 5, 2, {0, 2, 0, 0, 0, 1, 0, 0}, {1, 2, 2, 2, 2}, {{54, 1}}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "compass", "", 0, 0, "", "", false, "", true}},
-+    {"laboratory_age2", "Laboratory", 58, 5, 2, {0, 0, 2, 0, 0, 0, 1, 0}, {1, 1, 2, 2, 2}, {{55, 1}}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "gear", "", 0, 0, "", "", false, "", true}},
-+    {"library_age2", "Library", 59, 5, 2, {0, 0, 0, 2, 1, 0, 0, 0}, {1, 1, 1, 2, 2}, {{56, 1}}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "tablet", "", 0, 0, "", "", false, "", true}},
-+    {"school_age2", "School", 60, 5, 2, {1, 0, 0, 0, 0, 0, 1, 0}, {1, 1, 1, 1, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "tablet", "", 0, 0, "", "", false, "", true}},
-+    {"workers_guild_age3", "Workers Guild", 66, 6, 3, {1, 2, 1, 1, 0, 0, 0, 0}, {1, 1, 1, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "", "", 1, 0, "brown", "neighbors", false, "", true}},
-+    {"craftsmens_guild_age3", "Craftsmens Guild", 67, 6, 3, {0, 2, 0, 2, 0, 0, 0, 0}, {1, 1, 1, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "", "", 2, 0, "grey", "neighbors", false, "", true}},
-+    {"traders_guild_age3", "Traders Guild", 68, 6, 3, {0, 0, 0, 0, 1, 1, 1, 0}, {1, 1, 1, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "", "", 1, 0, "yellow", "neighbors", false, "", true}},
-+    {"philosophers_guild_age3", "Philosophers Guild", 69, 6, 3, {0, 0, 3, 0, 1, 0, 1, 0}, {1, 1, 1, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "", "", 1, 0, "green", "neighbors", false, "", true}},
-+    {"spies_guild_age3", "Spies Guild", 70, 6, 3, {0, 0, 2, 0, 0, 1, 0, 0}, {1, 1, 1, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "", "", 1, 0, "red", "neighbors", false, "", true}},
-+    {"decorators_guild_age3", "Decorators Guild", 78, 6, 3, {0, 2, 0, 1, 1, 0, 0, 0}, {1, 1, 1, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 7, 0, 0, "", "", 0, 0, "", "", false, "wonder_complete", false}},
-+    {"shipowners_guild_age3", "Shipowners Guild", 72, 6, 3, {3, 0, 0, 0, 0, 1, 1, 0}, {1, 1, 1, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "", "", 1, 0, "brown_grey_purple", "self", true, "", true}},
-+    {"scientists_guild_age3", "Scientists Guild", 74, 6, 3, {2, 2, 0, 0, 0, 0, 1, 0}, {1, 1, 1, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "joker", "", 0, 0, "", "", false, "", true}},
-+    {"magistrates_guild_age3", "Magistrates Guild", 71, 6, 3, {3, 0, 0, 1, 1, 0, 0, 0}, {1, 1, 1, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "", "", 1, 0, "blue", "neighbors", false, "", true}},
-+    {"builders_guild_age3", "Builders Guild", 75, 6, 3, {0, 0, 2, 3, 0, 1, 0, 0}, {1, 1, 1, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "", "", 1, 0, "wonder_stages", "self_and_neighbors", false, "", true}},
-+    {"pantheon_age3", "Pantheon", 29, 2, 3, {0, 1, 2, 0, 1, 1, 1, 0}, {1, 1, 1, 2, 2}, {{18, 1}}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 7, 0, 0, "", "", 0, 0, "", "", false, "", true}},
-+    {"gardens_age3", "Gardens", 26, 2, 3, {1, 0, 2, 0, 0, 0, 0, 0}, {1, 2, 2, 2, 2}, {{19, 1}}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 5, 0, 0, "", "", 0, 0, "", "", false, "", true}},
-+    {"town_hall_age3", "Town Hall", 27, 2, 3, {0, 1, 0, 2, 0, 1, 0, 0}, {1, 1, 1, 2, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 6, 0, 0, "", "", 0, 0, "", "", false, "", true}},
-+    {"palace_age3", "Palace", 30, 2, 3, {1, 1, 1, 1, 1, 1, 1, 0}, {1, 1, 1, 1, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 8, 0, 0, "", "", 0, 0, "", "", false, "", true}},
-+    {"senate_age3", "Senate", 28, 2, 3, {2, 1, 0, 1, 0, 0, 0, 0}, {1, 1, 2, 2, 2}, {{59, 2}}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 6, 0, 0, "", "", 0, 0, "", "", false, "", true}},
-+    {"haven_age3", "Haven", 39, 3, 3, {1, 1, 0, 0, 1, 0, 0, 0}, {1, 2, 2, 2, 2}, {{35, 2}}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "", "", 1, 1, "brown", "self", false, "", true}},
-+    {"lighthouse_age3", "Lighthouse", 40, 3, 3, {0, 0, 0, 1, 0, 1, 0, 0}, {1, 1, 1, 2, 2}, {{36, 2}}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "", "", 1, 1, "yellow", "self", true, "", true}},
-+    {"chamber_of_commerce_age3", "Chamber of Commerce", 41, 3, 3, {0, 0, 2, 0, 0, 0, 1, 0}, {0, 1, 1, 2, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "", "", 2, 2, "grey", "self", false, "", true}},
-+    {"arena_age3", "Arena", 42, 3, 3, {0, 1, 0, 2, 0, 0, 0, 0}, {1, 1, 2, 2, 2}, {{57, 2}}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "", "", 1, 3, "wonder_stages", "self", false, "", true}},
-+    {"fortifications_age3", "Fortifications", 50, 4, 3, {0, 3, 1, 0, 0, 0, 0, 0}, {1, 1, 1, 1, 2}, {{46, 2}}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 3, "", "", 0, 0, "", "", false, "", true}},
-+    {"circus_age3", "Circus", 51, 4, 3, {0, 1, 0, 3, 0, 0, 0, 0}, {0, 1, 1, 2, 2}, {{47, 2}}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 3, "", "", 0, 0, "", "", false, "", true}},
-+    {"arsenal_age3", "Arsenal", 52, 4, 3, {2, 1, 0, 0, 1, 0, 0, 0}, {1, 1, 2, 2, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 3, "", "", 0, 0, "", "", false, "", true}},
-+    {"siege_workshop_age3", "Siege Workshop", 53, 4, 3, {1, 0, 3, 0, 0, 0, 0, 0}, {1, 1, 2, 2, 2}, {{58, 2}}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 3, "", "", 0, 0, "", "", false, "", true}},
-+    {"lodge_age3", "Lodge", 61, 5, 3, {0, 0, 2, 0, 1, 0, 1, 0}, {1, 1, 1, 2, 2}, {{57, 2}}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "compass", "", 0, 0, "", "", false, "", true}},
-+    {"observatory_age3", "Observatory", 62, 5, 3, {0, 2, 0, 0, 1, 1, 0, 0}, {1, 1, 1, 1, 2}, {{58, 2}}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "gear", "", 0, 0, "", "", false, "", true}},
-+    {"university_age3", "University", 63, 5, 3, {2, 0, 0, 0, 0, 1, 1, 0}, {1, 2, 2, 2, 2}, {{59, 2}}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "tablet", "", 0, 0, "", "", false, "", true}},
-+    {"academy_age3", "Academy", 64, 5, 3, {0, 0, 0, 3, 0, 1, 0, 0}, {1, 1, 1, 1, 2}, {{60, 2}}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "compass", "", 0, 0, "", "", false, "", true}},
-+    {"study_age3", "Study", 65, 5, 3, {1, 0, 0, 0, 1, 0, 1, 0}, {1, 1, 2, 2, 2}, {{60, 2}}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "gear", "", 0, 0, "", "", false, "", true}},
-+    {"ludus_age3", "Ludus", 76, 3, 3, {0, 1, 0, 1, 0, 0, 0, 0}, {0, 0, 1, 1, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "", "", 1, 3, "red", "self", false, "", false}},
-+    {"castrum_age3", "Castrum", 77, 4, 3, {1, 0, 2, 0, 0, 0, 1, 0}, {0, 1, 1, 1, 2}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 3, "", "", 0, 0, "", "", false, "", true}},
-+};
-+}
-+#endif
-diff --git a/include/card_data.h b/include/card_data.h
-new file mode 100644
-index 0000000000000000000000000000000000000000..8f16eb6f681054f41460cdd2ce4621dabf4c8da8
---- /dev/null
-+++ b/include/card_data.h
-@@ -0,0 +1,35 @@
-+#ifndef CARD_DATA_H
-+#define CARD_DATA_H
-+#include <array>
-+#include <string>
-+#include <utility>
-+#include <vector>
-+
-+namespace DMAG {
-+struct CardEffects {
-+    std::array<int,7> production{};
-+    std::vector<int> choice;
-+    bool tradable=false;
-+    int vp=0, coins=0, shields=0;
-+    std::string science, discount;
-+    int vp_per=0, coins_per=0;
-+    std::string count, target;
-+    bool includes_self=false;
-+    std::string condition;
-+    // Target metadata is retained even when its new algorithm is deferred.
-+    bool runtime_complete=true;
-+};
-+struct CardDefinition {
-+    std::string key, name;
-+    int id, type, age;
-+    std::array<int,8> cost;
-+    std::array<int,5> quantities;
-+    std::vector<std::pair<int,int>> chain_from; // (type ID, age), alternatives
-+    CardEffects effects;
-+};
-+const std::vector<CardDefinition>& CardDefinitions();
-+const CardDefinition* FindCardDefinition(int id,int age);
-+const char* CardDataHash();
-+constexpr int CARD_DATA_FORMAT_VERSION=1;
-+}
-+#endif
-diff --git a/tests/test_card_tables.cpp b/tests/test_card_tables.cpp
-new file mode 100644
-index 0000000000000000000000000000000000000000..9b253767e849babd432a8773a1f76dc726f34d94
---- /dev/null
-+++ b/tests/test_card_tables.cpp
-@@ -0,0 +1,208 @@
-+// Runtime regressions first exercised against the pre-migration tables.
-+#define main sevenwonders_engine_main
-+#include "../main.cpp"
-+#undef main
++++ b/tests/test_card_effects.cpp
+@@ -0,0 +1,36 @@
 +#include "decision_helpers.h"
-+
-+struct GameTestAccess {
-+    static const std::vector<Card>& deck(const Game& g,int age) { return g.deck[age-1]; }
-+};
-+Card in_deck(const Game& g,int id,int age) {
-+    for(const auto& c:GameTestAccess::deck(g,age)) if(c.GetId()==id) return c;
-+    throw std::runtime_error("Missing deck card");
-+}
-+json dump_tables() {
-+    const std::array<std::string,8> resources={"wood","ore","clay","stone","loom","glass","papyrus","coins"};
-+    const std::array<std::string,7> colors={"brown","grey","blue","yellow","red","green","purple"};
-+    json rows=json::array();
-+    for(const auto& d:CardDefinitions()) {
-+        const auto c=Card::FromDefinition(d.id,d.age);
-+        const auto& e=c.GetEffects();json effects=json::object(), cost=json::object();
-+        for(int r=0;r<8;++r) {
-+            const int index=r==7?RESOURCE::coins:r;
-+            if(c.GetCost().at(index)) cost[resources[r]]=c.GetCost().at(index);
-+            if(r<7 && e.production[r]) effects["production"][resources[r]]=e.production[r];
-+        }
-+        if(!e.choice.empty()) { effects["choice"]=json::array();for(int r:e.choice) effects["choice"].push_back(resources[r]); }
-+        if(effects.contains("production") || effects.contains("choice")) effects["tradable"]=e.tradable;
-+        if(e.vp) effects["vp"]=e.vp;
-+        if(e.coins) effects["coins"]=e.coins;
-+        if(e.shields) effects["shields"]=e.shields;
-+        if(!e.science.empty()) effects["science"]=e.science;
-+        if(!e.discount.empty()) effects["discount"]=e.discount;
-+        if(e.vp_per) effects["vp_per"]=e.vp_per;
-+        if(e.coins_per) effects["coins_per"]=e.coins_per;
-+        if(!e.count.empty()) effects["count"]=e.count;
-+        if(!e.target.empty()) effects["target"]=e.target;
-+        if(e.includes_self) effects["includes_self"]=true;
-+        if(!e.condition.empty()) effects["condition"]=e.condition;
-+        json quantities=json::object(), chains=json::array();
-+        for(int n=3;n<=7;++n) quantities[std::to_string(n)]=c.GetAmount(n);
-+        for(const auto& predecessor:c.GetChainFrom())
-+            chains.push_back(FindCardDefinition(predecessor.first,predecessor.second)->key);
-+        rows.push_back({{"key",d.key},{"name",c.GetName()},{"engine_id",c.GetId()},
-+            {"color",colors[c.GetType()]},{"age",c.GetEra()},{"cost",cost},{"effects",effects},
-+            {"counts_by_players",quantities},{"chain_from",chains},{"runtime_effects_complete",e.runtime_complete}});
-+    }
-+    json decks=json::array();
-+    for(int seed=0;seed<40;++seed) {
-+        Game g(seed);g.Init();g.NewGame(3);json ages=json::array();
-+        for(int age=1;age<=3;++age) {
-+            json cards=json::array();
-+            for(const auto& c:GameTestAccess::deck(g,age))
-+                cards.push_back({{"id",c.GetId()},{"age",c.GetEra()},{"instance",c.GetInstanceId()}});
-+            ages.push_back(cards);
-+        }
-+        decks.push_back(ages);
-+    }
-+    return {{"source_sha256",CardDataHash()},{"format_version",CARD_DATA_FORMAT_VERSION},{"cards",rows},{"decks",decks}};
-+}
-+Card physical(int id,int age) {
-+    static std::uint64_t next=900000;
-+    return Card::FromDefinition(id,age).CreateInstance(next++);
-+}
-+void build_free(Player& p,const Card& c) {
-+    p.ReceiveCards({c});expect(p.BuildStructure(c,{c},true),"Setup construction failed");
-+}
-+void all_runtime_rows() {
-+    for(const auto& d:CardDefinitions()) {
++#include <iostream>
++using namespace DMAG;
++Card actual(int id,int age=3) { static std::uint64_t next=700000;return Card::FromDefinition(id,age).CreateInstance(next++); }
++void build(Player& p,Card c) { p.ReceiveCards({c});expect(p.BuildStructure(c,{c},true),"Fixture build failed"); }
++class HaliReady:public Halikarnassos_a {public:HaliReady(){stage=2;}};
++void ludus() {
++    const int red[]={CARD_ID::stockade,CARD_ID::barracks,CARD_ID::guard_tower};
++    for(int own=0;own<=3;++own) {
 +        DecisionFixture f;
-+        auto resources=f.players[0].GetResources();
-+        for(int r=0;r<7;++r) resources[r]=10;
-+        resources[RESOURCE::coins]=20;f.players[0].SetResources(resources);
-+        auto c=physical(d.id,d.age);
-+        f.players[0].ReceiveCards({c,test_card(d.id==CARD_ID::altar?CARD_ID::theater:CARD_ID::altar)});
-+        auto e=f.Engine();
-+        auto build=choose(*e,0,"build_structure",d.id);
-+        finish_cohort(*e,{build,choose(*e,1,"discard"),choose(*e,2,"discard")});
-+        const auto after=e->Status();const auto& p=after["players"]["0"];
-+        const std::array<std::string,7> names={"wood","ore","clay","stone","loom","glass","papyrus"};
-+        for(int r=0;r<7;++r)
-+            expect(p["resources"][names[r]]==10+d.effects.production[r],d.key+": production application");
-+        expect(p["resources"]["shields"]==d.effects.shields,d.key+": shield application");
-+        int coins=d.effects.runtime_complete?d.effects.coins:0;
-+        if(d.id==CARD_ID::lighthouse) coins=1;
-+        expect(p["resources"]["coins"]==20-d.cost[7]+coins,d.key+": bank or immediate coins");
-+        if(d.type==CARD_TYPE::civilian)
-+            expect(p["points"]["civilian"]==d.effects.vp,d.key+": civilian points");
-+    }
-+}
-+void all_chains() {
-+    int chains=0;
-+    for(const auto& d:CardDefinitions()) for(const auto& prerequisite:d.chain_from) {
-+        ++chains;DecisionFixture f;
-+        build_free(f.players[0],physical(prerequisite.first,prerequisite.second));
-+        auto target=physical(d.id,d.age);
-+        expect(f.players[0].CheckFreeCard(target),d.key+": chain not recognized");
-+        f.players[0].ReceiveCards({target,test_card(CARD_ID::altar)});
-+        auto e=f.Engine();
-+        finish_cohort(*e,{choose(*e,0,"build_structure",d.id,"chain"),choose(*e,1,"discard"),choose(*e,2,"discard")});
-+        expect(e->Status()["players"]["0"]["resources"]["coins"]==(d.id==CARD_ID::lighthouse?5:3),
-+               d.key+": chain cost or immediate coins");
-+    }
-+    expect(chains==25,"Missing chain edges");
-+    DecisionFixture f;build_free(f.players[0],physical(CARD_ID::altar,1));
-+    expect(!f.players[0].CheckFreeCard(physical(CARD_ID::temple,2)),"Obsolete Temple chain survived");
-+    build_free(f.players[0],physical(CARD_ID::temple,2));
-+    DecisionFixture old;build_free(old.players[0],physical(CARD_ID::temple,2));
-+    expect(!old.players[0].CheckFreeCard(physical(CARD_ID::pantheon,3)),"Obsolete Pantheon chain survived");
-+}
-+void all_production() {
-+    for(const auto& d:CardDefinitions()) {
-+        if(d.effects.choice.empty() && std::all_of(d.effects.production.begin(),d.effects.production.end(),[](int n){return n==0;})) continue;
-+        DecisionFixture f;build_free(f.players[0],physical(d.id,d.age));
-+        auto cash=f.players[0].GetResources();cash[RESOURCE::coins]=0;f.players[0].SetResources(cash);
-+        for(int r=0;r<7;++r) {
-+            const int expected=d.effects.production[r]+(std::find(d.effects.choice.begin(),d.effects.choice.end(),r)!=d.effects.choice.end());
-+            if(!expected) continue;
-+            std::vector<int> cost(8,0);cost[r]=expected;
-+            f.players[0].ReceiveCards({test_card(CARD_ID::palace,CARD_TYPE::civilian,3,cost),test_card(CARD_ID::altar)});
-+            auto e=f.Engine();expect(offered(*e,0,"build_structure",CARD_ID::palace),d.key+": planner lost production");
-+            ++cost[r];f.players[0].ReceiveCards({test_card(CARD_ID::palace,CARD_TYPE::civilian,3,cost),test_card(CARD_ID::altar)});
-+            auto over=f.Engine();expect(!offered(*over,0,"build_structure",CARD_ID::palace),d.key+": planner overproduced");
-+        }
-+        if(d.effects.choice.size()>1) {
-+            std::vector<int> cost(8,0);for(int r:d.effects.choice) cost[r]=1;
-+            f.players[0].ReceiveCards({test_card(CARD_ID::palace,CARD_TYPE::civilian,3,cost),test_card(CARD_ID::altar)});
-+            auto e=f.Engine();expect(!offered(*e,0,"build_structure",CARD_ID::palace),d.key+": choice used more than once");
++        for(int n=0;n<own;++n) build(f.players[0],actual(red[n],1));
++        for(int s=1;s<3;++s) for(int n=0;n<3;++n) build(f.players[s],actual(red[n],1));
++        build(f.players[0],actual(CARD_ID::ludus));
++        expect(f.players[0].GetResources()[RESOURCE::coins]==3+3*own,"Ludus coins must count own red cards once");
++        for(int n=0;n<3;++n) expect(f.players[0].CalculateCommercialScore()==1+2*own,"Ludus VP/treasury or repeated score");
++        if(own<3) {
++            build(f.players[0],actual(red[own],1));
++            expect(f.players[0].GetResources()[RESOURCE::coins]==3+3*own,"Later red retroactively paid coins");
++            expect(f.players[0].CalculateCommercialScore()==2+2*own,"Later red did not add end VP");
 +        }
 +    }
++    DecisionFixture f;build(f.players[0],actual(red[0],1));
++    auto r=f.players[0].GetResources();r[RESOURCE::stone]=1;r[RESOURCE::ore]=1;f.players[0].SetResources(r);
++    f.players[0].ReceiveCards({actual(CARD_ID::ludus),test_card(CARD_ID::altar)});
++    auto e=f.Engine();auto request=choose(*e,0,"build_structure",CARD_ID::ludus);
++    finish_cohort(*e,{request,choose(*e,1,"discard"),choose(*e,2,"discard")});
++    auto state=e->Status();expect(state["players"]["0"]["resources"]["coins"]==6,"Regular Ludus payout");
++    e->Submit(request);expect(e->Status()["players"]==state["players"],"Ludus replay paid twice");
++    DecisionFixture d;HaliReady hali;d.players[0].SetWonder(&hali);
++    build(d.players[0],actual(red[0],1));d.players[0].DiscardFree(true);
++    auto c=actual(CARD_ID::ludus);std::vector<Card> pile={c};
++    expect(d.players[0].BuildDiscardFree(c,pile) && pile.empty(),"Free Ludus failed");
++    expect(d.players[0].GetResources()[RESOURCE::coins]==6,"Free Ludus did not pay");
++    expect(!d.players[0].BuildDiscardFree(c,pile) && d.players[0].GetResources()[RESOURCE::coins]==6,"Consumed Ludus paid again");
 +}
-+void exact_cost_offers() {
-+    for(const auto& d:CardDefinitions()) {
-+        DecisionFixture f;
-+        auto resources=f.players[0].GetResources();
-+        for(int r=0;r<7;++r) resources[r]=d.cost[r];
-+        resources[RESOURCE::coins]=d.cost[7];f.players[0].SetResources(resources);
-+        auto target=physical(d.id,d.age);
-+        f.players[0].ReceiveCards({target,test_card(d.id==CARD_ID::altar?CARD_ID::theater:CARD_ID::altar)});
-+        auto e=f.Engine();expect(offered(*e,0,"build_structure",d.id),d.key+": exact resources rejected");
-+        for(int r=0;r<8;++r) if(d.cost[r]) {
-+            auto missing=resources;--missing[r==7?RESOURCE::coins:r];f.players[0].SetResources(missing);
-+            auto insufficient=f.Engine();
-+            expect(!offered(*insufficient,0,"build_structure",d.id),d.key+": missing resource accepted");
-+        }
-+    }
-+}
-+class CompletedGizah : public Gizah_a { public: CompletedGizah() { stage=3; } };
-+void deferred_and_identity() {
-+    expect(!FindCardDefinition(73,3),"Reserved ID reused");
-+    expect(CARD_ID::ludus==76 && CARD_ID::castrum==77 && CARD_ID::decorators==78,"New IDs shifted");
-+    for(int id:{76,78}) expect(!Card::FromDefinition(id,3).GetEffects().runtime_complete,"Deferred effect silently advertised");
-+    DecisionFixture f;build_free(f.players[0],physical(CARD_ID::stockade,1));
-+    build_free(f.players[0],physical(CARD_ID::ludus,3));
-+    expect(f.players[0].GetResources()[RESOURCE::coins]==3 && f.players[0].CalculateCommercialScore()==1,
-+           "Ludus algorithm started inside table package");
-+    CompletedGizah completed;f.players[0].SetWonder(&completed);
-+    build_free(f.players[0],physical(CARD_ID::decorators,3));
-+    expect(f.players[0].CalculateGuildScore()==0,"Decorators algorithm started inside table package");
-+    bool rejected=false;try { Card::FromDefinition(CARD_ID::loom,3); } catch(const std::invalid_argument&) { rejected=true; }
-+    expect(rejected,"Invalid grey age accepted");
-+    Game game(8);game.Init();game.NewGame(3);
-+    expect(game.GetCardByName("Loom").GetId()==CARD_ID::none && game.GetCardByName("Loom",2).GetEra()==2,
-+           "Name-only lookup silently selected a grey age");
-+}
-+void check_case(const std::string& which) {
-+    Game game(8);game.Init();game.NewGame(3);
-+    if(which=="points") {
-+        DecisionFixture f;
-+        auto c=in_deck(game,CARD_ID::altar,1);f.players[0].ReceiveCards({c});
-+        expect(f.players[0].BuildStructure(c,{c},true),"Altar build failed");
-+        expect(f.players[0].CalculateCivilianScore()==3,"Altar: expected 3 VP");
-+    } else if(which=="cost") {
-+        expect(in_deck(game,CARD_ID::aqueduct,2).MissingCards({})[RESOURCE::stone]==3,
-+               "Aqueduct: expected three stone, not clay");
-+        expect(in_deck(game,CARD_ID::town_hall,3).MissingCards({})[RESOURCE::glass]==1,
-+               "Town Hall: expected glass, not papyrus");
-+    } else if(which=="chain") {
-+        expect(in_deck(game,CARD_ID::pantheon,3).GetFreeWith()==CARD_ID::altar,
-+               "Pantheon: expected direct Altar chain");
-+        expect(in_deck(game,CARD_ID::temple,2).GetFreeWith()==CARD_ID::none,
-+               "Temple: obsolete Altar chain");
-+    } else if(which=="grey") {
-+        auto a=in_deck(game,CARD_ID::loom,1),b=in_deck(game,CARD_ID::loom,2);
-+        expect(a.GetEra()==1 && b.GetEra()==2 && a.GetAmount(5)==1 && b.GetAmount(5)==2,
-+               "Grey age variants collapsed");
-+    } else if(which=="quantities") {
-+        expect(in_deck(game,CARD_ID::town_hall,3).GetAmount(5)==1,
-+               "Town Hall: expected one copy at five players");
-+    } else if(which=="guilds") {
-+        for(int seed=0;seed<40;++seed) {
-+            Game g(seed);g.Init();g.NewGame(3);
-+            for(const auto& c:GameTestAccess::deck(g,3))
-+                expect(c.GetId()!=CARD_ID::strategists,"Retired Strategists in guild pool");
-+        }
-+    } else throw std::runtime_error("Unknown test case");
-+}
-+int main(int argc,char** argv) {
-+    if(argc>1 && std::string(argv[1])=="--dump") { std::cout<<dump_tables().dump()<<'\n';return 0; }
-+    int failures=0;
-+    for(const std::string name:{"points","cost","chain","grey","quantities","guilds"}) {
-+        if(argc>1 && argv[1]!=name) continue;
-+        try { check_case(name);std::cout<<name<<": OK\n"; }
-+        catch(const std::exception& e) { ++failures;std::cerr<<name<<": "<<e.what()<<'\n'; }
-+    }
-+    if(argc==1) try { all_runtime_rows();all_chains();all_production();exact_cost_offers();deferred_and_identity(); }
-+    catch(const std::exception& e) { ++failures;std::cerr<<e.what()<<'\n'; }
-+    return failures?1:0;
-+}
++int main(){try{ludus();return 0;}catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}}

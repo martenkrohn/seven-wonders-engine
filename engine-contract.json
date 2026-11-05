@@ -10,7 +10,9 @@
     "export": "data/generated/cards-v1.json",
     "tables_complete": true,
     "effects_complete": false,
-    "deferred_effect_ids": [76, 78]
+    "deferred_effect_ids": [
+      78
+    ]
   },
   "upstream_repository": "https://github.com/dmag-ufsm/7Wonders",
   "upstream_commit": "a0bc333a7a7f21f83156de8a2d522e7baa913f0a"

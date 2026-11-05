@@ -1,10 +1,10 @@
 # Arbeitsplan: alte GUI bis zur spielbaren BGA-Edition
 
 Stand: 5. November 2026. Dieser Plan ist die maßgebliche Reihenfolge für die
-weitere Migration. **Ein Auftrag bearbeitet jeweils nur ein Arbeitspaket.**
+weitere Migration. **Aktuelle Nutzerfreigabe: alle verbleibenden Pakete bis einschließlich 9, nacheinander.**
 Zum Abschluss werden Ergebnis, Tests, Commit und verbleibende Grenzen
-eingetragen. Anschließend endet der Auftrag; das nächste Paket startet mit
-frischem Kontext. Der [fertige nächste Agentenauftrag](NEXT_AGENT_TASK.md)
+eingetragen. Die Pakete werden gemäß der erweiterten Nutzerfreigabe vom 5. November 2026
+nacheinander umgesetzt und einzeln geprüft/committed. Der [fertige nächste Agentenauftrag](NEXT_AGENT_TASK.md)
 begrenzt die nächste Sitzung auf Paket 5-IIa (ausschließlich Ludus).
 
 ## Ziel und feste Entscheidungen
@@ -484,3 +484,13 @@ Legacy-Exporter, Features und Training sind unverändert. Kein Push/Release,
 kein Parent-Pin-/Lock-Update; der Parent bleibt bei `a283d58`, sein Pin bei
 `f39c1d7`. Der vorbereitete Folgeauftrag bearbeitet ausschließlich Ludus
 (5-IIa); Decorators und jede weitere Phase bleiben getrennt. Hier endet 5-I.
+
+
+## Laufende Gesamtabnahme bis Paket 9
+
+Erweiterte Nutzerfreigabe: alle verbleibenden Pakete nacheinander. Die alten
+Stop-Hinweise in historischen Einzelaufträgen sind dadurch aufgehoben.
+
+5-IIa Ludus: umgesetzt; roter Endwertungsfall nachgewiesen, danach alle 13
+CTests grün. Eigene/fremde Militärkarten, spätere Karten, Replay und freier
+Ablagebau geprüft. Einzelne Commits und weitere Nachweise folgen unten.

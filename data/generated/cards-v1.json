@@ -12,7 +12,6 @@
     "wonders": "legacy",
     "card_tables": true,
     "deferred_effects": {
-      "76": "ludus_count_effect",
       "78": "decorators_wonder_complete"
     }
   },

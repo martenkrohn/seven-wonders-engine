@@ -54,7 +54,7 @@ class GeneratedCardTests(unittest.TestCase):
         self.assertEqual(export["source"]["sha256"], hashlib.sha256((ROOT / SOURCE).read_bytes()).hexdigest())
         self.assertEqual(export["cards"], target["cards"])
         self.assertEqual(export["runtime_scope"]["deferred_effects"],
-                         {"76": "ludus_count_effect", "78": "decorators_wonder_complete"})
+                         {"78": "decorators_wonder_complete"})
         self.assertFalse(export["second_edition_implemented"])
 
 
@@ -78,7 +78,7 @@ class CompiledCardTests(unittest.TestCase):
             with self.subTest(card=target["key"]):
                 actual = dict(actual)
                 complete = actual.pop("runtime_effects_complete")
-                self.assertEqual(complete, target["engine_id"] not in {76, 78})
+                self.assertEqual(complete, target["engine_id"] not in {78})
                 self.assertEqual(actual, {k: target[k] for k in actual})
         self.assertEqual(sum(len(c["chain_from"]) for c in self.actual["cards"]), 25)
 

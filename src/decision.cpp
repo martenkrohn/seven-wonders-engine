@@ -480,7 +480,7 @@ public:
           {"engine",{{"release","v0.2.0-dev"},{"source_commit",ENGINE_SOURCE_COMMIT},{"source_dirty",ENGINE_SOURCE_DIRTY},
             {"ruleset","bga-second-edition-development"},{"second_edition_implemented",false},
             {"card_data",{{"format_version",CARD_DATA_FORMAT_VERSION},{"source_sha256",CardDataHash()},
-              {"tables_complete",true},{"effects_complete",false},{"deferred_effect_ids",{76,78}}}},
+              {"tables_complete",true},{"effects_complete",IncompleteCardEffects().empty()},{"deferred_effect_ids",IncompleteCardEffects()}}},
             {"capabilities",{"card_tables_v1","regular_options_v1","discard_choice_v1","simultaneous_settlement_v1","legacy_wonder_abilities_v1"}}}},
           {"game",{{"turn",turn},{"age",Age()},{"round_in_age",turn==21?json(nullptr):json(Round())},
             {"round_kind",turn==21?json(nullptr):json(Round()==7?"seventh":"regular")},{"phase",phase},

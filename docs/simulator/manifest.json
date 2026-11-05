@@ -2,7 +2,7 @@
   "format_version": 1,
   "upstream": "https://github.com/dmag-ufsm/7Wonders",
   "baseline_commit": "a0bc333a7a7f21f83156de8a2d522e7baa913f0a",
-  "patch_sha256": "7681d1432663566ee5590abf482319d5a2c16a52bed105d26bc215eeded514c8",
+  "patch_sha256": "88734bbda4172fedc9f04bf81275a3457cd113a2dddb03ec33b67908a82eac17",
   "files": [
     {
       "path": "CMakeLists.txt",
@@ -12,7 +12,7 @@
         "sha256": "89798e4668c9abcc0dee848590b15e1fa9c788650ce727237bb4d0365b7ae4c4"
       },
       "current": {
-        "sha256": "7895b1a1d10859eb19a9f84fdeddc42bb2283dfd83676b4991af963501e109a0",
+        "sha256": "3fa1a37cd94786cb6adbf72359aaa54a77d5f601d2afab481da141949f2e864a",
         "mode": "100644"
       }
     },
@@ -33,7 +33,7 @@
       "status": "added",
       "baseline": null,
       "current": {
-        "sha256": "3af03a20edc12b5a9383bfc6431265fdc0f8a5a99cae874aa02358ee5d7e9174",
+        "sha256": "680c0ddcdc781af043776774164c996d611ba8ac9bcb492dc6b6ee5b835188db",
         "mode": "100644"
       }
     },
@@ -42,7 +42,7 @@
       "status": "added",
       "baseline": null,
       "current": {
-        "sha256": "fdc191aefa7a9b313070fb87c854eb2d0769c1cf554231e48c9d66d69ea7af14",
+        "sha256": "86869786f8138407cf1cfbd674d77179c20f1ed377074a456ab6f75f83091073",
         "mode": "100644"
       }
     },
@@ -531,7 +531,7 @@
         "sha256": "d479a2427f6a0f14e335cce68b895816fbc1662c7f87ffa35d6cd32a4de8a296"
       },
       "current": {
-        "sha256": "f46b282c908695d45d503d9e9412b39102e2ddd3ebb1597e47ac608ed1b36a77",
+        "sha256": "300349668d3ac9cdcf7e361d3225e2782219bf04b59325d4871bbe0b912831cb",
         "mode": "100644"
       }
     },
@@ -540,7 +540,7 @@
       "status": "added",
       "baseline": null,
       "current": {
-        "sha256": "fecd052ae43ca480448a6713022cf6a1bfbe40732a1417d54274538479948034",
+        "sha256": "d420220c1a8e03e35a33e8d5a939df23dd4102abda95739724741c1d3ad74eeb",
         "mode": "100644"
       }
     },
@@ -590,11 +590,20 @@
       }
     },
     {
+      "path": "tests/test_card_effects.cpp",
+      "status": "added",
+      "baseline": null,
+      "current": {
+        "sha256": "7e9b7d4285b5704085cdf8f16b0b4c96bbaff19356c6530831865950bcaa3fa3",
+        "mode": "100644"
+      }
+    },
+    {
       "path": "tests/test_card_tables.cpp",
       "status": "added",
       "baseline": null,
       "current": {
-        "sha256": "2aa28d4f49b0a19f19bad8037d37b0c6b31e970f97e6980523293c28ee26d95f",
+        "sha256": "e608b867d6d44871ada2ca0f588a87184ba7c7566559fa82b2d5dd0df383325a",
         "mode": "100644"
       }
     },

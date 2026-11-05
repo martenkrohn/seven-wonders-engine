@@ -42,78 +42,22 @@ else()
     set(ENGINE_DIRTY_VALUE true)
 endif()
 add_definitions(-DENGINE_SOURCE_COMMIT="${ENGINE_COMMIT}" -DENGINE_SOURCE_DIRTY=${ENGINE_DIRTY_VALUE})
-add_executable(7Wonders ${SOURCES} ${HEADERS})
-
-add_executable(test_card_tables tests/test_card_tables.cpp
-    src/card.cpp src/decision.cpp src/player.cpp src/wonder.cpp src/filer.cpp)
-add_test(NAME card_tables COMMAND test_card_tables)
-set_tests_properties(card_tables PROPERTIES TIMEOUT 30)
-
-add_executable(test_decision_resolution tests/test_decision_resolution.cpp
-    src/card.cpp src/decision.cpp src/player.cpp src/wonder.cpp src/filer.cpp)
-add_test(NAME decision_resolution COMMAND test_decision_resolution)
-set_tests_properties(decision_resolution PROPERTIES TIMEOUT 30)
-
-# Test executable for choice-once-per-turn verification (simple, no card loading)
-add_executable(test_choice_simple
-    tests/test_choice_simple.cpp
-    src/player.cpp
-    src/wonder.cpp
-    src/card.cpp
-    src/decision.cpp
-    src/filer.cpp
-)
-
-# Test executable for choice-once-per-turn verification (full integration)
-add_executable(test_choice_once_per_turn
-    tests/test_choice_once_per_turn.cpp
-    src/card.cpp
-    src/decision.cpp
-    src/player.cpp
-    src/wonder.cpp
-    src/filer.cpp
-)
-
-file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/io" "${CMAKE_CURRENT_BINARY_DIR}/logs")
-
-# Register the existing regression executables for local checks and CI.
+# Build the common core once; every executable runs the same implementation.
+add_library(engine_core STATIC src/card.cpp src/decision.cpp src/player.cpp src/wonder.cpp src/filer.cpp)
+add_executable(7Wonders main.cpp)
+target_link_libraries(7Wonders engine_core)
 enable_testing()
-add_test(NAME choice_simple COMMAND test_choice_simple)
-add_test(NAME choice_once_per_turn COMMAND test_choice_once_per_turn)
-
-add_executable(test_final_status tests/test_final_status.cpp
-    src/card.cpp src/decision.cpp src/player.cpp src/wonder.cpp src/filer.cpp)
-file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/final_status_runtime")
-add_test(NAME final_status COMMAND test_final_status)
-set_tests_properties(final_status PROPERTIES
-    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/final_status_runtime" TIMEOUT 10)
-
-add_executable(test_joint_action_resources tests/test_joint_action_resources.cpp
-    src/card.cpp src/decision.cpp src/player.cpp src/wonder.cpp src/filer.cpp)
-file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/joint_action_resources_runtime")
-add_test(NAME joint_action_resources COMMAND test_joint_action_resources)
-set_tests_properties(joint_action_resources PROPERTIES
-    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/joint_action_resources_runtime" TIMEOUT 10)
-
-add_executable(test_science_scoring tests/test_science_scoring.cpp
-    src/card.cpp src/decision.cpp src/player.cpp src/wonder.cpp src/filer.cpp)
-file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/science_scoring_runtime")
-add_test(NAME science_scoring COMMAND test_science_scoring)
-set_tests_properties(science_scoring PROPERTIES
-    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/science_scoring_runtime" TIMEOUT 10)
-
-add_executable(test_discard_safety tests/test_discard_safety.cpp
-    src/card.cpp src/decision.cpp src/player.cpp src/wonder.cpp src/filer.cpp)
-file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/discard_safety_runtime")
-add_test(NAME discard_safety COMMAND test_discard_safety)
-set_tests_properties(discard_safety PROPERTIES
-    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/discard_safety_runtime" TIMEOUT 15)
-
-# The regression programs use assert(), including when the engine is built Release.
-if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    target_compile_options(test_choice_simple PRIVATE -UNDEBUG)
-    target_compile_options(test_choice_once_per_turn PRIVATE -UNDEBUG)
-endif()
+foreach(name card_tables card_effects decision_resolution choice_simple choice_once_per_turn final_status joint_action_resources science_scoring discard_safety)
+    add_executable(test_${name} tests/test_${name}.cpp)
+    target_link_libraries(test_${name} engine_core)
+    add_test(NAME ${name} COMMAND test_${name})
+    file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/${name}_runtime/io" "${CMAKE_BINARY_DIR}/${name}_runtime/logs")
+    set_tests_properties(${name} PROPERTIES WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/${name}_runtime" TIMEOUT 30)
+    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+        target_compile_options(test_${name} PRIVATE -UNDEBUG)
+    endif()
+endforeach()
+file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/io" "${CMAKE_BINARY_DIR}/logs")
 
 # Optional standalone client: standard library only, no RL dependencies.
 find_package(Python3 3.10 COMPONENTS Interpreter QUIET)
