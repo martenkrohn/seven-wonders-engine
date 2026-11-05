@@ -603,6 +603,7 @@ int Player::CalculateGuildScore(){
     for(const auto& c:cards_played) {
         const auto& e=c.GetEffects();
         if(c.GetType()!=CARD_TYPE::guild || !e.runtime_complete) continue;
+        if(e.condition=="wonder_complete" && !board->IsComplete()) continue;
         score+=e.vp+(e.vp_per?e.vp_per*CountCardEffect(e):0);
         // Reserved legacy fixture identity; never part of generated base decks.
         if(c.GetId()==CARD_ID::strategists)

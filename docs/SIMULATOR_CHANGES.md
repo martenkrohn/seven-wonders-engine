@@ -334,6 +334,14 @@ drei eigene und fremde rote Karten, Replay und Ablageentnahme sind geprüft.
 Alle 13 CTests bestehen. Decorators bleibt hier ausdrücklich offen. CMake
 kompiliert den gemeinsamen Kern einmal als Bibliothek für alle Programme.
 
+## ENG-017 – Decorators Guild (Paket 5-IIb)
+
+Sieben Punkte genau bei vollständigem eigenem Wunder, auch wenn die letzte
+Stufe erst nach dem Gildenbau entsteht. `Wonder::IsComplete` verwendet die
+jeweilige Stufenzahl. Teilstände, drei-/vierstufige Wunder und wiederholte
+Wertung geprüft; vor der Korrektur schlug spätere Vollendung fehl. 13 CTests
+grün, keine Karteneffekte mehr gesperrt; Wunderumstellung folgt separat.
+
 ## Abgrenzung
 
 Es findet keine pauschale Behauptung vollständiger Regelkorrektheit statt. Insbesondere werden die Wunder-Ausbauschritte nicht zur neuen Edition migriert. Die Kartentabellenmigration in ENG-015 bleibt von den noch offenen neuen Sondereffekten getrennt. Falls frühere Kartenänderungen nicht im exakten Unterschied zu diesem Upstream-Commit erscheinen, werden sie nicht ohne Nachweis als Änderungen dieser C++-Fassung behauptet. Für jede zukünftige Änderung ist ein neuer Eintrag mit Anlass, genauer Funktion, Wirkung, Test und Grenzen anzulegen und der exakte Nachweis neu zu erzeugen.

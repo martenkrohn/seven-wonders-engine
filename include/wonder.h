@@ -105,6 +105,8 @@ public:
     int GetId() const;
     int GetProduction() const;
     int GetStage() const;
+    int GetStageCount() const { return effects.size(); }
+    bool IsComplete() const { return GetStageCount()>0 && stage==GetStageCount(); }
     int GetWonderPoints() const;
     std::vector<int> GetEffects() const;
     virtual bool AddStage(Player* p);

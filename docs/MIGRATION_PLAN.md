@@ -79,7 +79,7 @@ lokalen Ordner verwendbar.
 | 4b-I – Sichere Ablageentnahme | Erledigt, Abnahme unten | Internen Ablagebau mit stabiler Instanz, atomarer Entnahme und korrektem Rechtverbrauch absichern | Keine Handentnahme über Ablageindex; zentrale Ablage genau einmal geändert; Fehler, Wiederholung und leere Auswahl geprüft; kein neuer interaktiver Transport |
 | 4b-II – Runden-/Zahlungsauflösung | Erledigt, Abnahme unten | Gemeinsamen Anfangszustand, Zahlungen, Folgeentscheidungen und Nachrichtenvertrag implementieren | Gleichzeitigkeit, Restkarten, siebte Karte, Abschlussbarrieren und Nachrichtenledger geprüft; RQ-1/RQ-2 gemäß ausdrücklicher Nutzervorgabe umgesetzt |
 | 5-I – Kartendatentabellen | Erledigt, Abnahme unten | Geprüfte Kartendaten deterministisch in Engine-Tabellen übernehmen | Alle 80 Zeitalterzeilen, Kosten/Punkte/Ketten, Mengen und feste Effekte gegen Ziele geprüft; IDs erhalten; neue Sondereffekte getrennt und ausdrücklich offen |
-| **5-II – Neue Kartensondereffekte** | **Als Nächstes: nur Ludus (5-IIa); Decorators danach** | Ludus und Decorators Guild einzeln umsetzen und abnehmen | Neue Zähl-/Wertungseffekte mit gezielten Gegenbeispielen geprüft; keine bloße Datenmigration als vollständige neue Edition ausgegeben |
+| **5-II – Neue Kartensondereffekte** | Erledigt: Ludus und Decorators, Abnahme unten | Ludus und Decorators Guild einzeln umsetzen und abnehmen | Neue Zähl-/Wertungseffekte mit gezielten Gegenbeispielen geprüft; keine bloße Datenmigration als vollständige neue Edition ausgegeben |
 | 6 – Neue Wunder | Offen | Die 14 Seiten familienweise umstellen | Jede Stufe: Kosten, Ertrag, Verfügbarkeit und richtige Anzahl geprüft; Sonderfähigkeiten mit gezielten Fällen abgenommen |
 | 7 – GUI der neuen Edition | Offen | Neue Entscheidungsansichten, Bilder und Layout einbinden | Alle neuen Fähigkeiten menschlich bedienbar; korrekte Bilder/Namen/Stufen; vollständige Partien und fehlende Bilder getestet |
 | 8 – RL-Anbindung | Offen | Neue Engine bewusst im RL-Projekt übernehmen | Exportdaten, Beobachtungen, Aktionen, Merkmale und Checkpoint-Verträge passen; Protokoll-/Kurztrainingsprüfungen bestehen |
@@ -494,3 +494,8 @@ Stop-Hinweise in historischen Einzelaufträgen sind dadurch aufgehoben.
 5-IIa Ludus: umgesetzt; roter Endwertungsfall nachgewiesen, danach alle 13
 CTests grün. Eigene/fremde Militärkarten, spätere Karten, Replay und freier
 Ablagebau geprüft. Einzelne Commits und weitere Nachweise folgen unten.
+
+5-IIa: Commit `ea0dcf6`. 5-IIb Decorators: eigener roter Fall für spätere
+Wunder-Vollendung, danach 13 CTests grün. Die Wertung verwendet die tatsächliche
+Stufenzahl (einschließlich vierstufiger Wunder); sieben Punkte nur bei
+eigener Vollendung. Alle Karteneffekte jetzt implementiert.

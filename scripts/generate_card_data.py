@@ -16,7 +16,7 @@ EXPORT = ROOT / "data/generated/cards-v1.json"
 RESOURCES = ("wood", "ore", "clay", "stone", "loom", "glass", "papyrus", "coins")
 COLORS = ("brown", "grey", "blue", "yellow", "red", "green", "purple")
 # Package 5-II implements these separately, with dedicated runtime regressions.
-DEFERRED = {78: "decorators_wonder_complete"}
+DEFERRED = {}
 
 
 def literal(value):

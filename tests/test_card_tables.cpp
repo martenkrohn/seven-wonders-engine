@@ -148,14 +148,14 @@ class CompletedGizah : public Gizah_a { public: CompletedGizah() { stage=3; } };
 void deferred_and_identity() {
     expect(!FindCardDefinition(73,3),"Reserved ID reused");
     expect(CARD_ID::ludus==76 && CARD_ID::castrum==77 && CARD_ID::decorators==78,"New IDs shifted");
-    for(int id:{78}) expect(!Card::FromDefinition(id,3).GetEffects().runtime_complete,"Deferred effect silently advertised");
+    for(int id:{76,78}) expect(Card::FromDefinition(id,3).GetEffects().runtime_complete,"Card effect not implemented");
     DecisionFixture f;build_free(f.players[0],physical(CARD_ID::stockade,1));
     build_free(f.players[0],physical(CARD_ID::ludus,3));
     expect(f.players[0].GetResources()[RESOURCE::coins]==6 && f.players[0].CalculateCommercialScore()==3,
            "Ludus count effect missing");
     CompletedGizah completed;f.players[0].SetWonder(&completed);
     build_free(f.players[0],physical(CARD_ID::decorators,3));
-    expect(f.players[0].CalculateGuildScore()==0,"Decorators algorithm started inside table package");
+    expect(f.players[0].CalculateGuildScore()==7,"Decorators completed wonder condition missing");
     bool rejected=false;try { Card::FromDefinition(CARD_ID::loom,3); } catch(const std::invalid_argument&) { rejected=true; }
     expect(rejected,"Invalid grey age accepted");
     Game game(8);game.Init();game.NewGame(3);

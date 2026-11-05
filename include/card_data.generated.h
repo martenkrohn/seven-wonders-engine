@@ -61,7 +61,7 @@ inline const std::vector<CardDefinition> GENERATED_CARD_DEFINITIONS = {
     {"traders_guild_age3", "Traders Guild", 68, 6, 3, {0, 0, 0, 0, 1, 1, 1, 0}, {1, 1, 1, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "", "", 1, 0, "yellow", "neighbors", false, "", true}},
     {"philosophers_guild_age3", "Philosophers Guild", 69, 6, 3, {0, 0, 3, 0, 1, 0, 1, 0}, {1, 1, 1, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "", "", 1, 0, "green", "neighbors", false, "", true}},
     {"spies_guild_age3", "Spies Guild", 70, 6, 3, {0, 0, 2, 0, 0, 1, 0, 0}, {1, 1, 1, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "", "", 1, 0, "red", "neighbors", false, "", true}},
-    {"decorators_guild_age3", "Decorators Guild", 78, 6, 3, {0, 2, 0, 1, 1, 0, 0, 0}, {1, 1, 1, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 7, 0, 0, "", "", 0, 0, "", "", false, "wonder_complete", false}},
+    {"decorators_guild_age3", "Decorators Guild", 78, 6, 3, {0, 2, 0, 1, 1, 0, 0, 0}, {1, 1, 1, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 7, 0, 0, "", "", 0, 0, "", "", false, "wonder_complete", true}},
     {"shipowners_guild_age3", "Shipowners Guild", 72, 6, 3, {3, 0, 0, 0, 0, 1, 1, 0}, {1, 1, 1, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "", "", 1, 0, "brown_grey_purple", "self", true, "", true}},
     {"scientists_guild_age3", "Scientists Guild", 74, 6, 3, {2, 2, 0, 0, 0, 0, 1, 0}, {1, 1, 1, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "joker", "", 0, 0, "", "", false, "", true}},
     {"magistrates_guild_age3", "Magistrates Guild", 71, 6, 3, {3, 0, 0, 1, 1, 0, 0, 0}, {1, 1, 1, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "", "", 1, 0, "blue", "neighbors", false, "", true}},

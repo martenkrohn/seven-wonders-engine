@@ -33,4 +33,21 @@ void ludus() {
     expect(d.players[0].GetResources()[RESOURCE::coins]==6,"Free Ludus did not pay");
     expect(!d.players[0].BuildDiscardFree(c,pile) && d.players[0].GetResources()[RESOURCE::coins]==6,"Consumed Ludus paid again");
 }
-int main(){try{ludus();return 0;}catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}}
+template<class Board> class AtStage:public Board {public:AtStage(int n){this->stage=n;}};
+template<class Board> void decorator_board() {
+    Board definition;
+    const int count=definition.GetEffects().size();
+    for(int n=0;n<=count;++n) {
+        DecisionFixture f;AtStage<Board> board(n);f.players[0].SetWonder(&board);
+        build(f.players[0],actual(CARD_ID::decorators));
+        for(int repeat=0;repeat<3;++repeat)
+            expect(f.players[0].CalculateGuildScore()==(n==count?7:0),"Decorators must score exactly seven only for own completed wonder");
+        if(n==count-1) {
+            auto resources=f.players[0].GetResources();for(int r=0;r<7;++r)resources[r]=20;f.players[0].SetResources(resources);
+            expect(board.AddStage(&f.players[0]),"Last stage failed");
+            expect(f.players[0].CalculateGuildScore()==7,"Later wonder completion must activate Decorators");
+        }
+    }
+}
+void decorators(){decorator_board<Gizah_a>();decorator_board<Gizah_b>();decorator_board<Babylon_b>();decorator_board<Rhodos_b>();}
+int main(int argc,char** argv){try{if(argc==1 || std::string(argv[1])=="ludus")ludus();if(argc==1 || std::string(argv[1])=="decorators")decorators();return 0;}catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}}

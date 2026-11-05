@@ -143,7 +143,7 @@ index 607ae4d0676afce74abea6e42479f732b4409ec6..e489a79b8b3f266d691eed1b0b3651ab
      std::map<int, int> MissingCards(std::map<int, int> resources);
 diff --git a/include/card_data.generated.h b/include/card_data.generated.h
 new file mode 100644
-index 0000000000000000000000000000000000000000..71d7f6539fa78545eb9de593349a6ad0b1984e04
+index 0000000000000000000000000000000000000000..298038ddd720dd80553409906298eb07fab57a59
 --- /dev/null
 +++ b/include/card_data.generated.h
 @@ -0,0 +1,91 @@
@@ -210,7 +210,7 @@ index 0000000000000000000000000000000000000000..71d7f6539fa78545eb9de593349a6ad0
 +    {"traders_guild_age3", "Traders Guild", 68, 6, 3, {0, 0, 0, 0, 1, 1, 1, 0}, {1, 1, 1, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "", "", 1, 0, "yellow", "neighbors", false, "", true}},
 +    {"philosophers_guild_age3", "Philosophers Guild", 69, 6, 3, {0, 0, 3, 0, 1, 0, 1, 0}, {1, 1, 1, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "", "", 1, 0, "green", "neighbors", false, "", true}},
 +    {"spies_guild_age3", "Spies Guild", 70, 6, 3, {0, 0, 2, 0, 0, 1, 0, 0}, {1, 1, 1, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "", "", 1, 0, "red", "neighbors", false, "", true}},
-+    {"decorators_guild_age3", "Decorators Guild", 78, 6, 3, {0, 2, 0, 1, 1, 0, 0, 0}, {1, 1, 1, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 7, 0, 0, "", "", 0, 0, "", "", false, "wonder_complete", false}},
++    {"decorators_guild_age3", "Decorators Guild", 78, 6, 3, {0, 2, 0, 1, 1, 0, 0, 0}, {1, 1, 1, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 7, 0, 0, "", "", 0, 0, "", "", false, "wonder_complete", true}},
 +    {"shipowners_guild_age3", "Shipowners Guild", 72, 6, 3, {3, 0, 0, 0, 0, 1, 1, 0}, {1, 1, 1, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "", "", 1, 0, "brown_grey_purple", "self", true, "", true}},
 +    {"scientists_guild_age3", "Scientists Guild", 74, 6, 3, {2, 2, 0, 0, 0, 0, 1, 0}, {1, 1, 1, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "joker", "", 0, 0, "", "", false, "", true}},
 +    {"magistrates_guild_age3", "Magistrates Guild", 71, 6, 3, {3, 0, 0, 1, 1, 0, 0, 0}, {1, 1, 1, 1, 1}, {}, {{0, 0, 0, 0, 0, 0, 0}, {}, false, 0, 0, 0, "", "", 1, 0, "blue", "neighbors", false, "", true}},
@@ -401,7 +401,7 @@ index 3118d29d0e816f39ae1fafd5932b1b2dba5bb47f..8fb12eb6224a80286d9fe9077b193b68
      bool CopyGuild(); // At the end of the game.
      bool PlaySeventh();
 diff --git a/include/wonder.h b/include/wonder.h
-index 58e6edb01103a9d84cfc72e360b360c35320de83..78143f5c93a45ec5ab7dff2a1646f7abdefab060 100644
+index 58e6edb01103a9d84cfc72e360b360c35320de83..f3b4a0c8f2000fa7513ace7c02f708777df72cfd 100644
 --- a/include/wonder.h
 +++ b/include/wonder.h
 @@ -5,6 +5,7 @@
@@ -412,7 +412,7 @@ index 58e6edb01103a9d84cfc72e360b360c35320de83..78143f5c93a45ec5ab7dff2a1646f7ab
  
  namespace WONDER_ID{
      enum{
-@@ -98,6 +99,8 @@ protected:
+@@ -98,10 +99,14 @@ protected:
  
  public:
      Wonder();
@@ -421,7 +421,13 @@ index 58e6edb01103a9d84cfc72e360b360c35320de83..78143f5c93a45ec5ab7dff2a1646f7ab
      std::string GetName() const;
      int GetId() const;
      int GetProduction() const;
-@@ -114,6 +117,7 @@ class Gizah_a : public Wonder
+     int GetStage() const;
++    int GetStageCount() const { return effects.size(); }
++    bool IsComplete() const { return GetStageCount()>0 && stage==GetStageCount(); }
+     int GetWonderPoints() const;
+     std::vector<int> GetEffects() const;
+     virtual bool AddStage(Player* p);
+@@ -114,6 +119,7 @@ class Gizah_a : public Wonder
  {
  public:
      Gizah_a();
@@ -429,7 +435,7 @@ index 58e6edb01103a9d84cfc72e360b360c35320de83..78143f5c93a45ec5ab7dff2a1646f7ab
      bool AddStage(Player* p) override;
      bool CanAddStage(Player* p) override;
  };
-@@ -122,6 +126,7 @@ class Gizah_b : public Wonder
+@@ -122,6 +128,7 @@ class Gizah_b : public Wonder
  {
  public:
      Gizah_b();
@@ -437,7 +443,7 @@ index 58e6edb01103a9d84cfc72e360b360c35320de83..78143f5c93a45ec5ab7dff2a1646f7ab
      bool AddStage(Player* p) override;
      bool CanAddStage(Player* p) override;
  };
-@@ -130,6 +135,7 @@ class Babylon_a : public Wonder
+@@ -130,6 +137,7 @@ class Babylon_a : public Wonder
  {
  public:
      Babylon_a();
@@ -445,7 +451,7 @@ index 58e6edb01103a9d84cfc72e360b360c35320de83..78143f5c93a45ec5ab7dff2a1646f7ab
      bool AddStage(Player* p) override;
      bool CanAddStage(Player* p) override;
  };
-@@ -138,6 +144,7 @@ class Babylon_b : public Wonder
+@@ -138,6 +146,7 @@ class Babylon_b : public Wonder
  {
  public:
      Babylon_b();
@@ -453,7 +459,7 @@ index 58e6edb01103a9d84cfc72e360b360c35320de83..78143f5c93a45ec5ab7dff2a1646f7ab
      bool AddStage(Player* p) override;
      bool CanAddStage(Player* p) override;
  };
-@@ -146,6 +153,7 @@ class Olympia_a : public Wonder
+@@ -146,6 +155,7 @@ class Olympia_a : public Wonder
  {
  public:
      Olympia_a();
@@ -461,7 +467,7 @@ index 58e6edb01103a9d84cfc72e360b360c35320de83..78143f5c93a45ec5ab7dff2a1646f7ab
      bool AddStage(Player* p) override;
      bool CanAddStage(Player* p) override;
  };
-@@ -154,6 +162,7 @@ class Olympia_b : public Wonder
+@@ -154,6 +164,7 @@ class Olympia_b : public Wonder
  {
  public:
      Olympia_b();
@@ -469,7 +475,7 @@ index 58e6edb01103a9d84cfc72e360b360c35320de83..78143f5c93a45ec5ab7dff2a1646f7ab
      bool AddStage(Player* p) override;
      bool CanAddStage(Player* p) override;
  };
-@@ -162,6 +171,7 @@ class Rhodos_a : public Wonder
+@@ -162,6 +173,7 @@ class Rhodos_a : public Wonder
  {
  public:
      Rhodos_a();
@@ -477,7 +483,7 @@ index 58e6edb01103a9d84cfc72e360b360c35320de83..78143f5c93a45ec5ab7dff2a1646f7ab
      bool AddStage(Player* p) override;
      bool CanAddStage(Player* p) override;
  };
-@@ -170,6 +180,7 @@ class Rhodos_b : public Wonder
+@@ -170,6 +182,7 @@ class Rhodos_b : public Wonder
  {
  public:
      Rhodos_b();
@@ -485,7 +491,7 @@ index 58e6edb01103a9d84cfc72e360b360c35320de83..78143f5c93a45ec5ab7dff2a1646f7ab
      bool AddStage(Player* p) override;
      bool CanAddStage(Player* p) override;
  };
-@@ -178,6 +189,7 @@ class Ephesos_a : public Wonder
+@@ -178,6 +191,7 @@ class Ephesos_a : public Wonder
  {
  public:
      Ephesos_a();
@@ -493,7 +499,7 @@ index 58e6edb01103a9d84cfc72e360b360c35320de83..78143f5c93a45ec5ab7dff2a1646f7ab
      bool AddStage(Player* p) override;
      bool CanAddStage(Player* p) override;
  };
-@@ -186,6 +198,7 @@ class Ephesos_b : public Wonder
+@@ -186,6 +200,7 @@ class Ephesos_b : public Wonder
  {
  public:
      Ephesos_b();
@@ -501,7 +507,7 @@ index 58e6edb01103a9d84cfc72e360b360c35320de83..78143f5c93a45ec5ab7dff2a1646f7ab
      bool AddStage(Player* p) override;
      bool CanAddStage(Player* p) override;
  };
-@@ -194,6 +207,7 @@ class Alexandria_a : public Wonder
+@@ -194,6 +209,7 @@ class Alexandria_a : public Wonder
  {
  public:
      Alexandria_a();
@@ -509,7 +515,7 @@ index 58e6edb01103a9d84cfc72e360b360c35320de83..78143f5c93a45ec5ab7dff2a1646f7ab
      bool AddStage(Player* p) override;
      bool CanAddStage(Player* p) override;
  };
-@@ -202,6 +216,7 @@ class Alexandria_b : public Wonder
+@@ -202,6 +218,7 @@ class Alexandria_b : public Wonder
  {
  public:
      Alexandria_b();
@@ -517,7 +523,7 @@ index 58e6edb01103a9d84cfc72e360b360c35320de83..78143f5c93a45ec5ab7dff2a1646f7ab
      bool AddStage(Player* p) override;
      bool CanAddStage(Player* p) override;
  };
-@@ -210,6 +225,7 @@ class Halikarnassos_a : public Wonder
+@@ -210,6 +227,7 @@ class Halikarnassos_a : public Wonder
  {
  public:
      Halikarnassos_a();
@@ -525,7 +531,7 @@ index 58e6edb01103a9d84cfc72e360b360c35320de83..78143f5c93a45ec5ab7dff2a1646f7ab
      bool AddStage(Player* p) override;
      bool CanAddStage(Player* p) override;
  };
-@@ -218,6 +234,7 @@ class Halikarnassos_b : public Wonder
+@@ -218,6 +236,7 @@ class Halikarnassos_b : public Wonder
  {
  public:
      Halikarnassos_b();
@@ -1858,7 +1864,7 @@ index dd219de7df0af977f508326df94c0f86f49c69d5..f9c9874a27ddd2e53b48de9c8a3d6c3c
  }
  
 diff --git a/src/player.cpp b/src/player.cpp
-index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..bb19638f70131a0d1e15642d8ec1ce679c0d1642 100644
+index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..606aceef5819d8e54dc33b4c4b11f8dde69305f5 100644
 --- a/src/player.cpp
 +++ b/src/player.cpp
 @@ -1,12 +1,17 @@
@@ -2171,7 +2177,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..bb19638f70131a0d1e15642d8ec1ce67
      }
  
      curr_resource += cont;
-@@ -657,155 +582,33 @@ void Player::Battle(int age){
+@@ -657,155 +582,34 @@ void Player::Battle(int age){
  
  // Calculates the number of VPs the player gets from civilian structures.
  int Player::CalculateCivilianScore(){
@@ -2335,6 +2341,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..bb19638f70131a0d1e15642d8ec1ce67
 +    for(const auto& c:cards_played) {
 +        const auto& e=c.GetEffects();
 +        if(c.GetType()!=CARD_TYPE::guild || !e.runtime_complete) continue;
++        if(e.condition=="wonder_complete" && !board->IsComplete()) continue;
 +        score+=e.vp+(e.vp_per?e.vp_per*CountCardEffect(e):0);
 +        // Reserved legacy fixture identity; never part of generated base decks.
 +        if(c.GetId()==CARD_ID::strategists)
@@ -2346,7 +2353,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..bb19638f70131a0d1e15642d8ec1ce67
  }
  
  // Calculates the number of VPs the player gets from battles.
-@@ -817,35 +620,12 @@ int Player::CalculateMilitaryScore(){
+@@ -817,35 +621,12 @@ int Player::CalculateMilitaryScore(){
  int Player::CalculateScientificScore(){
      int gear = 0, tablet = 0, compass = 0, sci_extra = 0;
  
@@ -2388,7 +2395,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..bb19638f70131a0d1e15642d8ec1ce67
      }
  
      int id = this->board->GetId();
-@@ -855,46 +635,20 @@ int Player::CalculateScientificScore(){
+@@ -855,46 +636,20 @@ int Player::CalculateScientificScore(){
          sci_extra++;
      }
  
@@ -2447,7 +2454,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..bb19638f70131a0d1e15642d8ec1ce67
  }
  
  int Player::CalculateWonderScore(){
-@@ -905,6 +659,10 @@ int Player::CalculateWonderScore(){
+@@ -905,6 +660,10 @@ int Player::CalculateWonderScore(){
  
  // Calculates the player's TOTAL score using the methods defined above.
  int Player::CalculateScore(){
@@ -2458,7 +2465,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..bb19638f70131a0d1e15642d8ec1ce67
      int civil_score = this->CalculateCivilianScore();
      int commercial_score = this->CalculateCommercialScore();
      int guild_score = this->CalculateGuildScore();
-@@ -917,7 +675,8 @@ int Player::CalculateScore(){
+@@ -917,7 +676,8 @@ int Player::CalculateScore(){
  
      this->victory_points = total_score;
  
@@ -2468,7 +2475,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..bb19638f70131a0d1e15642d8ec1ce67
  }
  
  //////////////////////////////////
-@@ -995,8 +754,10 @@ int Player::CalculateAmountManufacturedGood(){
+@@ -995,8 +755,10 @@ int Player::CalculateAmountManufacturedGood(){
  bool Player::ChooseExtraManuf(int resource){
      if (resource == RESOURCE::loom || resource == RESOURCE::glass || resource == RESOURCE::papyrus) {
          if (this->board->GetId() == WONDER_ID::alexandria_b && this->board->GetStage() >= 2) {
@@ -2481,7 +2488,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..bb19638f70131a0d1e15642d8ec1ce67
          }
      }
      return false;
-@@ -1010,9 +771,10 @@ bool Player::ChooseExtraRaw(int resource){
+@@ -1010,9 +772,10 @@ bool Player::ChooseExtraRaw(int resource){
          resource == RESOURCE::clay || resource == RESOURCE::stone) {
          int id = this->board->GetId();
          int stage = this->board->GetStage();
@@ -2495,7 +2502,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..bb19638f70131a0d1e15642d8ec1ce67
              return true;
          }
      }
-@@ -1036,9 +798,22 @@ void Player::FreeCardOnce(bool flag) {
+@@ -1036,9 +799,22 @@ void Player::FreeCardOnce(bool flag) {
      this->free_card_once = flag;
  }
  
@@ -2520,7 +2527,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..bb19638f70131a0d1e15642d8ec1ce67
  }
  
  // The player can buy resources for 1 coin instead of 2 from neighbors.
-@@ -1047,21 +822,41 @@ void Player::CanBuyRawCheap(){
+@@ -1047,21 +823,41 @@ void Player::CanBuyRawCheap(){
      this->wonder_raw_cheap = true;
  }
  
@@ -2575,7 +2582,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..bb19638f70131a0d1e15642d8ec1ce67
  }
  
  // Builds a card from the hand for free, once per Age, if the player has the requirements.
-@@ -1205,6 +1000,10 @@ void Player::SetNeighbors(DMAG::Player* east, DMAG::Player* west){
+@@ -1205,6 +1001,10 @@ void Player::SetNeighbors(DMAG::Player* east, DMAG::Player* west){
  }
  
  void Player::SetWonder(DMAG::Wonder *_board){
@@ -2685,9 +2692,68 @@ index 0000000000000000000000000000000000000000..a7da49075ec6c3f2f8087e28a23e485d
 +    for(const auto& r:actions) applied(e,r);
 +}
 +#endif
+diff --git a/tests/test_card_effects.cpp b/tests/test_card_effects.cpp
+new file mode 100644
+index 0000000000000000000000000000000000000000..efe5ed8cb83eeaba0ca6deff8e7eca9fdd96225d
+--- /dev/null
++++ b/tests/test_card_effects.cpp
+@@ -0,0 +1,53 @@
++#include "decision_helpers.h"
++#include <iostream>
++using namespace DMAG;
++Card actual(int id,int age=3) { static std::uint64_t next=700000;return Card::FromDefinition(id,age).CreateInstance(next++); }
++void build(Player& p,Card c) { p.ReceiveCards({c});expect(p.BuildStructure(c,{c},true),"Fixture build failed"); }
++class HaliReady:public Halikarnassos_a {public:HaliReady(){stage=2;}};
++void ludus() {
++    const int red[]={CARD_ID::stockade,CARD_ID::barracks,CARD_ID::guard_tower};
++    for(int own=0;own<=3;++own) {
++        DecisionFixture f;
++        for(int n=0;n<own;++n) build(f.players[0],actual(red[n],1));
++        for(int s=1;s<3;++s) for(int n=0;n<3;++n) build(f.players[s],actual(red[n],1));
++        build(f.players[0],actual(CARD_ID::ludus));
++        expect(f.players[0].GetResources()[RESOURCE::coins]==3+3*own,"Ludus coins must count own red cards once");
++        for(int n=0;n<3;++n) expect(f.players[0].CalculateCommercialScore()==1+2*own,"Ludus VP/treasury or repeated score");
++        if(own<3) {
++            build(f.players[0],actual(red[own],1));
++            expect(f.players[0].GetResources()[RESOURCE::coins]==3+3*own,"Later red retroactively paid coins");
++            expect(f.players[0].CalculateCommercialScore()==2+2*own,"Later red did not add end VP");
++        }
++    }
++    DecisionFixture f;build(f.players[0],actual(red[0],1));
++    auto r=f.players[0].GetResources();r[RESOURCE::stone]=1;r[RESOURCE::ore]=1;f.players[0].SetResources(r);
++    f.players[0].ReceiveCards({actual(CARD_ID::ludus),test_card(CARD_ID::altar)});
++    auto e=f.Engine();auto request=choose(*e,0,"build_structure",CARD_ID::ludus);
++    finish_cohort(*e,{request,choose(*e,1,"discard"),choose(*e,2,"discard")});
++    auto state=e->Status();expect(state["players"]["0"]["resources"]["coins"]==6,"Regular Ludus payout");
++    e->Submit(request);expect(e->Status()["players"]==state["players"],"Ludus replay paid twice");
++    DecisionFixture d;HaliReady hali;d.players[0].SetWonder(&hali);
++    build(d.players[0],actual(red[0],1));d.players[0].DiscardFree(true);
++    auto c=actual(CARD_ID::ludus);std::vector<Card> pile={c};
++    expect(d.players[0].BuildDiscardFree(c,pile) && pile.empty(),"Free Ludus failed");
++    expect(d.players[0].GetResources()[RESOURCE::coins]==6,"Free Ludus did not pay");
++    expect(!d.players[0].BuildDiscardFree(c,pile) && d.players[0].GetResources()[RESOURCE::coins]==6,"Consumed Ludus paid again");
++}
++template<class Board> class AtStage:public Board {public:AtStage(int n){this->stage=n;}};
++template<class Board> void decorator_board() {
++    Board definition;
++    const int count=definition.GetEffects().size();
++    for(int n=0;n<=count;++n) {
++        DecisionFixture f;AtStage<Board> board(n);f.players[0].SetWonder(&board);
++        build(f.players[0],actual(CARD_ID::decorators));
++        for(int repeat=0;repeat<3;++repeat)
++            expect(f.players[0].CalculateGuildScore()==(n==count?7:0),"Decorators must score exactly seven only for own completed wonder");
++        if(n==count-1) {
++            auto resources=f.players[0].GetResources();for(int r=0;r<7;++r)resources[r]=20;f.players[0].SetResources(resources);
++            expect(board.AddStage(&f.players[0]),"Last stage failed");
++            expect(f.players[0].CalculateGuildScore()==7,"Later wonder completion must activate Decorators");
++        }
++    }
++}
++void decorators(){decorator_board<Gizah_a>();decorator_board<Gizah_b>();decorator_board<Babylon_b>();decorator_board<Rhodos_b>();}
++int main(int argc,char** argv){try{if(argc==1 || std::string(argv[1])=="ludus")ludus();if(argc==1 || std::string(argv[1])=="decorators")decorators();return 0;}catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}}
 diff --git a/tests/test_card_tables.cpp b/tests/test_card_tables.cpp
 new file mode 100644
-index 0000000000000000000000000000000000000000..43cf8d23b12733d30b64b53ca1ad0587a7326a3e
+index 0000000000000000000000000000000000000000..9be8c307392316ce2aa46ee00a61e33048ea47ea
 --- /dev/null
 +++ b/tests/test_card_tables.cpp
 @@ -0,0 +1,208 @@
@@ -2841,14 +2907,14 @@ index 0000000000000000000000000000000000000000..43cf8d23b12733d30b64b53ca1ad0587
 +void deferred_and_identity() {
 +    expect(!FindCardDefinition(73,3),"Reserved ID reused");
 +    expect(CARD_ID::ludus==76 && CARD_ID::castrum==77 && CARD_ID::decorators==78,"New IDs shifted");
-+    for(int id:{78}) expect(!Card::FromDefinition(id,3).GetEffects().runtime_complete,"Deferred effect silently advertised");
++    for(int id:{76,78}) expect(Card::FromDefinition(id,3).GetEffects().runtime_complete,"Card effect not implemented");
 +    DecisionFixture f;build_free(f.players[0],physical(CARD_ID::stockade,1));
 +    build_free(f.players[0],physical(CARD_ID::ludus,3));
 +    expect(f.players[0].GetResources()[RESOURCE::coins]==6 && f.players[0].CalculateCommercialScore()==3,
 +           "Ludus count effect missing");
 +    CompletedGizah completed;f.players[0].SetWonder(&completed);
 +    build_free(f.players[0],physical(CARD_ID::decorators,3));
-+    expect(f.players[0].CalculateGuildScore()==0,"Decorators algorithm started inside table package");
++    expect(f.players[0].CalculateGuildScore()==7,"Decorators completed wonder condition missing");
 +    bool rejected=false;try { Card::FromDefinition(CARD_ID::loom,3); } catch(const std::invalid_argument&) { rejected=true; }
 +    expect(rejected,"Invalid grey age accepted");
 +    Game game(8);game.Init();game.NewGame(3);
@@ -4511,45 +4577,3 @@ index 0000000000000000000000000000000000000000..82b0b41bb01587e69f15d8b808cc97c0
 +        return 1;
 +    }
 +}
-diff --git a/tests/test_card_effects.cpp b/tests/test_card_effects.cpp
-new file mode 100644
-index 0000000000000000000000000000000000000000..994799bd158cf841d70b8eba1bdab20dad0ac93e
---- /dev/null
-+++ b/tests/test_card_effects.cpp
-@@ -0,0 +1,36 @@
-+#include "decision_helpers.h"
-+#include <iostream>
-+using namespace DMAG;
-+Card actual(int id,int age=3) { static std::uint64_t next=700000;return Card::FromDefinition(id,age).CreateInstance(next++); }
-+void build(Player& p,Card c) { p.ReceiveCards({c});expect(p.BuildStructure(c,{c},true),"Fixture build failed"); }
-+class HaliReady:public Halikarnassos_a {public:HaliReady(){stage=2;}};
-+void ludus() {
-+    const int red[]={CARD_ID::stockade,CARD_ID::barracks,CARD_ID::guard_tower};
-+    for(int own=0;own<=3;++own) {
-+        DecisionFixture f;
-+        for(int n=0;n<own;++n) build(f.players[0],actual(red[n],1));
-+        for(int s=1;s<3;++s) for(int n=0;n<3;++n) build(f.players[s],actual(red[n],1));
-+        build(f.players[0],actual(CARD_ID::ludus));
-+        expect(f.players[0].GetResources()[RESOURCE::coins]==3+3*own,"Ludus coins must count own red cards once");
-+        for(int n=0;n<3;++n) expect(f.players[0].CalculateCommercialScore()==1+2*own,"Ludus VP/treasury or repeated score");
-+        if(own<3) {
-+            build(f.players[0],actual(red[own],1));
-+            expect(f.players[0].GetResources()[RESOURCE::coins]==3+3*own,"Later red retroactively paid coins");
-+            expect(f.players[0].CalculateCommercialScore()==2+2*own,"Later red did not add end VP");
-+        }
-+    }
-+    DecisionFixture f;build(f.players[0],actual(red[0],1));
-+    auto r=f.players[0].GetResources();r[RESOURCE::stone]=1;r[RESOURCE::ore]=1;f.players[0].SetResources(r);
-+    f.players[0].ReceiveCards({actual(CARD_ID::ludus),test_card(CARD_ID::altar)});
-+    auto e=f.Engine();auto request=choose(*e,0,"build_structure",CARD_ID::ludus);
-+    finish_cohort(*e,{request,choose(*e,1,"discard"),choose(*e,2,"discard")});
-+    auto state=e->Status();expect(state["players"]["0"]["resources"]["coins"]==6,"Regular Ludus payout");
-+    e->Submit(request);expect(e->Status()["players"]==state["players"],"Ludus replay paid twice");
-+    DecisionFixture d;HaliReady hali;d.players[0].SetWonder(&hali);
-+    build(d.players[0],actual(red[0],1));d.players[0].DiscardFree(true);
-+    auto c=actual(CARD_ID::ludus);std::vector<Card> pile={c};
-+    expect(d.players[0].BuildDiscardFree(c,pile) && pile.empty(),"Free Ludus failed");
-+    expect(d.players[0].GetResources()[RESOURCE::coins]==6,"Free Ludus did not pay");
-+    expect(!d.players[0].BuildDiscardFree(c,pile) && d.players[0].GetResources()[RESOURCE::coins]==6,"Consumed Ludus paid again");
-+}
-+int main(){try{ludus();return 0;}catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}}

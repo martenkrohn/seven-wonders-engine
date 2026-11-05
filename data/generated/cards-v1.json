@@ -11,9 +11,7 @@
     "players": 3,
     "wonders": "legacy",
     "card_tables": true,
-    "deferred_effects": {
-      "78": "decorators_wonder_complete"
-    }
+    "deferred_effects": {}
   },
   "deck_policy": {
     "players_implemented": 3,
