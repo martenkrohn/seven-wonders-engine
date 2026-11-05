@@ -152,6 +152,7 @@ public:
     DMAG::Player* GetEastNeighbor();
     DMAG::Player* GetWestNeighbor();
     bool CanBuildHandFree();
+    std::string FreeBuildingSource(const Card& card,int round);
 
     // Setters:
     void SetNeighbors(DMAG::Player* east, DMAG::Player* west);

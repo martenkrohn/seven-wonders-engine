@@ -362,6 +362,17 @@ Zug erhält den eigenen siebten Zug vor der Ärenbarriere. Wissenschaft liest
 die tatsächlichen aufgebauten Stufeneffekte, die Optimierung bleibt gleich.
 Roter Aktivierungsfall nachgewiesen, anschließend alle 15 CTests grün.
 
+## ENG-020 – Olympia (Paket 6c)
+
+Erste Farbe nach Tag-Stufe zwei, unter Berücksichtigung schon vorher gebauter
+Farben; erste beziehungsweise sechste Ärenkarte nach Nacht-Stufe eins/zwei.
+Optionen benennen den Freibaumodus ausdrücklich; Zahlungen und Ketten bleiben
+getrennt, Erwerb ist erst in späteren Angeboten sichtbar. Nacht gewährt keinen
+alten Rabatt oder Gildenkopie; die geerbte Kopierfunktion ist für migrierte
+Wunder deaktiviert. Historische Kopiertests prüfen jetzt die entfernte
+Fähigkeit; optimale eigene/Babylon-Joker und Schlusskategorien bleiben geprüft.
+Roter neuer Modus vor Implementierung; anschließend 15 CTests grün.
+
 ## Abgrenzung
 
 Es findet keine pauschale Behauptung vollständiger Regelkorrektheit statt. Insbesondere werden die Wunder-Ausbauschritte nicht zur neuen Edition migriert. Die Kartentabellenmigration in ENG-015 bleibt von den noch offenen neuen Sondereffekten getrennt. Falls frühere Kartenänderungen nicht im exakten Unterschied zu diesem Upstream-Commit erscheinen, werden sie nicht ohne Nachweis als Änderungen dieser C++-Fassung behauptet. Für jede zukünftige Änderung ist ein neuer Eintrag mit Anlass, genauer Funktion, Wirkung, Test und Grenzen anzulegen und der exakte Nachweis neu zu erzeugen.

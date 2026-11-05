@@ -273,7 +273,8 @@ class DecisionCore {
                 if (!p.HasPlayedCard(card)) {
                     if (p.CheckFreeCard(card)) Add(o,"build_structure",card,{},"chain");
                     else { Payment payment; if(Quote(s,card.cost,payment)) Add(o,"build_structure",card,payment); }
-                    if(p.CanBuildHandFree() && !p.CheckFreeCard(card)) Add(o,"build_structure",card,{},"legacy_olympia_once");
+                    const auto source=p.FreeBuildingSource(card,Round());
+                    if(!source.empty() && !p.CheckFreeCard(card)) Add(o,"build_structure",card,{},source);
                 }
                 if(wonder_legal) Add(o,"build_wonder",card,wp);
             }
@@ -360,7 +361,6 @@ class DecisionCore {
             for(int to=0;to<3;++to) income[to]+=plan.payment.to[to];
             if(plan.kind=="discard") { world->discarded.push_back(*hand); p.resources[RESOURCE::coins]+=3; }
             else if(plan.kind=="build_structure") {
-                if(plan.free=="legacy_olympia_once") p.free_card_once=false;
                 p.defer_coin_effects=true; p.ApplyBuilding(*hand,true); p.defer_coin_effects=false;
                 constructed.emplace_back(s,*hand);
             } else {
@@ -498,7 +498,8 @@ public:
         for(int s=0;s<3;++s) {
             const Player& p=world->players[s];
             json j={{"neighbors",{{"left",(s+2)%3},{"right",(s+1)%3}}},{"wonder_id",p.board->GetId()},
-              {"wonder_name",p.board->GetName()},{"wonder_stage",p.board->GetStage()},{"hand_cards",Cards(p.cards_hand)},
+              {"wonder_name",p.board->GetName()},{"wonder_stage",p.board->GetStage()},
+              {"wonder_stage_count",p.board->GetStageCount()},{"wonder_complete",p.board->IsComplete()},{"hand_cards",Cards(p.cards_hand)},
               {"built_cards",json::array()},{"copied_guilds",json::array()},{"available_abilities",json::array()}};
             const size_t physical=p.cards_played.size()-world->copied[s].size();
             for(size_t n=0;n<physical;++n) j["built_cards"].push_back(CardRef(p.cards_played[n]));
@@ -508,7 +509,9 @@ public:
             for(int c=0;c<7;++c) j["points"][categories[c]]=scores[c];
             if(!Terminal()) {
                 if(p.play_seventh) j["available_abilities"].push_back({{"code","play_seventh_card"},{"availability",Round()==7?"decision":"future_seventh"}});
-                if(scored.CanBuildHandFree()) j["available_abilities"].push_back({{"code","legacy_olympia_once"},{"availability","offered_options"}});
+                for(const auto& ability:std::vector<std::pair<std::string,std::string>>{
+                    {"first_color_free","olympia_first_color"},{"first_age_card_free","olympia_first_age_card"},{"last_age_card_free","olympia_last_age_card"}})
+                    if(p.board->EffectCount(ability.first)) j["available_abilities"].push_back({{"code",ability.second},{"availability","offered_options"}});
                 for(const auto& g:grants) if(g["actor"]==s && g["status"]=="active")
                     j["available_abilities"].push_back({{"code","discard_build_for_free"},{"availability","decision"},{"grant_id",g["grant_id"]}});
             }

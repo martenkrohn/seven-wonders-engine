@@ -122,10 +122,9 @@ void copied_joker() {
     build_free(fixture.player, scientific_card(CARD_ID::scientists));
     build_free(fixture.east, scientific_card(CARD_ID::scientists));
     require(fixture.player.CalculateScientificScore() == 13, "Owned Scientists Guild joker missing");
-    require(fixture.player.CopyGuild(), "Available Scientists Guild was not copied");
-    require(fixture.player.GetPlayedCards().size() == 5, "Guild copy did not add exactly one card");
-    require(fixture.player.CalculateScientificScore() == 18, "Owned and copied jokers must each count once");
-    require(fixture.player.CalculateScientificScore() == 18, "Repeated scoring duplicated copied joker");
+    require(!fixture.player.CopyGuild(), "New Olympia copied a guild");
+    require(fixture.player.GetPlayedCards().size() == 4, "Retired copy mutated city");
+    require(fixture.player.CalculateScientificScore() == 13, "Repeated owned joker scoring changed");
 }
 
 json read_status() {
@@ -156,7 +155,7 @@ void final_publication() {
     const auto final=engine->Status();
     require(final["game"]["phase"]=="finished","Missing finished status");
     require(final["players"]["0"]["points"]["scientific"]==18,"Combined final jokers wrong");
-    require(final["players"]["1"]["points"]["scientific"]==13,"Copied final joker wrong");
+    require(final["players"]["1"]["points"]["scientific"]==5,"Retired Olympia guild copy survived");
     for(int seat=0;seat<3;++seat) {
         const auto& points=final["players"][std::to_string(seat)]["points"];
         const int sum=points["civilian"].get<int>()+points["commercial"].get<int>()+points["guild"].get<int>()

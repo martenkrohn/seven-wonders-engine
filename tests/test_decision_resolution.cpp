@@ -102,18 +102,19 @@ void free_modes_and_frozen_discount() {
     auto free=choose(*e,0,"build_structure",CARD_ID::temple,"chain");
     finish_cohort(*e,{free,choose(*e,1,"discard"),choose(*e,2,"discard")});
     auto after=e->Status();bool available=false;
-    for(const auto& ability:after["players"]["0"]["available_abilities"]) available|=ability["code"]=="legacy_olympia_once";
+    for(const auto& ability:after["players"]["0"]["available_abilities"]) available|=ability["code"]=="olympia_first_color";
     expect(available,"Chain construction consumed separate once-per-age power");
 
     DecisionFixture once;ReadyOlympia second;
     once.players[0].SetWonder(&second);
     once.players[0].ReceiveCards({test_card(CARD_ID::library,CARD_TYPE::scientific,2,std::vector<int>(8,99)),test_card(CARD_ID::altar)});
     auto one=once.Engine();
-    finish_cohort(*one,{choose(*one,0,"build_structure",CARD_ID::library,"legacy_olympia_once"),choose(*one,1,"discard"),choose(*one,2,"discard")});
-    expect(one->Status()["players"]["0"]["available_abilities"].empty(),"Once-per-age mode did not consume its own power");
+    finish_cohort(*one,{choose(*one,0,"build_structure",CARD_ID::library,"olympia_first_color"),choose(*one,1,"discard"),choose(*one,2,"discard")});
+    expect(one->Status()["players"]["0"]["resources"]["coins"]==3,"First-color free build charged coins");
 
-    DecisionFixture discounted;DMAG::Olympia_b board;
+    DecisionFixture discounted;DMAG::Gizah_a board;
     discounted.players[0].SetWonder(&board);
+    discounted.players[0].AddResource(RESOURCE::wood,1); // One own wood, one purchased for the new Gizah cost.
     auto money=discounted.players[0].GetResources();money[RESOURCE::coins]=1;discounted.players[0].SetResources(money);
     auto wood=test_card(CARD_ID::lumber_yard,CARD_TYPE::materials);
     discounted.players[1].ReceiveCards({wood});discounted.players[1].BuildStructure(wood,{wood},true);

@@ -59,7 +59,7 @@ int main() {
         require(status["players"]["0"]["points"]["military"] == 10, "Age-III battles missing or repeated");
         require(status["players"]["1"]["points"]["military"] == 4, "Incorrect final battle score");
         require(status["players"]["2"]["points"]["military"] == -2, "Final defeat tokens missing");
-        require(status["players"]["1"]["points"]["guild"] == 1, "Guild copy missing from final JSON");
+        require(status["players"]["1"]["points"]["guild"] == 0, "Retired guild copy appeared in new edition");
         require(status["receipts"].size()==1 && status["receipts"][0]["status"]=="applied", "Real seventh action not acknowledged exactly once");
         require(status["players"]["1"]["resources"]["coins"] == 3, "Skipped discard changed coins");
         return 0;

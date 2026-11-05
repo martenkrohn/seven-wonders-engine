@@ -13,7 +13,7 @@ class WonderDataTests(unittest.TestCase):
             result=subprocess.run([str(binary),'--dump'],cwd=tmp,capture_output=True,text=True,timeout=10)
         self.assertEqual(result.returncode,0,result.stderr)
         actual=json.loads(result.stdout)
-        self.assertEqual({r['engine_id'] for r in actual},{0,1,3,4,5,7,8,10,11,12})
+        self.assertEqual({r['engine_id'] for r in actual},{0,1,2,3,4,5,7,8,9,10,11,12})
         targets={r['engine_id']:r for r in json.loads((ROOT/'data/bga-second-edition/targets.json').read_text())['wonders']}
         for row in actual:
             self.assertEqual(row,{k:targets[row['engine_id']][k] for k in row})

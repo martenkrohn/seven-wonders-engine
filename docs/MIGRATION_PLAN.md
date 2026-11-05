@@ -511,3 +511,9 @@ exakt zwei Stufen und erhält die siebte Karte bereits nach Stufe eins, auch
 beim Bau im sechsten Zug derselben Ära. Joker ab der zweiten Stufe. Roter
 Siebtkarte-Fall vor der Korrektur; 15 CTests einschließlich 375 Science-
 Beständen und neuem Stufengrenztest grün.
+
+6b: Commit `15be460`. 6c Olympia: neue explizite Freibaumodi für erste Farbe
+(Tag) und erste/sechste Karte einer Ära (Nacht). Frühere Farben zählen mit;
+Ketten und Freibaumodi bleiben getrennt. Keine alte Einmal-pro-Ära-Regel,
+kein neuer Rohstoffrabatt und keine Gildenkopie. Roter neuer Freibaumodus,
+danach alle 15 CTests grün; 36 Nacht-Stufen-/Ären-/Rundenkombinationen geprüft.

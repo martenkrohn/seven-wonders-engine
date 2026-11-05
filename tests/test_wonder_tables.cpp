@@ -69,4 +69,28 @@ void babylon() {
     expect(e->Status()["game"]["turn"]==7,"Babylon seventh decision failed to close age");
     expect(board.GetStageCount()==2,"Babylon B must have exactly two stages");
 }
-int main(int argc,char** argv){try{if(argc>1 && std::string(argv[1])=="--dump")std::cout<<dump().dump()<<'\n';else if(argc>1 && std::string(argv[1])=="babylon")babylon();else{runtime();babylon();}return 0;}catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}}
+template<class Board> class StageBoard:public Board {public:StageBoard(int n){this->stage=n;}};
+void olympia() {
+    DecisionFixture f;StageBoard<Olympia_a> board(2);f.players[0].SetWonder(&board);
+    auto money=f.players[0].GetResources();money[RESOURCE::coins]=0;f.players[0].SetResources(money);
+    f.players[0].ReceiveCards({test_card(CARD_ID::library,CARD_TYPE::scientific,2,std::vector<int>(8,99)),test_card(CARD_ID::altar)});
+    f.players[1].ReceiveCards({test_card(CARD_ID::altar),test_card(CARD_ID::laboratory,CARD_TYPE::scientific,2,std::vector<int>(8,99)),test_card(CARD_ID::stockade,CARD_TYPE::military,1,std::vector<int>(8,99))});
+    auto e=f.Engine();
+    finish_cohort(*e,{choose(*e,0,"build_structure",CARD_ID::library,"olympia_first_color"),choose(*e,1,"discard",CARD_ID::altar),choose(*e,2,"discard")});
+    expect(!offered(*e,0,"build_structure",CARD_ID::laboratory),"Olympia reused a color");
+    expect(offered(*e,0,"build_structure",CARD_ID::stockade),"Olympia lost other colors");
+    DecisionFixture prior;StageBoard<Olympia_a> ready(2);
+    auto owned=test_card(CARD_ID::altar);prior.players[0].ReceiveCards({owned});
+    expect(prior.players[0].BuildStructure(owned,{owned},true),"Prior color setup");
+    prior.players[0].SetWonder(&ready);
+    prior.players[0].ReceiveCards({test_card(CARD_ID::statue,CARD_TYPE::civilian,2,std::vector<int>(8,99)),test_card(CARD_ID::theater)});
+    auto previous=prior.Engine();expect(!offered(*previous,0,"build_structure",CARD_ID::statue),"Color built before activation was free again");
+    for(int stage=0;stage<=3;++stage) for(int age=0;age<3;++age) for(int round:{1,2,6}) {
+        DecisionFixture b;StageBoard<Olympia_b> night(stage);b.players[0].SetWonder(&night);
+        auto r=b.players[0].GetResources();r[RESOURCE::coins]=0;b.players[0].SetResources(r);
+        b.players[0].ReceiveCards({test_card(CARD_ID::library,CARD_TYPE::scientific,2,std::vector<int>(8,99)),test_card(CARD_ID::altar)});
+        auto engine=b.Engine(age*7+round-1);
+        expect(offered(*engine,0,"build_structure",CARD_ID::library)==((stage>=1 && round==1)||(stage>=2 && round==6)),"Olympia B first/last round eligibility");
+    }
+}
+int main(int argc,char** argv){try{if(argc>1 && std::string(argv[1])=="--dump")std::cout<<dump().dump()<<'\n';else if(argc>1 && std::string(argv[1])=="babylon")babylon();else if(argc>1 && std::string(argv[1])=="olympia")olympia();else{runtime();babylon();olympia();}return 0;}catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}}

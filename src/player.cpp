@@ -865,6 +865,7 @@ bool Player::BuildHandFree(DMAG::Card c){
 // - called at the END of the game, before scoring.
 // UNTESTED!
 bool Player::CopyGuild(){
+    if(board->IsMigrated()) return false; // No new-edition wonder copies guilds.
     Player* east = this->GetEastNeighbor();
     Player* west = this->GetWestNeighbor();
 
@@ -983,8 +984,12 @@ DMAG::Player* Player::GetWestNeighbor() {
     return this->player_west;
 }
 
-bool Player::CanBuildHandFree() {
-    return (this->board->GetId() == WONDER_ID::olympia_a && this->board->GetStage() >= 2 && this->free_card_once);
+bool Player::CanBuildHandFree() { return false; }
+std::string Player::FreeBuildingSource(const Card& card,int round) {
+    if(board->EffectCount("first_color_free") && AmountOfType(card.GetType())==0) return "olympia_first_color";
+    if(board->EffectCount("first_age_card_free") && round==1) return "olympia_first_age_card";
+    if(board->EffectCount("last_age_card_free") && round==6) return "olympia_last_age_card";
+    return "";
 }
 
 void Player::SetNeighbors(DMAG::Player* east, DMAG::Player* west){
