@@ -145,6 +145,36 @@ Nur die inaktive Zieldatei trägt `bga-second-edition-development` mit
 `second_edition_implemented=false`. Generatorintegration und Regelmigration
 folgen erst in den dafür vorgesehenen Paketen.
 
+## ENG-012 – Optimale Wissenschaftsjoker im Entwicklungs-Regelstand
+
+5. November 2026, Paket 3, `v0.2.0-dev`,
+`ruleset=bga-second-edition-development`, `second_edition_implemented=false`.
+Datei: `src/player.cpp`, `Player::CalculateScientificScore()`.
+
+Vorher konnte die gierige Vergabe Scientists Guild und Babylon unterbewerten:
+Workshop, Laboratory, Apothecary plus Scientists Guild erhielten 10 statt
+13 Punkte. Der neue CTest `science_scoring` weist diesen Fehler vor der
+Korrektur ausdrücklich nach. Die Wertung zählt feste Symbole und bisherige
+Jokerquellen unverändert und maximiert anschließend über alle vollständigen
+Verteilungen der Joker auf drei Symbolarten. Sie verändert weder Karten noch
+Ressourcen oder Wunderstufen. Auswertung O(J²), zusätzlicher Speicher O(1).
+
+`tests/test_science_scoring.cpp` prüft 375 Symbol-/Jokerbestände gegen einen
+unabhängigen rekursiven Prüfer, alte Babylon-Stufengrenzen, eigene und kopierte
+Gilden, wiederholte Wertung und eine echte Schlussrundenveröffentlichung mit
+übereinstimmenden Kategorien, Gesamtpunkten und `results.txt`. Der Test wird
+über `CMakeLists.txt` in einem isolierten Laufzeitordner registriert. Alle
+sechs CTests, die 19 Python-Tests und der BGA-Zielaudit sind grün.
+Patch und Inventar werden für den geänderten C++-/Test-/Buildstand erneuert.
+
+Grenzen: keine neuen Karten-/Wunderdaten oder Fähigkeiten, kein Protokoll-
+oder GUI-Umbau. Die getrennte alte `CopyGuild()`-Kandidatenbewertung bleibt
+näherungsweise; eine tatsächlich kopierte Gilde wird optimal gewertet.
+Python-Diagnose und feste Symbolformel stimmen mit der Veröffentlichung
+überein; die heuristische Marginalvorschau ohne Joker bleibt für Paket 8
+abgegrenzt. Keine RL-Übernahme, Pin-/Lock-Änderung, Veröffentlichung oder
+Trainingsänderung. Details: [SCIENCE_SCORING.md](SCIENCE_SCORING.md).
+
 ## Abgrenzung
 
 Es findet keine pauschale Behauptung vollständiger Regelkorrektheit statt. Insbesondere werden die Wunder-Ausbauschritte nicht zur neuen Edition migriert. Auch Kartenwerte werden durch den aktuellen Self-Play-Umbau nicht geändert. Falls frühere Kartenänderungen nicht im exakten Unterschied zu diesem Upstream-Commit erscheinen, werden sie nicht ohne Nachweis als Änderungen dieser C++-Fassung behauptet. Für jede zukünftige Änderung ist ein neuer Eintrag mit Anlass, genauer Funktion, Wirkung, Test und Grenzen anzulegen und der exakte Nachweis neu zu erzeugen.

@@ -26,7 +26,12 @@ Use the previously collected BGA reference as the target source of truth.
 The complete card/wonder comparison remains in the RL project's
 `docs/reference/edition-comparison/`. Package 1 freezes its checked targets,
 source hashes and identity mapping in [data/bga-second-edition](../data/bga-second-edition/README.md).
-Runtime migration has not started; the binary still implements the legacy rules.
+Package 3 starts runtime migration with optimal science joker scoring. The
+development contract is `v0.2.0-dev` / `bga-second-edition-development`, with
+`second_edition_implemented=false`. Card/wonder data and transport version 2
+remain unchanged; this is not a new released legacy or complete BGA version.
+The legacy tags and RL consumer pin remain available unchanged. Details and
+remaining boundaries: [SCIENCE_SCORING.md](SCIENCE_SCORING.md).
 
 Audit the target data independently of the RL checkout:
 
@@ -48,5 +53,6 @@ reuse old checkpoints or exported data as evidence for the new ruleset.
 
 `upstream` should refer to `https://github.com/dmag-ufsm/7Wonders.git`;
 `origin` is the maintained fork. The fork retains upstream ancestry, original
-license and notices. The extracted engine's game source is byte-for-byte
-identical to the RL snapshot tagged `pre-engine-split-2026-11-05`.
+license and notices. At extraction, the engine's game source was byte-for-byte
+identical to the RL snapshot tagged `pre-engine-split-2026-11-05`. Subsequent
+source changes are recorded in the simulator audit and change log.

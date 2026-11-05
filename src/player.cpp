@@ -860,46 +860,20 @@ int Player::CalculateScientificScore(){
         sci_extra++;
     }
 
-    // Choose the most advantageous scientific piece for extra piece:
-    // First complete the set if possible. The pieces left over, add to what has more.
-    int remaining_tablets = 0, remaining_compasses = 0, remaining_gears = 0, extra = sci_extra;
-    if (tablet >= compass && tablet >= gear) {
-        remaining_compasses = tablet - compass;
-        remaining_gears = tablet - gear;
-        if (remaining_compasses + remaining_gears <= sci_extra) {
-            compass += remaining_compasses;
-            gear += remaining_gears;
-            extra -= remaining_compasses + remaining_gears;
+    // Enumerate every allocation of all jokers without changing fixed symbols.
+    // Greedy concentration misses e.g. (2 gears, 1 compass, 1 joker): 13 > 10.
+    int best_score = 0;
+    for (int extra_gears = 0; extra_gears <= sci_extra; ++extra_gears) {
+        for (int extra_compasses = 0; extra_compasses <= sci_extra - extra_gears; ++extra_compasses) {
+            const int gears = gear + extra_gears;
+            const int compasses = compass + extra_compasses;
+            const int tablets = tablet + sci_extra - extra_gears - extra_compasses;
+            const int sets = std::min({gears, compasses, tablets});
+            best_score = std::max(best_score, gears * gears + compasses * compasses
+                                             + tablets * tablets + 7 * sets);
         }
-        tablet += extra;
-    } else if (compass >= tablet && compass >= gear) {
-        remaining_tablets = compass - tablet;
-        remaining_gears = compass - gear;
-        if (remaining_tablets + remaining_gears <= extra) {
-            tablet += remaining_tablets;
-            gear += remaining_gears;
-            extra -= remaining_tablets + remaining_gears;
-        }
-        compass += extra;
-    } else if (gear >= tablet && gear >= compass) {
-        remaining_tablets = gear - tablet;
-        remaining_compasses = gear - compass;
-        if (remaining_compasses + remaining_tablets <= extra) {
-            compass += remaining_compasses;
-            tablet += remaining_tablets;
-            extra -= remaining_compasses + remaining_tablets;
-        }
-        gear += extra;
     }
-
-    // The smallest value among the three is the amount of completed sets
-    int completed_sets = 0;
-    if (gear <= tablet && gear <= compass)    completed_sets = gear;
-    if (tablet <= gear && tablet <= compass)  completed_sets = tablet;
-    if (compass <= gear && compass <= tablet) completed_sets = compass;
-
-    int points_per_set_completed = 7;
-    return (gear * gear) + (tablet * tablet) + (compass * compass) + (completed_sets * points_per_set_completed);
+    return best_score;
 }
 
 int Player::CalculateWonderScore(){

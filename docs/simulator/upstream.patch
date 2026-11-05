@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index add0c31aea13d74f44b3e843977cf13e0ca4eec2..9bf0792b55e518db75945f7b7fd4b91ff3e07ed5 100644
+index add0c31aea13d74f44b3e843977cf13e0ca4eec2..912fa8d94f79ce0f67a4d995a32256dd5022942a 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -1,3 +1,4 @@
@@ -16,7 +16,7 @@ index add0c31aea13d74f44b3e843977cf13e0ca4eec2..9bf0792b55e518db75945f7b7fd4b91f
  
  set(SOURCES
      main.cpp
-@@ -29,4 +30,56 @@ set(HEADERS
+@@ -29,4 +30,63 @@ set(HEADERS
  
  add_executable(7Wonders ${SOURCES} ${HEADERS})
  
@@ -59,6 +59,13 @@ index add0c31aea13d74f44b3e843977cf13e0ca4eec2..9bf0792b55e518db75945f7b7fd4b91f
 +add_test(NAME joint_action_resources COMMAND test_joint_action_resources)
 +set_tests_properties(joint_action_resources PROPERTIES
 +    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/joint_action_resources_runtime" TIMEOUT 10)
++
++add_executable(test_science_scoring tests/test_science_scoring.cpp
++    src/card.cpp src/player.cpp src/wonder.cpp src/filer.cpp)
++file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/science_scoring_runtime")
++add_test(NAME science_scoring COMMAND test_science_scoring)
++set_tests_properties(science_scoring PROPERTIES
++    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/science_scoring_runtime" TIMEOUT 10)
 +
 +# The regression programs use assert(), including when the engine is built Release.
 +if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
@@ -370,7 +377,7 @@ index dd219de7df0af977f508326df94c0f86f49c69d5..f9c9874a27ddd2e53b48de9c8a3d6c3c
  }
  
 diff --git a/src/player.cpp b/src/player.cpp
-index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..6665fd9ded2ecab98008ac99ab6f32f9050b5ae8 100644
+index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..65cee67069029d0b13b47156aec21663cbfba1ca 100644
 --- a/src/player.cpp
 +++ b/src/player.cpp
 @@ -1,3 +1,5 @@
@@ -448,7 +455,66 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..6665fd9ded2ecab98008ac99ab6f32f9
      }
  
      curr_resource += cont;
-@@ -905,6 +910,10 @@ int Player::CalculateWonderScore(){
+@@ -855,46 +860,20 @@ int Player::CalculateScientificScore(){
+         sci_extra++;
+     }
+ 
+-    // Choose the most advantageous scientific piece for extra piece:
+-    // First complete the set if possible. The pieces left over, add to what has more.
+-    int remaining_tablets = 0, remaining_compasses = 0, remaining_gears = 0, extra = sci_extra;
+-    if (tablet >= compass && tablet >= gear) {
+-        remaining_compasses = tablet - compass;
+-        remaining_gears = tablet - gear;
+-        if (remaining_compasses + remaining_gears <= sci_extra) {
+-            compass += remaining_compasses;
+-            gear += remaining_gears;
+-            extra -= remaining_compasses + remaining_gears;
+-        }
+-        tablet += extra;
+-    } else if (compass >= tablet && compass >= gear) {
+-        remaining_tablets = compass - tablet;
+-        remaining_gears = compass - gear;
+-        if (remaining_tablets + remaining_gears <= extra) {
+-            tablet += remaining_tablets;
+-            gear += remaining_gears;
+-            extra -= remaining_tablets + remaining_gears;
+-        }
+-        compass += extra;
+-    } else if (gear >= tablet && gear >= compass) {
+-        remaining_tablets = gear - tablet;
+-        remaining_compasses = gear - compass;
+-        if (remaining_compasses + remaining_tablets <= extra) {
+-            compass += remaining_compasses;
+-            tablet += remaining_tablets;
+-            extra -= remaining_compasses + remaining_tablets;
++    // Enumerate every allocation of all jokers without changing fixed symbols.
++    // Greedy concentration misses e.g. (2 gears, 1 compass, 1 joker): 13 > 10.
++    int best_score = 0;
++    for (int extra_gears = 0; extra_gears <= sci_extra; ++extra_gears) {
++        for (int extra_compasses = 0; extra_compasses <= sci_extra - extra_gears; ++extra_compasses) {
++            const int gears = gear + extra_gears;
++            const int compasses = compass + extra_compasses;
++            const int tablets = tablet + sci_extra - extra_gears - extra_compasses;
++            const int sets = std::min({gears, compasses, tablets});
++            best_score = std::max(best_score, gears * gears + compasses * compasses
++                                             + tablets * tablets + 7 * sets);
+         }
+-        gear += extra;
+     }
+-
+-    // The smallest value among the three is the amount of completed sets
+-    int completed_sets = 0;
+-    if (gear <= tablet && gear <= compass)    completed_sets = gear;
+-    if (tablet <= gear && tablet <= compass)  completed_sets = tablet;
+-    if (compass <= gear && compass <= tablet) completed_sets = compass;
+-
+-    int points_per_set_completed = 7;
+-    return (gear * gear) + (tablet * tablet) + (compass * compass) + (completed_sets * points_per_set_completed);
++    return best_score;
+ }
+ 
+ int Player::CalculateWonderScore(){
+@@ -905,6 +884,10 @@ int Player::CalculateWonderScore(){
  
  // Calculates the player's TOTAL score using the methods defined above.
  int Player::CalculateScore(){
@@ -459,7 +525,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..6665fd9ded2ecab98008ac99ab6f32f9
      int civil_score = this->CalculateCivilianScore();
      int commercial_score = this->CalculateCommercialScore();
      int guild_score = this->CalculateGuildScore();
-@@ -917,7 +926,8 @@ int Player::CalculateScore(){
+@@ -917,7 +900,8 @@ int Player::CalculateScore(){
  
      this->victory_points = total_score;
  
@@ -469,7 +535,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..6665fd9ded2ecab98008ac99ab6f32f9
  }
  
  //////////////////////////////////
-@@ -995,8 +1005,10 @@ int Player::CalculateAmountManufacturedGood(){
+@@ -995,8 +979,10 @@ int Player::CalculateAmountManufacturedGood(){
  bool Player::ChooseExtraManuf(int resource){
      if (resource == RESOURCE::loom || resource == RESOURCE::glass || resource == RESOURCE::papyrus) {
          if (this->board->GetId() == WONDER_ID::alexandria_b && this->board->GetStage() >= 2) {
@@ -482,7 +548,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..6665fd9ded2ecab98008ac99ab6f32f9
          }
      }
      return false;
-@@ -1010,9 +1022,10 @@ bool Player::ChooseExtraRaw(int resource){
+@@ -1010,9 +996,10 @@ bool Player::ChooseExtraRaw(int resource){
          resource == RESOURCE::clay || resource == RESOURCE::stone) {
          int id = this->board->GetId();
          int stage = this->board->GetStage();
@@ -1297,6 +1363,209 @@ index 0000000000000000000000000000000000000000..c094ce082b0e561dd7fcfc334d9bfb11
 +        require(status["last_actions"]["2"]["status"] == "applied",
 +                "Earlier player's choice use must not invalidate the next player's legal Forum");
 +        require(players[2]->HasPlayedCard(forum), "Forum was not built");
++        return 0;
++    } catch (const std::exception& error) {
++        std::cerr << error.what() << std::endl;
++        return 1;
++    }
++}
+diff --git a/tests/test_science_scoring.cpp b/tests/test_science_scoring.cpp
+new file mode 100644
+index 0000000000000000000000000000000000000000..3502da680111f546046a247bac6912f774275c62
+--- /dev/null
++++ b/tests/test_science_scoring.cpp
+@@ -0,0 +1,197 @@
++// Scientific scoring through real cards, wonder markers and final publication.
++#define main sevenwonders_engine_main
++#include "../main.cpp"
++#undef main
++
++#include <filesystem>
++#include <sstream>
++
++struct GameTestAccess {
++    static std::vector<Player*>& players(Game& game) { return game.player_list; }
++    static void final_turn(Game& game) { game.turn = 20; game.era = 3; }
++};
++
++template<class Board>
++class AtStage : public Board {
++public:
++    explicit AtStage(int value) { this->stage = value; }
++};
++
++void require(bool condition, const std::string& message) {
++    if (!condition) throw std::runtime_error(message);
++}
++
++Card scientific_card(int identity) {
++    const std::map<int, std::string> names = {
++        {CARD_ID::workshop, "Workshop"}, {CARD_ID::laboratory, "Laboratory"},
++        {CARD_ID::apothecary, "Apothecary"}, {CARD_ID::scientists, "Scientists Guild"}};
++    auto name = names.find(identity);
++    return Card(identity, name == names.end() ? "Science fixture " + std::to_string(identity) : name->second,
++                identity == CARD_ID::scientists ? CARD_TYPE::guild : CARD_TYPE::scientific,
++                3, CARD_ID::none, std::vector<int>(8, 0), std::vector<int>(5, 1));
++}
++
++void build_free(Player& player, const Card& card) {
++    player.ReceiveCards({card});
++    require(player.BuildStructure(card, {card}, true), "Could not construct fixture card");
++}
++
++void add_symbols(Player& player, int gears, int compasses, int tablets) {
++    const int gear_cards[] = {CARD_ID::workshop, CARD_ID::laboratory, CARD_ID::observatory, CARD_ID::study};
++    const int compass_cards[] = {CARD_ID::apothecary, CARD_ID::dispensary, CARD_ID::lodge, CARD_ID::academy};
++    const int tablet_cards[] = {CARD_ID::scriptorium, CARD_ID::library, CARD_ID::school, CARD_ID::university};
++    for (int n = 0; n < gears; ++n) build_free(player, scientific_card(gear_cards[n]));
++    for (int n = 0; n < compasses; ++n) build_free(player, scientific_card(compass_cards[n]));
++    for (int n = 0; n < tablets; ++n) build_free(player, scientific_card(tablet_cards[n]));
++}
++
++struct Fixture {
++    Gizah_a plain;
++    Player player, east, west;
++    explicit Fixture(Wonder* board = nullptr) {
++        player.SetWonder(board ? board : &plain);
++        east.SetWonder(&plain);
++        west.SetWonder(&plain);
++        player.SetNeighbors(&east, &west);
++        east.SetNeighbors(&west, &player);
++        west.SetNeighbors(&player, &east);
++    }
++};
++
++// Independent oracle: assign each individual joker recursively, rather than
++// enumerating integer partitions as the production implementation does.
++int oracle(int gear, int compass, int tablet, int jokers) {
++    if (!jokers) return gear * gear + compass * compass + tablet * tablet
++                        + 7 * std::min({gear, compass, tablet});
++    return std::max({oracle(gear + 1, compass, tablet, jokers - 1),
++                     oracle(gear, compass + 1, tablet, jokers - 1),
++                     oracle(gear, compass, tablet + 1, jokers - 1)});
++}
++
++void counterexample() {
++    Fixture fixture;
++    add_symbols(fixture.player, 2, 1, 0);
++    build_free(fixture.player, scientific_card(CARD_ID::scientists));
++    const int actual = fixture.player.CalculateScientificScore();
++    require(actual == 13, "Workshop + Laboratory + Apothecary + Scientists Guild: expected 13, got "
++                          + std::to_string(actual));
++}
++
++void exhaustive_counts() {
++    for (int gear = 0; gear <= 4; ++gear)
++        for (int compass = 0; compass <= 4; ++compass)
++            for (int tablet = 0; tablet <= 4; ++tablet)
++                for (int jokers = 0; jokers <= 2; ++jokers) {
++                    AtStage<Babylon_a> babylon(2);
++                    Fixture fixture(jokers == 2 ? &babylon : nullptr);
++                    add_symbols(fixture.player, gear, compass, tablet);
++                    if (jokers) build_free(fixture.player, scientific_card(CARD_ID::scientists));
++                    const auto resources = fixture.player.GetResources();
++                    const auto cards = fixture.player.GetPlayedCards();
++                    const int expected = oracle(gear, compass, tablet, jokers);
++                    for (int repeat = 0; repeat < 3; ++repeat) {
++                        require(fixture.player.CalculateScientificScore() == expected,
++                                "Scientific score disagrees with recursive joker oracle");
++                        const auto scores = fixture.player.CalculateScores();
++                        require(scores[4] == expected && scores[6] == expected + 1,
++                                "Scientific category or total differs from optimal score");
++                        require(fixture.player.CalculateScore() == scores[6], "Total scoring disagrees");
++                    }
++                    require(fixture.player.GetResources() == resources, "Scoring changed resources");
++                    require(fixture.player.GetPlayedCards().size() == cards.size(), "Scoring added cards");
++                    require(fixture.player.GetHandCards().empty(), "Scoring changed hand");
++                    require(fixture.player.GetBoard()->GetStage() == (jokers == 2 ? 2 : 0),
++                            "Scoring changed wonder stage");
++                }
++}
++
++template<class Board>
++void wonder_boundary(int stage, int expected) {
++    AtStage<Board> board(stage);
++    Fixture fixture(&board);
++    add_symbols(fixture.player, 2, 1, 0);
++    require(fixture.player.CalculateScientificScore() == expected, "Babylon joker stage boundary");
++}
++
++void copied_joker() {
++    AtStage<Olympia_b> olympia(3);
++    Fixture fixture(&olympia);
++    add_symbols(fixture.player, 2, 1, 0);
++    build_free(fixture.player, scientific_card(CARD_ID::scientists));
++    build_free(fixture.east, scientific_card(CARD_ID::scientists));
++    require(fixture.player.CalculateScientificScore() == 13, "Owned Scientists Guild joker missing");
++    require(fixture.player.CopyGuild(), "Available Scientists Guild was not copied");
++    require(fixture.player.GetPlayedCards().size() == 5, "Guild copy did not add exactly one card");
++    require(fixture.player.CalculateScientificScore() == 18, "Owned and copied jokers must each count once");
++    require(fixture.player.CalculateScientificScore() == 18, "Repeated scoring duplicated copied joker");
++}
++
++json read_status() {
++    json status;
++    std::ifstream("io/game_status.json") >> status;
++    return status;
++}
++
++void final_publication() {
++    std::filesystem::create_directories("io");
++    Game game(0, 0, true);
++    game.Init();
++    game.NewGame(3);
++    auto& players = GameTestAccess::players(game);
++    players[0]->SetWonder(new AtStage<Babylon_a>(2));
++    players[1]->SetWonder(new AtStage<Olympia_b>(3));
++    players[2]->SetWonder(new Gizah_a());
++    add_symbols(*players[0], 2, 1, 0);
++    build_free(*players[0], scientific_card(CARD_ID::scientists));
++    add_symbols(*players[1], 2, 1, 0);
++    game.WriteGameStatus();
++    const auto before = read_status();
++    require(before["players"]["0"]["points"]["scientific"] == 18, "Published combined jokers wrong");
++    require(before["players"]["1"]["points"]["scientific"] == 5, "Guild copied before endgame");
++    const Card altar = game.GetCardByName("Altar");
++    for (Player* player : players) player->ReceiveCards({altar});
++    GameTestAccess::final_turn(game);
++    for (int seat = 0; seat < 3; ++seat) {
++        json action = {{"turn", 20}, {"command", {{"subcommand", "discard"}, {"argument", "Altar"}, {"extra", ""}}}};
++        std::ofstream("io/player_" + std::to_string(seat + 1) + ".json") << action;
++    }
++    std::ofstream("io/ready.txt") << "ready\nready\nready\n";
++    game.Loop();
++    const auto final = read_status();
++    require(final["game"]["phase"] == "finished", "Missing finished status");
++    require(final["players"]["0"]["points"]["scientific"] == 18, "Combined final jokers wrong");
++    require(final["players"]["1"]["points"]["scientific"] == 13, "Copied final joker wrong");
++    std::ifstream result_file("results.txt");
++    const std::string results((std::istreambuf_iterator<char>(result_file)), std::istreambuf_iterator<char>());
++    for (int seat = 0; seat < 3; ++seat) {
++        const auto scores = players[seat]->CalculateScores();
++        const auto& points = final["players"][std::to_string(seat)]["points"];
++        require(points["scientific"] == scores[4] && points["total"] == scores[6], "Final score publication differs");
++        const int sum = points["civilian"].get<int>() + points["commercial"].get<int>()
++                      + points["guild"].get<int>() + points["military"].get<int>()
++                      + points["scientific"].get<int>() + points["wonder"].get<int>();
++        require(sum == scores[6], "Score categories do not sum to total");
++        require(results.find("Player " + std::to_string(seat + 1) + " score: " + std::to_string(scores[6]) + "\n")
++                != std::string::npos, "results.txt differs from published total");
++    }
++    game.WriteGameStatus();
++    require(read_status() == final, "Repeated final publication changed state or score");
++}
++
++int main() {
++    try {
++        std::cout.setstate(std::ios_base::failbit);
++        counterexample();
++        exhaustive_counts();
++        for (int stage = 0; stage <= 3; ++stage) {
++            wonder_boundary<Babylon_a>(stage, stage >= 2 ? 13 : 5);
++            wonder_boundary<Babylon_b>(stage, stage >= 3 ? 13 : 5);
++        }
++        copied_joker();
++        final_publication();
 +        return 0;
 +    } catch (const std::exception& error) {
 +        std::cerr << error.what() << std::endl;

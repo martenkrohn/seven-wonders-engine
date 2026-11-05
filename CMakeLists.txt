@@ -69,6 +69,13 @@ add_test(NAME joint_action_resources COMMAND test_joint_action_resources)
 set_tests_properties(joint_action_resources PROPERTIES
     WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/joint_action_resources_runtime" TIMEOUT 10)
 
+add_executable(test_science_scoring tests/test_science_scoring.cpp
+    src/card.cpp src/player.cpp src/wonder.cpp src/filer.cpp)
+file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/science_scoring_runtime")
+add_test(NAME science_scoring COMMAND test_science_scoring)
+set_tests_properties(science_scoring PROPERTIES
+    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/science_scoring_runtime" TIMEOUT 10)
+
 # The regression programs use assert(), including when the engine is built Release.
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(test_choice_simple PRIVATE -UNDEBUG)

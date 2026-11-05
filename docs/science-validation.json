@@ -1,0 +1,167 @@
+{
+  "format_version": 1,
+  "checked_on": "2026-11-05",
+  "package": 3,
+  "status": "accepted",
+  "engine_baseline_commit": "044b73f37e28eed953463aa98a4379157f3a23c8",
+  "rl_commit": "a283d5897d01b8edd32021562271698f1d41a3ee",
+  "rl_pin": "f39c1d7ead271df437269b7f555a2c7a0d4b9ad1",
+  "engine_contract": {
+    "format_version": 1,
+    "release": "v0.2.0-dev",
+    "ruleset": "bga-second-edition-development",
+    "protocol_version": 2,
+    "players": 3,
+    "second_edition_implemented": false,
+    "upstream_repository": "https://github.com/dmag-ufsm/7Wonders",
+    "upstream_commit": "a0bc333a7a7f21f83156de8a2d522e7baa913f0a"
+  },
+  "red_regression": {
+    "command": "ctest --test-dir build -R '^science_scoring$' --output-on-failure",
+    "runtime_source_commit": "044b73f37e28eed953463aa98a4379157f3a23c8",
+    "exit_code": 8,
+    "failure": "Workshop + Laboratory + Apothecary + Scientists Guild: expected 13, got 10",
+    "baseline_player_cpp_sha256": "461568f1e7630cca688c1af667a92b8ea500c5abff3745ac8cafa80a1f48b2b0"
+  },
+  "coverage": {
+    "independent_oracle": "Recursively assign each individual joker to one of three symbols.",
+    "fixed_symbols_each": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "joker_counts": [
+      0,
+      1,
+      2
+    ],
+    "inventory_combinations": 375,
+    "repeated_evaluations_per_combination": 3,
+    "old_babylon_stage_boundary_cases": 8,
+    "owned_and_copied_guild_jokers": 2,
+    "final_scientific_scores": [
+      18,
+      13,
+      0
+    ],
+    "final_total_scores": [
+      19,
+      14,
+      1
+    ],
+    "category_total_and_results_txt_agree": true,
+    "repeated_final_status_identical": true,
+    "owned_and_copied_guild_fixture": "Synthetic duplicate-source stress case; valid shared-guild copy is also exercised across two players in the final-turn fixture."
+  },
+  "checks": [
+    {
+      "command": "cmake -S . -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build --parallel 2",
+      "exit_code": 0
+    },
+    {
+      "command": "ctest --test-dir build --output-on-failure",
+      "exit_code": 0,
+      "passed": 6
+    },
+    {
+      "command": "python3 -m unittest discover -s tests -p 'test_*.py' -v",
+      "exit_code": 0,
+      "passed": 19
+    },
+    {
+      "command": "python3 scripts/audit_bga_targets.py --check --workspace ..",
+      "exit_code": 0
+    },
+    {
+      "command": "python3 scripts/audit_simulator.py && python3 scripts/audit_simulator.py --check",
+      "exit_code": 0,
+      "scoped_files": 50
+    },
+    {
+      "command": "Read actual final fixture status through existing Python science_state, enumerate assignments with science_score, verify ScienceDiagnostics.finish",
+      "exit_code": 0
+    }
+  ],
+  "python_check": {
+    "final_status_agrees_with_python": [
+      {
+        "seat": 0,
+        "symbols": {
+          "gear": 2,
+          "compass": 1,
+          "tablet": 0
+        },
+        "jokers": 2,
+        "points": 18
+      },
+      {
+        "seat": 1,
+        "symbols": {
+          "gear": 2,
+          "compass": 1,
+          "tablet": 0
+        },
+        "jokers": 1,
+        "points": 13
+      },
+      {
+        "seat": 2,
+        "symbols": {
+          "gear": 0,
+          "compass": 0,
+          "tablet": 0
+        },
+        "jokers": 0,
+        "points": 0
+      }
+    ],
+    "remaining_fixed_symbol_preview": {
+      "before_optimal": 13,
+      "after_optimal": 18,
+      "optimal_gain": 5,
+      "fixed_symbol_gain": 8
+    }
+  },
+  "separate_copy_selection_finding": {
+    "source": "src/player.cpp Player::CopyGuild() Scientists Guild estimate uses AmountOfType(scientific)",
+    "controlled_probe": {
+      "copied": false,
+      "science_before": 0,
+      "science_if_copy": 1
+    },
+    "scope": "Existing guild-copy selection remains outside optimal valuation of actual joker sources."
+  },
+  "unchanged_definitions": [
+    "main.cpp",
+    "include/card.h",
+    "include/player.h",
+    "include/wonder.h",
+    "src/card.cpp",
+    "src/wonder.cpp",
+    "src/filer.cpp",
+    "gui",
+    "Game.py",
+    "data/bga-second-edition/targets.json",
+    "data/bga-second-edition/provenance.json",
+    "data/bga-second-edition/reference"
+  ],
+  "unchanged_definition_differences": [],
+  "artifacts_sha256": {
+    "src/player.cpp": "d809fa52118d750e0f314eb06e95a7a37b645a5d506d1db7ee87469d6cd2ef57",
+    "CMakeLists.txt": "23f1bc0261fb2bd52a2465000e1d386f58411dfd35b85aafd03a5b2b75f25dd5",
+    "tests/test_science_scoring.cpp": "4c2d2a037ef077efe822bf3bc3d2e22ad71c36aee229dd2ef74e1534270343bf",
+    "engine-contract.json": "826a7ecc0658eb288fb18a5892581789d6488cb22cfeb68cfa5f1c53dd7ce3b8",
+    "docs/simulator/manifest.json": "08f258ade4933e141c50c898731321c91210b1e0b2f646cfa0e42bab8d008fd9",
+    "docs/simulator/upstream.patch": "83c33ab79a86d801bd4731c408b2c40de02642d1d336681fa33632191f6c0fe8"
+  },
+  "limits": [
+    "Development ruleset only, second_edition_implemented=false; transport remains version 2.",
+    "Legacy card and wonder definitions and joker activation stages are unchanged.",
+    "Old guild-copy candidate selection remains approximate and is separately documented.",
+    "Python fixed-symbol marginal preview omits existing jokers; RL adaptation is deferred to package 8.",
+    "No GUI/feature/training change, RL adoption, pin/lock update, push or release.",
+    "Package 4a is prepared separately and not implemented in this package."
+  ]
+}

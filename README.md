@@ -4,12 +4,17 @@ A standalone C++17 simulator for three-player **7 Wonders**, forked from
 [DMAG/UFSM's 7Wonders](https://github.com/dmag-ufsm/7Wonders). It exposes a
 JSON file protocol for bots and other clients. No RL framework is required.
 
-**Current release: `v0.1.1-legacy`.** This restores the optional original Tk GUI
-and preserves the simulator previously
-used by [Seven Wonders RL](https://github.com/martenkrohn/seven-wonders-rl),
-including its existing corrections and limitations. The second-edition/BGA
-migration is planned; it is **not implemented** in this release. The versioned
-[engine contract](engine-contract.json) identifies the ruleset and protocol.
+**Development tree: `v0.2.0-dev`, ruleset `bga-second-edition-development`.**
+Package 3 now scores science jokers optimally. Card and wonder definitions
+still use the legacy data; the full second-edition/BGA rules are not implemented
+(`second_edition_implemented=false`). The versioned
+[engine contract](engine-contract.json) identifies this development ruleset
+separately from transport protocol 2. See the [science validation](docs/SCIENCE_SCORING.md).
+
+The tagged `v0.1.1-legacy` release preserves the restored original Tk GUI and
+the simulator used by [Seven Wonders RL](https://github.com/martenkrohn/seven-wonders-rl).
+Its exact RL pin remains unchanged; this development tree has not been released
+or adopted by the RL project.
 
 ## Build and check
 
@@ -63,8 +68,8 @@ baseline and the remaining interface/artwork work.
 
 The [BGA target contract](data/bga-second-edition/README.md) now preserves all
 80 checked card/age rows, 14 wonder sides, source checksums and the complete ID
-mapping in this repository. It is preparation for migration; the executable
-and `engine-contract.json` still describe the legacy rules.
+mapping in this repository. Runtime migration has begun with science scoring;
+the executable still uses the legacy card and wonder definitions.
 
 Keep engine changes and C++ regressions here. The RL repository consumes an
 exact engine commit as a Git submodule. Follow [DEVELOPMENT.md](docs/DEVELOPMENT.md)

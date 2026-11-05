@@ -5,8 +5,11 @@ Stand: 5. November 2026. Paket 1 des [Migrationsplans](../../docs/MIGRATION_PLAN
 80 Karten-/Zeitalterzeilen, 77 Kartentypen und 14 Wunderseiten. Sie wird von
 der laufenden Legacy-Engine noch nicht geladen. Ihr Entwicklungs-Regelname
 lautet `bga-second-edition-development`, `second_edition_implemented=false`.
-Der Vertrag des tatsächlich laufenden Binarys bleibt in
-[`engine-contract.json`](../../engine-contract.json) auf dem Legacy-Regelstand.
+Der Vertrag des tatsächlich laufenden Binarys steht in
+[`engine-contract.json`](../../engine-contract.json). Seit Paket 3 trägt er
+denselben Entwicklungsnamen: Die Wissenschaftswertung ist korrigiert, Karten
+und Wunder verwenden weiterhin Legacy-Daten; die vollständige zweite Edition
+ist noch nicht implementiert.
 `format_version=1` bezeichnet dieses Datenschema, nicht Transportversion 2.
 
 ## Herkunft und Prüfung
@@ -132,7 +135,8 @@ zunächst ausdrücklich die alten Exporter gegen den alten Regelstand.
 
 Die Definitionen ergeben für diesen Datenauftrag keine zusätzliche offene
 Regelfrage (`open_rule_questions=[]`). Sie beweisen kein BGA-Serververhalten.
-Wissenschaftsjoker, simultane Auflösung, Ablageentscheidungen und Ausführung
-neuer Fähigkeiten bleiben bei den folgenden Paketen. Kosten, Punkte,
-Deckmengen und Stufen der laufenden Engine wurden hier nicht geändert.
+Paket 3 hat inzwischen die Wissenschaftsjoker korrigiert. Simultane Auflösung,
+Ablageentscheidungen und Ausführung neuer Fähigkeiten bleiben bei den folgenden
+Paketen. Kartenkosten/-punkte, Deckmengen und Wunderstufen der laufenden Engine
+wurden durch die Datenvorbereitung und Wissenschaftskorrektur nicht geändert.
 GUI-, RL-Feature- und Trainingsmigration sind ebenfalls offen.

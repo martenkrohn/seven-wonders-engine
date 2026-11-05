@@ -1,7 +1,7 @@
 {
   "format_version": 1,
-  "release": "v0.1.1-legacy",
-  "ruleset": "legacy-dmag-with-downstream-fixes",
+  "release": "v0.2.0-dev",
+  "ruleset": "bga-second-edition-development",
   "protocol_version": 2,
   "players": 3,
   "second_edition_implemented": false,
