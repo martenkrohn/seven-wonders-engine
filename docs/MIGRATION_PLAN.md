@@ -5,7 +5,7 @@ weitere Migration. **Ein Auftrag bearbeitet jeweils nur ein Arbeitspaket.**
 Zum Abschluss werden Ergebnis, Tests, Commit und verbleibende Grenzen
 eingetragen. Anschließend endet der Auftrag; das nächste Paket startet mit
 frischem Kontext. Der [fertige nächste Agentenauftrag](NEXT_AGENT_TASK.md)
-begrenzt die nächste Sitzung auf Paket 2.
+begrenzt die nächste Sitzung auf Paket 3.
 
 ## Ziel und feste Entscheidungen
 
@@ -64,8 +64,8 @@ lokalen Ordner verwendbar.
 | --- | --- | --- | --- |
 | 0 – Legacy-GUI | Erledigt, technische Abnahme siehe GUI-Audit | Alte Oberfläche wieder anbinden und kompatibel machen | Alte Partien mit Endwertung, Session-Isolation und Tests funktionieren; Regeln unverändert |
 | 1 – Zielvertrag und Zuordnung | Erledigt, Abnahme unten | Vorhandene BGA-Ziele versioniert festhalten und IDs/Schema zuordnen | 80 Kartenzeilen und 14 Seiten vollständig; Prüfsummen/Quelle dokumentiert; alle Zielkarten und Ketten eindeutig zugeordnet; kein Laufzeitumbau |
-| **2 – Exporter reproduzierbar machen** | **Als Nächstes** | Im RL-Projekt die alten Exportfehler beheben | Wunder-ID 0, Produktionsmengen und Mehrfach-Zeitalter korrekt; deterministischer Export mit geprüftem JSON-Diff und Regressionen |
-| 3 – Wissenschaftswertung | Offen | Gierige Jokervergabe durch optimale Endwertung ersetzen | Dokumentierte Gegenbeispiele und Kombinationen mit mehreren Jokern/Quellen bestehen; keine Kartendaten-/GUI-Änderung |
+| 2 – Exporter reproduzierbar machen | Erledigt, Abnahme unten | Im RL-Projekt die alten Exportfehler beheben | Wunder-ID 0, Produktionsmengen und Mehrfach-Zeitalter korrekt; deterministischer Export mit geprüftem JSON-Diff und Regressionen |
+| **3 – Wissenschaftswertung** | **Als Nächstes** | Gierige Jokervergabe durch optimale Endwertung ersetzen | Dokumentierte Gegenbeispiele und Kombinationen mit mehreren Jokern/Quellen bestehen; keine Kartendaten-/GUI-Änderung |
 | 4a – Entscheidungsvertrag | Offen | Ablagewahl und simultane Auflösung als Protokollzustände spezifizieren | Eingaben, sichtbare Optionen, Sitzreihenfolge, Timing, Abbruch und Terminalzustand sind für GUI und RL eindeutig beschrieben; Implementierung folgt separat |
 | 4b – Sichere Auflösung | Offen | Vertrag aus 4a in der Engine implementieren | Ablagekarten genau einmal entnommen, keine Handentnahme mit Ablageindex, Berechtigung korrekt verbraucht, relevante Gleichzeitigkeit getestet |
 | 5 – Neue Karten | Offen | Kosten, Punkte, Ketten, Deckmengen und neue Karteneffekte migrieren | Alle 80 Zeitalterzeilen gegen Ziel geprüft; Ludus und Decorators Guild funktionieren; Drei-Spieler-Decks stimmen |
@@ -172,5 +172,41 @@ Grenzen: keine Laufzeit-, C++-, GUI-, Exporter- oder Trainingsänderung.
 Statische BGA-Daten belegen kein vollständiges Serververhalten.
 `engine-contract.json` bleibt Legacy; das inaktive Ziel trägt einen eigenen
 Entwicklungsnamen und `second_edition_implemented=false`. Submodule-Pin und
-`engine.lock.json` im RL-Projekt werden hier nicht aktualisiert. Das nächste
-vorbereitete Paket 2 repariert ausschließlich die alten Exportwege.
+`engine.lock.json` im RL-Projekt werden hier nicht aktualisiert. Der damalige
+Folgeauftrag war Paket 2 zur Reparatur ausschließlich der alten Exportwege.
+
+## Abnahme Paket 2 – 5. November 2026
+
+RL-Implementierungscommit: `a283d5897d01b8edd32021562271698f1d41a3ee`
+(`Fix legacy C++ data exports without changing runtime rules`), Branch
+`refactor/separate-engine-20261105`. Der Engine-Commit zu dieser Abnahme
+ändert ausschließlich diesen Plan und den nächsten Agentenauftrag.
+
+Ergebnis: Gemeinsamer Enum-Parser erhält Wunder-IDs 0–13. Alle fünf
+Spielerzahlspalten 3–7 werden für jede der 78 Legacy-Kartenzeilen exportiert;
+Loom, Glassworks und Press behalten ihre getrennten Altersmengen. Konflikte
+bei Kosten/Ketten zwischen Altersvarianten und doppelte Zeilen werden
+abgelehnt. Die vier Doppelproduzenten erhalten Menge 2 im bereits unterstützten
+Ressourcenobjektformat; zwei veraltete Forum-/Caravansery-Flags entfallen.
+Der geprüfte Diff betrifft nur diese Felder der alten Kartendatenbank.
+Wunder- und Mechanikdateien bleiben bytegleich. `--output-dir`, `--engine-root`
+und schreibfreies `--check` erlauben Prüfung vor Übernahme; CI prüft die Exporte.
+
+Prüfungen: 18 gezielt nachgewiesene Fehlerfälle vor der Reparatur;
+27 neue Exportregressionen und insgesamt 66 bestandene betroffene Tests,
+einschließlich Datenbank-, Produktions-/Handels-, Beobachtungs- und
+Checkpoint-Verträgen. Beide Exportprüfungen und der Editionsaudit sind grün.
+Zwei Exporte aus einem isolierten Archiv des tatsächlich gepinnten
+`f39c1d7ead271df437269b7f555a2c7a0d4b9ad1` sind bytegleich und stimmen mit
+allen drei Paketdateien überein. Der Herkunftsaudit für 49 C++-/Build-/Testdateien
+bleibt gültig. [Anleitung](../../docs/guides/LEGACY_DATA_EXPORT.md) und
+[maschinenlesbarer Nachweis](../../docs/reference/legacy-export-validation.json)
+liegen im RL-Projekt.
+
+Grenzen: Engine-Regeln, C++, GUI, Featurecode und Trainingsstände bleiben
+unverändert. Die Datenkorrektur ändert den bestehenden `public_schema_hash()`;
+keine Kompatibilitätsprüfung wurde umgangen. Die bekannten Legacy-Decklücken
+ab vier Spielern bleiben als C++-Quellstand abgebildet; die Engine unterstützt
+weiter nur drei Spieler. Keine BGA-Aktivierung, kein Push/Release, keine
+Änderung von RL-Submodule-Pin oder `engine.lock.json`. Paket 3 ist ausschließlich
+als nächster Auftrag vorbereitet, nicht begonnen.
