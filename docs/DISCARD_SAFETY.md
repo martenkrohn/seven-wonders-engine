@@ -1,5 +1,9 @@
 # Sichere interne Ablageentnahme – Paket 4b-I
 
+Historischer Abnahmestand von Paket 4b-I. Paket 4b-II implementiert inzwischen
+die vollständige Pflichtauswahl und ersetzt den unten beschriebenen V2-Pfad;
+aktueller Stand: [SIMULTANEOUS_RESOLUTION.md](SIMULTANEOUS_RESOLUTION.md).
+
 Stand: 5. November 2026. Entwicklungs-Regelstand `v0.2.0-dev`,
 `bga-second-edition-development`, `second_edition_implemented=false`,
 weiterhin Transportversion **2**. Der [Entscheidungsvertrag](DECISION_PROTOCOL_DRAFT.md)

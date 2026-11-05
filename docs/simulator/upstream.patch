@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index add0c31aea13d74f44b3e843977cf13e0ca4eec2..61d99037078f0f04dc9ee574e8be0cc524708551 100644
+index add0c31aea13d74f44b3e843977cf13e0ca4eec2..2e75156cfcfa61660e06bfecc225b3321a6607ea 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -1,3 +1,4 @@
@@ -7,7 +7,7 @@ index add0c31aea13d74f44b3e843977cf13e0ca4eec2..61d99037078f0f04dc9ee574e8be0cc5
  cmake_minimum_required(VERSION 3.5)
  
  project(7Wonders LANGUAGES CXX)
-@@ -8,7 +9,7 @@ set(JSON_BuildTests OFF CACHE INTERNAL "")
+@@ -8,11 +9,12 @@ set(JSON_BuildTests OFF CACHE INTERNAL "")
  
  set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
  
@@ -16,17 +16,43 @@ index add0c31aea13d74f44b3e843977cf13e0ca4eec2..61d99037078f0f04dc9ee574e8be0cc5
  
  set(SOURCES
      main.cpp
-@@ -29,4 +30,70 @@ set(HEADERS
+     src/card.cpp
++    src/decision.cpp
+ 	src/player.cpp
+     src/wonder.cpp
+ 	src/filer.cpp
+@@ -27,6 +29,96 @@ set(HEADERS
+ 	include/nlohmann/json.hpp
+ 	)
  
++execute_process(COMMAND git rev-parse HEAD WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
++    OUTPUT_VARIABLE ENGINE_COMMIT OUTPUT_STRIP_TRAILING_WHITESPACE)
++execute_process(COMMAND git diff --quiet WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
++    RESULT_VARIABLE ENGINE_DIRTY)
++if(NOT ENGINE_COMMIT)
++    set(ENGINE_COMMIT "unknown-archive")
++endif()
++if(ENGINE_DIRTY EQUAL 0)
++    set(ENGINE_DIRTY_VALUE false)
++else()
++    set(ENGINE_DIRTY_VALUE true)
++endif()
++add_definitions(-DENGINE_SOURCE_COMMIT="${ENGINE_COMMIT}" -DENGINE_SOURCE_DIRTY=${ENGINE_DIRTY_VALUE})
  add_executable(7Wonders ${SOURCES} ${HEADERS})
  
 -file(MAKE_DIRECTORY ./build/io ./io ./logs)
++add_executable(test_decision_resolution tests/test_decision_resolution.cpp
++    src/card.cpp src/decision.cpp src/player.cpp src/wonder.cpp src/filer.cpp)
++add_test(NAME decision_resolution COMMAND test_decision_resolution)
++set_tests_properties(decision_resolution PROPERTIES TIMEOUT 30)
++
 +# Test executable for choice-once-per-turn verification (simple, no card loading)
 +add_executable(test_choice_simple
 +    tests/test_choice_simple.cpp
 +    src/player.cpp
 +    src/wonder.cpp
 +    src/card.cpp
++    src/decision.cpp
 +    src/filer.cpp
 +)
 +
@@ -34,6 +60,7 @@ index add0c31aea13d74f44b3e843977cf13e0ca4eec2..61d99037078f0f04dc9ee574e8be0cc5
 +add_executable(test_choice_once_per_turn
 +    tests/test_choice_once_per_turn.cpp
 +    src/card.cpp
++    src/decision.cpp
 +    src/player.cpp
 +    src/wonder.cpp
 +    src/filer.cpp
@@ -47,28 +74,28 @@ index add0c31aea13d74f44b3e843977cf13e0ca4eec2..61d99037078f0f04dc9ee574e8be0cc5
 +add_test(NAME choice_once_per_turn COMMAND test_choice_once_per_turn)
 +
 +add_executable(test_final_status tests/test_final_status.cpp
-+    src/card.cpp src/player.cpp src/wonder.cpp src/filer.cpp)
++    src/card.cpp src/decision.cpp src/player.cpp src/wonder.cpp src/filer.cpp)
 +file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/final_status_runtime")
 +add_test(NAME final_status COMMAND test_final_status)
 +set_tests_properties(final_status PROPERTIES
 +    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/final_status_runtime" TIMEOUT 10)
 +
 +add_executable(test_joint_action_resources tests/test_joint_action_resources.cpp
-+    src/card.cpp src/player.cpp src/wonder.cpp src/filer.cpp)
++    src/card.cpp src/decision.cpp src/player.cpp src/wonder.cpp src/filer.cpp)
 +file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/joint_action_resources_runtime")
 +add_test(NAME joint_action_resources COMMAND test_joint_action_resources)
 +set_tests_properties(joint_action_resources PROPERTIES
 +    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/joint_action_resources_runtime" TIMEOUT 10)
 +
 +add_executable(test_science_scoring tests/test_science_scoring.cpp
-+    src/card.cpp src/player.cpp src/wonder.cpp src/filer.cpp)
++    src/card.cpp src/decision.cpp src/player.cpp src/wonder.cpp src/filer.cpp)
 +file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/science_scoring_runtime")
 +add_test(NAME science_scoring COMMAND test_science_scoring)
 +set_tests_properties(science_scoring PROPERTIES
 +    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/science_scoring_runtime" TIMEOUT 10)
 +
 +add_executable(test_discard_safety tests/test_discard_safety.cpp
-+    src/card.cpp src/player.cpp src/wonder.cpp src/filer.cpp)
++    src/card.cpp src/decision.cpp src/player.cpp src/wonder.cpp src/filer.cpp)
 +file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/discard_safety_runtime")
 +add_test(NAME discard_safety COMMAND test_discard_safety)
 +set_tests_properties(discard_safety PROPERTIES
@@ -87,9 +114,13 @@ index add0c31aea13d74f44b3e843977cf13e0ca4eec2..61d99037078f0f04dc9ee574e8be0cc5
 +        "${CMAKE_CURRENT_SOURCE_DIR}/scripts/smoke_protocol.py"
 +        --engine "$<TARGET_FILE:7Wonders>")
 +    set_tests_properties(protocol_smoke PROPERTIES TIMEOUT 60)
++    add_test(NAME decision_protocol COMMAND "${CMAKE_COMMAND}" -E env
++        "SEVENWONDERS_TEST_ENGINE=$<TARGET_FILE:7Wonders>" "${Python3_EXECUTABLE}" -m unittest discover
++        -s "${CMAKE_CURRENT_SOURCE_DIR}/tests" -p test_decision_protocol.py -v)
++    set_tests_properties(decision_protocol PROPERTIES TIMEOUT 60)
 +endif()
 diff --git a/include/card.h b/include/card.h
-index 607ae4d0676afce74abea6e42479f732b4409ec6..d344ff2c822a2ecddc0e06ba3b1e8d524ca9392b 100644
+index 607ae4d0676afce74abea6e42479f732b4409ec6..9168e366d4ae92f1ba06257c93d1023745e97473 100644
 --- a/include/card.h
 +++ b/include/card.h
 @@ -4,6 +4,7 @@
@@ -100,16 +131,22 @@ index 607ae4d0676afce74abea6e42479f732b4409ec6..d344ff2c822a2ecddc0e06ba3b1e8d52
  #include <resources.h>
  
  namespace CARD_ID{
-@@ -120,6 +121,8 @@ namespace DMAG {
+@@ -116,10 +117,14 @@ enum type{
+ }
+ 
+ namespace DMAG {
++class DecisionCore;
+ 
  class Card
  {
++    friend class DecisionCore;
  private:
 +    // Zero identifies a definition/legacy fixture, not a physical deck card.
 +    std::uint64_t instance_id = 0;
      int id;
      std::string name;
      int type;
-@@ -146,6 +149,8 @@ public:
+@@ -146,6 +151,8 @@ public:
      int GetEra() const;
      int GetFreeWith() const;
      int GetAmount(int) const;
@@ -119,7 +156,7 @@ index 607ae4d0676afce74abea6e42479f732b4409ec6..d344ff2c822a2ecddc0e06ba3b1e8d52
      bool CanBePlayed(std::map<int, int> resources);
      std::map<int, int> MissingCards(std::map<int, int> resources);
 diff --git a/include/player.h b/include/player.h
-index 3118d29d0e816f39ae1fafd5932b1b2dba5bb47f..5593310d506165bee69f428de8992fba201e9787 100644
+index 3118d29d0e816f39ae1fafd5932b1b2dba5bb47f..f0084655917d02519d9dd3b2dd1ea51c9e96dd98 100644
 --- a/include/player.h
 +++ b/include/player.h
 @@ -1,5 +1,8 @@
@@ -131,11 +168,23 @@ index 3118d29d0e816f39ae1fafd5932b1b2dba5bb47f..5593310d506165bee69f428de8992fba
  
  #include <card.h>
  #include <wonder.h>
-@@ -28,10 +31,9 @@ private:
+@@ -12,6 +15,8 @@ namespace DMAG {
+ 
+ class Player
+ {
++    friend class DecisionCore;
++    friend struct RoundState;
+ private:
+     unsigned int id;
+     DMAG::Wonder *board;
+@@ -28,10 +33,12 @@ private:
      bool manuf_cheap;          // Can the player buy manufactured resources from neighbors for 1 coin? (Marketplace)
      bool free_card_once;       // EXTRA check whether the player can build a card for free once per Age or not.
      bool discard_free;         // Checks if the player can build an extra card from the discard pile.
 +    int discard_grant_stage = 0; // Last source event; closing a right never re-arms this stage.
++    std::map<int, int>* cost_probe = nullptr;
++    bool prepaid_wonder = false;
++    bool defer_coin_effects = false;
      bool can_build_wonder;     // Checks if the player can build the next stage of a Wonder each round.
  
 -    bool raw_extra;            // The player has an additional raw material. (Caravansery and Alexandria A)
@@ -143,7 +192,7 @@ index 3118d29d0e816f39ae1fafd5932b1b2dba5bb47f..5593310d506165bee69f428de8992fba
  
      // Possible values:
      // -> -1 (not used)
-@@ -45,6 +47,9 @@ private:
+@@ -45,6 +52,9 @@ private:
      int used_forum;
      int used_caravansery;
  
@@ -153,17 +202,18 @@ index 3118d29d0e816f39ae1fafd5932b1b2dba5bb47f..5593310d506165bee69f428de8992fba
      // Key needs to be int because the underlying type in enums is int
      std::map<int, int> resources{
          { RESOURCE::wood, 0 },
-@@ -64,6 +69,9 @@ private:
+@@ -64,6 +74,10 @@ private:
      DMAG::Player* player_east;
      DMAG::Player* player_west;
  
 +    // Applies a building to this player without taking a card from any source.
 +    void ApplyBuilding(DMAG::Card c, bool free_card);
++    int ImmediateCoins(const DMAG::Card& c);
 +
  public:
      Player();
  
-@@ -101,6 +109,7 @@ public:
+@@ -101,6 +115,7 @@ public:
      int CalculateScientificScore();
      int CalculateWonderScore();
      int CalculateScore();
@@ -171,7 +221,7 @@ index 3118d29d0e816f39ae1fafd5932b1b2dba5bb47f..5593310d506165bee69f428de8992fba
  
      // Amount resources related
      int CalculateAmountCivilianCards();
-@@ -117,7 +126,9 @@ public:
+@@ -117,7 +132,9 @@ public:
      bool ChooseExtraRaw(int resource);     // Once per turn.
      void CanPlaySeventh();
      void CanBuyRawCheap();
@@ -182,11 +232,144 @@ index 3118d29d0e816f39ae1fafd5932b1b2dba5bb47f..5593310d506165bee69f428de8992fba
      bool BuildHandFree(DMAG::Card c); // Once per Age.
      bool CopyGuild(); // At the end of the game.
      bool PlaySeventh();
+diff --git a/include/wonder.h b/include/wonder.h
+index 58e6edb01103a9d84cfc72e360b360c35320de83..78143f5c93a45ec5ab7dff2a1646f7abdefab060 100644
+--- a/include/wonder.h
++++ b/include/wonder.h
+@@ -5,6 +5,7 @@
+ #include <string>
+ #include <vector>
+ #include <map>
++#include <memory>
+ 
+ namespace WONDER_ID{
+     enum{
+@@ -98,6 +99,8 @@ protected:
+ 
+ public:
+     Wonder();
++    virtual ~Wonder() = default;
++    virtual std::unique_ptr<Wonder> Clone() const { return std::make_unique<Wonder>(*this); }
+     std::string GetName() const;
+     int GetId() const;
+     int GetProduction() const;
+@@ -114,6 +117,7 @@ class Gizah_a : public Wonder
+ {
+ public:
+     Gizah_a();
++    std::unique_ptr<Wonder> Clone() const override { return std::make_unique<Gizah_a>(*this); }
+     bool AddStage(Player* p) override;
+     bool CanAddStage(Player* p) override;
+ };
+@@ -122,6 +126,7 @@ class Gizah_b : public Wonder
+ {
+ public:
+     Gizah_b();
++    std::unique_ptr<Wonder> Clone() const override { return std::make_unique<Gizah_b>(*this); }
+     bool AddStage(Player* p) override;
+     bool CanAddStage(Player* p) override;
+ };
+@@ -130,6 +135,7 @@ class Babylon_a : public Wonder
+ {
+ public:
+     Babylon_a();
++    std::unique_ptr<Wonder> Clone() const override { return std::make_unique<Babylon_a>(*this); }
+     bool AddStage(Player* p) override;
+     bool CanAddStage(Player* p) override;
+ };
+@@ -138,6 +144,7 @@ class Babylon_b : public Wonder
+ {
+ public:
+     Babylon_b();
++    std::unique_ptr<Wonder> Clone() const override { return std::make_unique<Babylon_b>(*this); }
+     bool AddStage(Player* p) override;
+     bool CanAddStage(Player* p) override;
+ };
+@@ -146,6 +153,7 @@ class Olympia_a : public Wonder
+ {
+ public:
+     Olympia_a();
++    std::unique_ptr<Wonder> Clone() const override { return std::make_unique<Olympia_a>(*this); }
+     bool AddStage(Player* p) override;
+     bool CanAddStage(Player* p) override;
+ };
+@@ -154,6 +162,7 @@ class Olympia_b : public Wonder
+ {
+ public:
+     Olympia_b();
++    std::unique_ptr<Wonder> Clone() const override { return std::make_unique<Olympia_b>(*this); }
+     bool AddStage(Player* p) override;
+     bool CanAddStage(Player* p) override;
+ };
+@@ -162,6 +171,7 @@ class Rhodos_a : public Wonder
+ {
+ public:
+     Rhodos_a();
++    std::unique_ptr<Wonder> Clone() const override { return std::make_unique<Rhodos_a>(*this); }
+     bool AddStage(Player* p) override;
+     bool CanAddStage(Player* p) override;
+ };
+@@ -170,6 +180,7 @@ class Rhodos_b : public Wonder
+ {
+ public:
+     Rhodos_b();
++    std::unique_ptr<Wonder> Clone() const override { return std::make_unique<Rhodos_b>(*this); }
+     bool AddStage(Player* p) override;
+     bool CanAddStage(Player* p) override;
+ };
+@@ -178,6 +189,7 @@ class Ephesos_a : public Wonder
+ {
+ public:
+     Ephesos_a();
++    std::unique_ptr<Wonder> Clone() const override { return std::make_unique<Ephesos_a>(*this); }
+     bool AddStage(Player* p) override;
+     bool CanAddStage(Player* p) override;
+ };
+@@ -186,6 +198,7 @@ class Ephesos_b : public Wonder
+ {
+ public:
+     Ephesos_b();
++    std::unique_ptr<Wonder> Clone() const override { return std::make_unique<Ephesos_b>(*this); }
+     bool AddStage(Player* p) override;
+     bool CanAddStage(Player* p) override;
+ };
+@@ -194,6 +207,7 @@ class Alexandria_a : public Wonder
+ {
+ public:
+     Alexandria_a();
++    std::unique_ptr<Wonder> Clone() const override { return std::make_unique<Alexandria_a>(*this); }
+     bool AddStage(Player* p) override;
+     bool CanAddStage(Player* p) override;
+ };
+@@ -202,6 +216,7 @@ class Alexandria_b : public Wonder
+ {
+ public:
+     Alexandria_b();
++    std::unique_ptr<Wonder> Clone() const override { return std::make_unique<Alexandria_b>(*this); }
+     bool AddStage(Player* p) override;
+     bool CanAddStage(Player* p) override;
+ };
+@@ -210,6 +225,7 @@ class Halikarnassos_a : public Wonder
+ {
+ public:
+     Halikarnassos_a();
++    std::unique_ptr<Wonder> Clone() const override { return std::make_unique<Halikarnassos_a>(*this); }
+     bool AddStage(Player* p) override;
+     bool CanAddStage(Player* p) override;
+ };
+@@ -218,6 +234,7 @@ class Halikarnassos_b : public Wonder
+ {
+ public:
+     Halikarnassos_b();
++    std::unique_ptr<Wonder> Clone() const override { return std::make_unique<Halikarnassos_b>(*this); }
+     bool AddStage(Player* p) override;
+     bool CanAddStage(Player* p) override;
+ };
 diff --git a/main.cpp b/main.cpp
-index 81c519daf5454fb08161015c17463be4137f5e97..be691fdbad6de3f1826d1fa9e018925c60c9cdd0 100644
+index 81c519daf5454fb08161015c17463be4137f5e97..a648e3bbbbd9a784f2ed1afb74f176f6c426badc 100644
 --- a/main.cpp
 +++ b/main.cpp
-@@ -1,6 +1,13 @@
+@@ -1,7 +1,16 @@
 +// Downstream runtime changes for Seven Wonders RL, 2026-10-23.
 +// Derived from DMAG/UFSM 7Wonders; see NOTICE and docs/ORIGIN.md (GPLv3).
  #include <iostream>
@@ -198,9 +381,12 @@ index 81c519daf5454fb08161015c17463be4137f5e97..be691fdbad6de3f1826d1fa9e018925c
 +#include <cstdint>
 +#include <stdexcept>
  #include <card.h>
++#include <decision.h>
++#include <filesystem>
  #include <player.h>
  #include <wonder.h>
-@@ -22,6 +29,7 @@ using namespace std;
+ #include <resources.h>
+@@ -22,6 +31,7 @@ using namespace std;
  using namespace DMAG;
  
  class Game{
@@ -208,7 +394,7 @@ index 81c519daf5454fb08161015c17463be4137f5e97..be691fdbad6de3f1826d1fa9e018925c
      private:
          vector<Player*> player_list;
          unsigned char number_of_players;
-@@ -30,8 +38,46 @@ class Game{
+@@ -30,8 +40,15 @@ class Game{
          vector<Wonder*> wonders;
          vector<Card> deck[3]; // need to change to Deck deck[3];
          vector<Card> discard_pile; // need to change to Deck discard_pile;
@@ -219,43 +405,12 @@ index 81c519daf5454fb08161015c17463be4137f5e97..be691fdbad6de3f1826d1fa9e018925c
 +        uint64_t engine_seed;
 +        unsigned int poll_us;
 +        bool quiet;
-+        json last_actions = json::object();
-+
-+        static const Card* UniqueNamedCard(const vector<Card>& cards, const string& name) {
-+            const Card* found = nullptr;
-+            for (const Card& card : cards) {
-+                if (card.GetName() != name) continue;
-+                if (found) return nullptr;
-+                found = &card;
-+            }
-+            return found;
-+        }
-+
-+        // V2 still preselects by name. Bind it only to the submitting seat and
-+        // one real pile instance; the interactive decision queue belongs to 4b-II.
-+        void ResolveDiscardExtras(const vector<string>& extras) {
-+            if (extras.size() != player_list.size())
-+                throw std::invalid_argument("Discard extras must belong to individual seats");
-+            try {
-+                for (size_t seat = 0; seat < player_list.size(); ++seat) {
-+                    Player* player = player_list[seat];
-+                    if (player->HasDiscardFree() && !player->CloseDiscardIfNoOptions(discard_pile)) {
-+                        const Card* selected = UniqueNamedCard(discard_pile, extras[seat]);
-+                        if (selected) player->BuildDiscardFree(*selected, discard_pile);
-+                    }
-+                    // Invalid/absent V2 preselection is not a successful build.
-+                    // Its unfulfilled right expires at this turn boundary.
-+                    player->DiscardFree(false);
-+                }
-+            } catch (...) {
-+                for (Player* player : player_list) player->DiscardFree(false);
-+                throw;
-+            }
-+        }
++        unsigned decision_timeout_ms = 0;
++        unsigned terminal_grace_ms = 100;
  
      public:
  
-@@ -47,7 +93,7 @@ class Game{
+@@ -47,7 +64,7 @@ class Game{
                      }
                  }
              }
@@ -264,7 +419,7 @@ index 81c519daf5454fb08161015c17463be4137f5e97..be691fdbad6de3f1826d1fa9e018925c
          }
  
          /*
-@@ -70,7 +116,8 @@ class Game{
+@@ -70,7 +87,8 @@ class Game{
          /*
           * Initializes the game variables.
           */
@@ -274,7 +429,70 @@ index 81c519daf5454fb08161015c17463be4137f5e97..be691fdbad6de3f1826d1fa9e018925c
              this->number_of_players = NUM_PLAYERS;
              this->era = 1;
              this->turn = 0;
-@@ -160,7 +207,7 @@ class Game{
+@@ -97,62 +115,6 @@ class Game{
+          * or, if at the end of an era, giving 7 new cards to
+          * each player.
+          */
+-        void NextTurn(){
+-
+-            // TODO: check if the player has the wonder effects that make
+-            // possible to play another card in the same round and do it
+-
+-            turn++;
+-
+-            // if end of an era (turns 7 14 and 21)
+-            if (turn % 7 == 0) {
+-                for (Player* & player : player_list) {
+-                    player->FreeCardOnce(true);
+-                    player->Battle(era);
+-                }
+-
+-                era++;
+-                cout << "-----------------------------------------------------------------\n";
+-                if(era < 4)
+-                    cout << "Nova era: "<< era << endl;
+-                else{
+-                    cout << "End of game" << endl;
+-                    return;
+-                }
+-                    
+-                // transfer the remaining card in each player's hand to the discarded card list
+-                for (Player* & player : player_list) {
+-                    vector<Card> cards = player->GetHandCards();
+-                    // cards must be size 1!!
+-                    for (int i = 0; i < cards.size(); i++)
+-                        discard_pile.push_back(cards[i]);
+-                }
+-
+-                GiveCards();
+-            }
+-            else {
+-                Player *player, *p1, *neighbor;
+-                p1 = player = player_list.front();
+-                vector<Card> neighbor_deck, player_deck = p1->GetHandCards();
+-
+-                bool clockwise = (era == 1 || era == 3);
+-                do {
+-                    // Get the neighbor of player p who will receive the cards
+-                    // Keep his deck from being overwritten and lost
+-                    // The neighbor receives the cards from player p
+-                    // The neighbor becomes the player p
+-                    // Continue until you reach the first player again
+-                    neighbor = clockwise ? player->GetWestNeighbor() : player->GetEastNeighbor();
+-                    neighbor_deck = neighbor->GetHandCards();
+-                    neighbor->ReceiveCards(player_deck);
+-                    player = neighbor;
+-                    player_deck = neighbor_deck;
+-                    //cout << "Passou" << endl;
+-                } while (p1 != player);
+-                //cout << "Passou tudo" << endl;
+-            }
+-        }
+-
+         /*
+          * Gives 7 cards to each player.
+          */
+@@ -160,7 +122,7 @@ class Game{
              vector<Card> cards;
              int card_idx = 0;
  
@@ -283,7 +501,7 @@ index 81c519daf5454fb08161015c17463be4137f5e97..be691fdbad6de3f1826d1fa9e018925c
  
              for (Player* & player : player_list) {
                  cards.clear();
-@@ -181,7 +228,7 @@ class Game{
+@@ -181,7 +143,7 @@ class Game{
  
              for (Player* & player : player_list) {
                  while (true) {
@@ -292,7 +510,7 @@ index 81c519daf5454fb08161015c17463be4137f5e97..be691fdbad6de3f1826d1fa9e018925c
                      if (wonder_availability[n % 7]) {
                          player->SetWonder(wonders[n]);
                          wonder_availability[n % 7] = false;
-@@ -311,15 +358,14 @@ class Game{
+@@ -311,15 +273,14 @@ class Game{
              for (DMAG::Card const& card : cards) {
                  int amount = card.GetAmount(this->number_of_players);
                  for (int i = 0; i < amount; i++) {
@@ -311,22 +529,83 @@ index 81c519daf5454fb08161015c17463be4137f5e97..be691fdbad6de3f1826d1fa9e018925c
              }
          }
  
-@@ -378,6 +424,11 @@ class Game{
-             std::map<int, int> resources;
-             DMAG::Wonder* wonder;
+@@ -370,225 +331,64 @@ class Game{
  
-+            status["protocol_version"] = 2;
-+            status["game"]["phase"] = InGame() ? "playing" : "finished";
-+            status["game"]["engine_seed"] = engine_seed;
-+            status["last_actions"] = last_actions;
-+
-             status["game"]["era"] = era;
-             status["game"]["turn"] = turn;
-             status["game"]["clockwise"] = (era == 1 || era == 3);
-@@ -443,13 +494,11 @@ class Game{
-                 status["players"][to_string(i)]["resources"]["shields"] = resources[RESOURCE::shields];
+         }
  
-                 // victory points
+-        void WriteGameStatus() {
+-            json status;
+-            std::vector<DMAG::Card> cards;
+-            std::vector<std::string> card_names;
+-            std::vector<int> card_ids;
+-            std::map<int, int> resources;
+-            DMAG::Wonder* wonder;
+-
+-            status["game"]["era"] = era;
+-            status["game"]["turn"] = turn;
+-            status["game"]["clockwise"] = (era == 1 || era == 3);
+-
+-            for (int i = 0; i < number_of_players; i++) {
+-                wonder = player_list[i]->GetBoard();
+-                status["players"][to_string(i)]["wonder_id"] = wonder->GetId();
+-                status["players"][to_string(i)]["wonder_name"] = wonder->GetName();
+-                status["players"][to_string(i)]["wonder_stage"] = wonder->GetStage();
+-                status["players"][to_string(i)]["can_build_hand_free"] = player_list[i]->CanBuildHandFree();
+-                // status["players"][to_string(i)]["can_build_wonder"] = true; // ToDo: have enough resources to build a wonder stage?
+-                status["players"][to_string(i)]["can_build_wonder"] = player_list[i]->CanBuildWonder();
+-
+-                // hand cards
+-                cards = player_list[i]->GetHandCards();
+-                card_names.clear();
+-                for (DMAG::Card c : cards)
+-                    card_names.push_back(c.GetName());
+-                status["players"][to_string(i)]["cards_hand"] = card_names;
+-
+-                // card IDS
+-                card_ids.clear();
+-                for(DMAG::Card c: cards)
+-                    card_ids.push_back(c.GetId());
+-                status["players"][to_string(i)]["cards_hand_id"] = card_ids;
+-
+-
+-
+-                // played cards
+-                cards = player_list[i]->GetPlayedCards();
+-                card_names.clear();
+-                for (DMAG::Card c : cards)
+-                    card_names.push_back(c.GetName());
+-                status["players"][to_string(i)]["cards_played"] = card_names;
+-
+-                // playable cards
+-                cards = player_list[i]->GetPlayableCards();
+-                card_names.clear();
+-                for (DMAG::Card c : cards)
+-                    card_names.push_back(c.GetName());
+-                status["players"][to_string(i)]["cards_playable"] = card_names;
+-
+-                // Playable cards ids
+-                // this is for simpler bot usage
+-                card_ids.clear();
+-                for(DMAG::Card c: cards)
+-                    card_ids.push_back(c.GetId());
+-                status["players"][to_string(i)]["cards_playable_id"] = card_ids;
+-
+-                // resources
+-                resources = player_list[i]->GetResources();
+-                status["players"][to_string(i)]["resources"]["wood"] = resources[RESOURCE::wood];
+-                status["players"][to_string(i)]["resources"]["ore"] = resources[RESOURCE::ore];
+-                status["players"][to_string(i)]["resources"]["clay"] = resources[RESOURCE::clay];
+-                status["players"][to_string(i)]["resources"]["stone"] = resources[RESOURCE::stone];
+-                status["players"][to_string(i)]["resources"]["loom"] = resources[RESOURCE::loom];
+-                status["players"][to_string(i)]["resources"]["glass"] = resources[RESOURCE::glass];
+-                status["players"][to_string(i)]["resources"]["papyrus"] = resources[RESOURCE::papyrus];
+-                status["players"][to_string(i)]["resources"]["gear"] = resources[RESOURCE::gear];
+-                status["players"][to_string(i)]["resources"]["compass"] = resources[RESOURCE::compass];
+-                status["players"][to_string(i)]["resources"]["tablet"] = resources[RESOURCE::tablet];
+-                status["players"][to_string(i)]["resources"]["coins"] = resources[RESOURCE::coins];
+-                status["players"][to_string(i)]["resources"]["shields"] = resources[RESOURCE::shields];
+-
+-                // victory points
 -                status["players"][to_string(i)]["points"]["civilian"] = player_list[i]->CalculateCivilianScore();
 -                status["players"][to_string(i)]["points"]["commercial"] = player_list[i]->CalculateCommercialScore();
 -                status["players"][to_string(i)]["points"]["guild"] = player_list[i]->CalculateGuildScore();
@@ -334,96 +613,142 @@ index 81c519daf5454fb08161015c17463be4137f5e97..be691fdbad6de3f1826d1fa9e018925c
 -                status["players"][to_string(i)]["points"]["scientific"] = player_list[i]->CalculateScientificScore();
 -                status["players"][to_string(i)]["points"]["wonder"] = player_list[i]->CalculateWonderScore();
 -                status["players"][to_string(i)]["points"]["total"] = player_list[i]->CalculateScore();
-+                const auto scores = player_list[i]->CalculateScores();
-+                const char* categories[] = {"civilian", "commercial", "guild", "military",
-+                                            "scientific", "wonder", "total"};
-+                for (int category = 0; category < 7; ++category)
-+                    status["players"][to_string(i)]["points"][categories[category]] = scores[category];
+-
+-                // Amount resources by type
+-                status["players"][to_string(i)]["amount"]["civilian"] = player_list[i]->CalculateAmountCivilianCards();
+-                status["players"][to_string(i)]["amount"]["commercial"] = player_list[i]->CalculateAmountCommercialCards();
+-                status["players"][to_string(i)]["amount"]["military"] = player_list[i]->CalculateAmountMilitaryCards();
+-                status["players"][to_string(i)]["amount"]["guild"] = player_list[i]->CalculateAmountGuildCards();
+-                status["players"][to_string(i)]["amount"]["scientific"] = player_list[i]->CalculateAmountScientificCards();
+-                status["players"][to_string(i)]["amount"]["raw_material"] = player_list[i]->CalculateAmountRawMaterial();
+-                status["players"][to_string(i)]["amount"]["manufactured_goods"] = player_list[i]->CalculateAmountManufacturedGood();
+-            }
++        void SetDecisionTimeout(unsigned value) { decision_timeout_ms = value; }
++        void SetTerminalGrace(unsigned value) { terminal_grace_ms = value; }
  
-                 // Amount resources by type
-                 status["players"][to_string(i)]["amount"]["civilian"] = player_list[i]->CalculateAmountCivilianCards();
-@@ -466,7 +515,7 @@ class Game{
+-            fp.WriteMessage(status, "./io/game_status.json");
++        std::unique_ptr<DecisionEngine> Decisions() {
++            std::array<vector<Card>,3> decks{{deck[0],deck[1],deck[2]}};
++            return std::make_unique<DecisionEngine>(player_list,decks,discard_pile,rng,engine_seed,decision_timeout_ms,turn);
+         }
  
-         void Loop(){
-             json json_object;
+-        void Loop(){
+-            json json_object;
 -            std::string command, argument, extra;
-+            std::string command, argument;
-             std::vector<DMAG::Card> hand_cards_bkp;
-             // fp.StartLog(time(0));
- 
-@@ -474,6 +523,7 @@ class Game{
- 
-                 WriteGameStatus();
- 
-+                if (!quiet) {
-                 cout << "\n:::TURN " << (short)this->turn << ":::" << endl;
- 
-                 // Print Playable Cards for each player.
-@@ -488,26 +538,45 @@ class Game{
+-            std::vector<DMAG::Card> hand_cards_bkp;
+-            // fp.StartLog(time(0));
+-
+-            while(InGame()){
+-
+-                WriteGameStatus();
+-
+-                cout << "\n:::TURN " << (short)this->turn << ":::" << endl;
+-
+-                // Print Playable Cards for each player.
+-                for (int i = 0; i < number_of_players; i++) {
+-                    cout << "> Playable cards for player " << i << ":" << endl;
+-                    for (DMAG::Card const& card : player_list[i]->GetPlayableCards()) {
+-                        cout << "  (" << i << ") " << card.GetName() << endl;
+-                    }
+-                    if (player_list[i]->CanBuildWonder()) {
+-                        cout << "> Player " << i << " CAN build a wonder stage! " << endl;
+-                    } else cout << "> Player " << i << " CANNOT build a wonder stage! " << endl;
++        bool Loop() {
++            auto session=Decisions();
++            auto& engine=*session;
++            bool results_written = false;
++            auto terminal_since = DecisionEngine::Clock::time_point{};
++            auto publish = [&]() {
++                const auto status=engine.Status();
++                fp.WriteMessage(status,"io/game_status.json");
++                engine.Published();
++                if(status["game"]["phase"]=="finished" && !results_written) {
++                    std::ofstream results("results.txt.tmp");
++                    if(!results) throw std::runtime_error("Cannot write results file");
++                    for(int s=0;s<3;++s) results<<"Player "<<s+1<<" score: "<<status["result"]["totals"][to_string(s)]<<'\n';
++                    results.close();
++                    if(!results || std::rename("results.txt.tmp","results.txt")) throw std::runtime_error("Cannot publish results file");
++                    results_written=true;
                  }
- 
-                 cout << "<Waiting players...>" << endl;
+-
+-                cout << "<Waiting players...>" << endl;
 -                while(!fp.ArePlayersReady());
-+                }
-+                while (!fp.ArePlayersReady()) {
-+                    if (poll_us) std::this_thread::sleep_for(std::chrono::microseconds(poll_us));
-+                }
-+                last_actions = json::object();
-+                vector<string> extras(number_of_players);
- 
-                 for(int i = 0; i < number_of_players; i++){
-                     json_object = fp.ReadMessages(i);
-+                    if (json_object.contains("turn") && json_object["turn"].get<int>() != turn)
-+                        throw std::runtime_error("Action belongs to a different turn");
-                     // handle command inside json_object
-                     command = json_object["command"]["subcommand"];
-                     argument = json_object["command"]["argument"];
- 
+-
+-                for(int i = 0; i < number_of_players; i++){
+-                    json_object = fp.ReadMessages(i);
+-                    // handle command inside json_object
+-                    command = json_object["command"]["subcommand"];
+-                    argument = json_object["command"]["argument"];
+-
 -                    // Only the player with Halikarnassos will have something written on extra.
 -                    extra = json_object["command"]["extra"];
-+                    extras[i] = json_object["command"]["extra"];
-+                    last_actions[to_string(i)] = {{"requested", command}, {"executed", command},
-+                                                   {"status", "applied"}, {"turn", turn}};
- 
-                     // Turns 6 13 and 20 -> last card in hand card.
-                     // If the player doesn't have the ability to play the seventh card,
-                     // just skip the turn (i.e. don't do anything).
-                     if (this->turn == 6 || this->turn == 13 || this->turn == 20) {
+-
+-                    // Turns 6 13 and 20 -> last card in hand card.
+-                    // If the player doesn't have the ability to play the seventh card,
+-                    // just skip the turn (i.e. don't do anything).
+-                    if (this->turn == 6 || this->turn == 13 || this->turn == 20) {
 -                        if (!player_list[i]->PlaySeventh()) continue;
-+                        if (!player_list[i]->PlaySeventh()) {
-+                            last_actions[to_string(i)]["status"] = "skipped";
-+                            last_actions[to_string(i)]["executed"] = nullptr;
-+                            continue;
-+                        }
-                     }
- 
+-                    }
+-
 -                    Card card_played = GetCardByName(argument);
-+                    // Choice allocations belong to one player's purchase, not
-+                    // the entire simultaneous turn. Another player may use or
-+                    // buy the same production independently. See ENG-006 in
-+                    // docs/SIMULATOR_CHANGES.md and joint_action_resources test.
-+                    for (Player* player : player_list) player->ResetUsed();
-                     hand_cards_bkp = player_list[i]->GetHandCards();
-+                    const Card* selected = UniqueNamedCard(hand_cards_bkp, argument);
-+                    if (!selected) throw std::runtime_error("Action must name exactly one card in this seat's hand");
-+                    Card card_played = *selected;
- 
-                     if (command == "build_structure"){
-                         if(player_list[i]->BuildStructure(card_played, player_list[i]->GetHandCards(), false)) {
-@@ -539,6 +608,9 @@ class Game{
-                         cout << "<Discard OK>" << endl;
-                         discard_pile.push_back(card_played);
+-                    hand_cards_bkp = player_list[i]->GetHandCards();
+-
+-                    if (command == "build_structure"){
+-                        if(player_list[i]->BuildStructure(card_played, player_list[i]->GetHandCards(), false)) {
+-                            cout << "<BuildStructure OK>" << endl;
+-                        } else {
+-                            cout << "<BuildStructure NOK>" << endl;
+-                            command = "discard";
+-                        }
+-
+-                    } else if (command == "build_hand_free"){
+-                        if (player_list[i]->BuildHandFree(card_played)) {
+-                            cout << "<BuildHandFree OK>" << endl;
+-                        } else {
+-                            cout << "<BuildHandFree NOK>" << endl;
+-                            command = "discard";
+-                        }
+-
+-                    } else if(command == "build_wonder"){
+-                        if (player_list[i]->BuildWonder(card_played)) {
+-                            cout << "<BuildWonder OK>" << endl;
+-                        } else {
+-                            cout << "<BuildWonder NOK>" << endl;
+-                            command = "discard";
+-                        }
++            };
++            // One process owns one fresh runtime directory; stale results are
++            // never left visible during a pending/aborted game.
++            std::filesystem::remove("results.txt");
++            publish();
++            std::uint64_t published_revision=engine.Revision();
++            for(;;) {
++                engine.CheckTimeout();
++                bool processed=false;
++                try {
++                    json ready,commands;
++                    std::ifstream signal("io/ready.json"),batch("io/commands.json");
++                    if(signal && batch) {
++                        signal>>ready; batch>>commands;
++                        processed=engine.Bundle(commands,ready);
                      }
-+                    last_actions[to_string(i)]["executed"] = command;
-+                    if (last_actions[to_string(i)]["requested"] != command)
-+                        last_actions[to_string(i)]["status"] = "fallback_discard";
- 
-                     // fp.WriteLog(era, turn, player_list[i]->GetId(), hand_cards_bkp, command, argument);
+-
+-                    if (command == "discard"){
+-                        player_list[i]->Discard(card_played); //Gives player 3 coins.
+-                        cout << "<Discard OK>" << endl;
+-                        discard_pile.push_back(card_played);
+-                    }
+-
+-                    // fp.WriteLog(era, turn, player_list[i]->GetId(), hand_cards_bkp, command, argument);
++                } catch(const json::exception&) {
++                    // Incomplete/nonmatching bundles are not accepted. Their
++                    // offers retain the original deadline.
                  }
-@@ -547,15 +619,8 @@ class Game{
-                 // VERY IMPORTANT: call player->ResetUsed() for each player at the end of a turn!
-                 for (int i = 0; i < player_list.size(); i++) {
-                     player_list[i]->ResetUsed();
+-
+-                // Moves the game to the next turn.
+-                // VERY IMPORTANT: call player->ResetUsed() for each player at the end of a turn!
+-                for (int i = 0; i < player_list.size(); i++) {
+-                    player_list[i]->ResetUsed();
 -                    // If extra is not empty, try to build a card from the discard pile for free.
 -                    // (will only work if the player has the required stage for Halikarnassos)
 -                    if (!extra.empty()) {
@@ -432,25 +757,54 @@ index 81c519daf5454fb08161015c17463be4137f5e97..be691fdbad6de3f1826d1fa9e018925c
 -                            cout << "<BuildDiscardFree OK>" << endl;
 -                        }
 -                    }
++                if(processed || engine.Revision()!=published_revision) { publish();published_revision=engine.Revision(); }
++                // Publish the acknowledgement before releasing the one-flight
++                // signal, including redelivery of the same batch identity.
++                if(processed) std::filesystem::remove("io/ready.json");
++                if(engine.Terminal()) {
++                    if(terminal_since==DecisionEngine::Clock::time_point{}) terminal_since=DecisionEngine::Clock::now();
++                    if(DecisionEngine::Clock::now()-terminal_since>=std::chrono::milliseconds(terminal_grace_ms)) break;
                  }
-+                ResolveDiscardExtras(extras);
- 
-                 NextTurn();
- 
-@@ -575,9 +640,10 @@ class Game{
-             std::ofstream results;
-             results.open("results.txt");
- 
-+            for (Player* player : player_list) player->CopyGuild();
-+            // Publish only after the final action, age-III battles and all guild copies.
-+            WriteGameStatus();
-             for(int i = 0; i< NUM_PLAYERS; ++i){
+-
+-                NextTurn();
+-
+-
+-                // TODO: show info
+-#ifndef NDEBUG
+-                ShowInfo();
+-#endif
+-
+-
+-                //get commands
+-
+-
++                if(poll_us) std::this_thread::sleep_for(std::chrono::microseconds(poll_us));
+             }
+-
+-            //calculate stuff
+-            std::ofstream results;
+-            results.open("results.txt");
+-
+-            for(int i = 0; i< NUM_PLAYERS; ++i){
 -                // Copies a neighbor guild before scoring if the player has the ability to do so.
 -                player_list[i]->CopyGuild();
-                 results << "Player " << i+1 << " score: " << player_list[i]->CalculateScore() << std::endl;
-             }
+-                results << "Player " << i+1 << " score: " << player_list[i]->CalculateScore() << std::endl;
+-            }
+-
+-            results << std::endl;
+-            results.close();
+-
+-            //end game?
+-            // output results after game
+-            // match_log_results after end game
+-            fp.WriteMatchLog(player_list, time(0));
++            return engine.Status()["game"]["phase"]=="finished";
+         }
++
+ };
  
-@@ -601,7 +667,27 @@ class Game{
+ 
+@@ -601,14 +401,44 @@ class Game{
      */
  int main(int argc, char **argv)
  {
@@ -459,17 +813,22 @@ index 81c519daf5454fb08161015c17463be4137f5e97..be691fdbad6de3f1826d1fa9e018925c
 +    uint64_t seed = (uint64_t(std::random_device{}()) << 32) ^ std::random_device{}();
 +    unsigned int poll_us = 1000;
 +    bool quiet = false;
++    unsigned decision_timeout_ms = 0, terminal_grace_ms = 100;
 +    for (int i = 1; i < argc; ++i) {
 +        std::string arg = argv[i];
 +        if (arg == "--quiet") { quiet = true; continue; }
-+        if ((arg != "--seed" && arg != "--poll-us") || i + 1 >= argc)
-+            throw std::invalid_argument("Usage: 7Wonders [--seed UINT64] [--poll-us 0..1000000] [--quiet]");
++        if ((arg != "--seed" && arg != "--poll-us" && arg != "--decision-timeout-ms" && arg != "--terminal-grace-ms") || i + 1 >= argc)
++            throw std::invalid_argument("Usage: 7Wonders [--seed UINT64] [--poll-us 0..1000000] [--decision-timeout-ms UINT] [--terminal-grace-ms UINT] [--quiet]");
 +        std::string value = argv[++i];
 +        if (value.empty() || value.find_first_not_of("0123456789") != std::string::npos)
 +            throw std::invalid_argument("Expected unsigned integer for " + arg);
 +        uint64_t parsed = std::stoull(value);
 +        if (arg == "--seed") seed = parsed;
-+        else {
++        else if(arg=="--decision-timeout-ms" || arg=="--terminal-grace-ms") {
++            if(parsed>3600000) throw std::invalid_argument("Timeout exceeds 3600000 ms");
++            if(arg=="--decision-timeout-ms") decision_timeout_ms=static_cast<unsigned>(parsed);
++            else terminal_grace_ms=static_cast<unsigned>(parsed);
++        } else {
 +            if (parsed > 1000000) throw std::invalid_argument("poll-us exceeds 1000000");
 +            poll_us = static_cast<unsigned int>(parsed);
 +        }
@@ -479,10 +838,16 @@ index 81c519daf5454fb08161015c17463be4137f5e97..be691fdbad6de3f1826d1fa9e018925c
  
      g.Init();
      g.NewGame(NUM_PLAYERS);
-@@ -611,4 +697,8 @@ int main(int argc, char **argv)
++    g.SetDecisionTimeout(decision_timeout_ms);
++    g.SetTerminalGrace(terminal_grace_ms);
+ 
+-    //    g.NextTurn(p, 0); //this function is not completed
+-    g.Loop();
++    const bool completed=g.Loop();
      g.Close();
  
-     return 0;
+-    return 0;
++    return completed?0:2;
 +    } catch (const std::exception& error) {
 +        std::cerr << error.what() << std::endl;
 +        return 1;
@@ -561,7 +926,7 @@ index dd219de7df0af977f508326df94c0f86f49c69d5..f9c9874a27ddd2e53b48de9c8a3d6c3c
  }
  
 diff --git a/src/player.cpp b/src/player.cpp
-index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..863d8c3ac96b97bbf830438a118f91f6238a3dab 100644
+index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..77a92af64b10ae263ea4876ad64e6fc7ef5d0e83 100644
 --- a/src/player.cpp
 +++ b/src/player.cpp
 @@ -1,12 +1,17 @@
@@ -646,7 +1011,16 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..863d8c3ac96b97bbf830438a118f91f6
      int cost = 0;
      int card = c.GetId();
      switch (c.GetType()) {
-@@ -196,9 +210,9 @@ bool Player::BuildStructure(DMAG::Card c, std::vector<DMAG::Card> cards, bool fr
+@@ -188,7 +202,7 @@ bool Player::BuildStructure(DMAG::Card c, std::vector<DMAG::Card> cards, bool fr
+ 
+         case CARD_TYPE::commercial:
+             if (card == CARD_ID::tavern) {
+-                this->resources[RESOURCE::coins] += 5;
++                // Immediate coins are settled after the city entry below.
+             } else if (card == CARD_ID::east_trading_post) {
+                 this->raw_cheap_east = true;
+             } else if (card == CARD_ID::west_trading_post) {
+@@ -196,31 +210,9 @@ bool Player::BuildStructure(DMAG::Card c, std::vector<DMAG::Card> cards, bool fr
              } else if (card == CARD_ID::marketplace) {
                  this->manuf_cheap = true;
              } else if (card == CARD_ID::forum) {
@@ -654,25 +1028,67 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..863d8c3ac96b97bbf830438a118f91f6
 +                // handled via AvailableCard + used_forum in IncrementOnDemand
              } else if (card == CARD_ID::caravansery) {
 -                this->raw_extra = true;
+-            } else if (card == CARD_ID::vineyard) {
+-                int brown_cards = player_east->AmountOfType(CARD_TYPE::materials)
+-                                + player_west->AmountOfType(CARD_TYPE::materials)
+-                                + this->AmountOfType(CARD_TYPE::materials);
+-                this->resources[RESOURCE::coins] += 1 * brown_cards;
+-            } else if (card == CARD_ID::bazar) {
+-                int grey_cards = player_east->AmountOfType(CARD_TYPE::manufactured)
+-                                + player_west->AmountOfType(CARD_TYPE::manufactured)
+-                                + this->AmountOfType(CARD_TYPE::manufactured);
+-                this->resources[RESOURCE::coins] += 2 * grey_cards;
+-            } else if (card == CARD_ID::haven) {
+-                int brown_cards = this->AmountOfType(CARD_TYPE::materials);
+-                this->resources[RESOURCE::coins] += 1 * brown_cards;
+-            } else if (card == CARD_ID::lighthouse) {
+-                int yellow_cards = this->AmountOfType(CARD_TYPE::commercial);
+-                this->resources[RESOURCE::coins] += 1 * yellow_cards;
+-            } else if (card == CARD_ID::chamber_of_commerce) {
+-                int grey_cards = this->AmountOfType(CARD_TYPE::manufactured);
+-                this->resources[RESOURCE::coins] += 2 * grey_cards;
+-            } else if (card == CARD_ID::arena) {
+-                int stages = this->board->GetStage();
+-                this->resources[RESOURCE::coins] += 3 * stages;
 +                // handled via AvailableCard + used_caravansery in IncrementOnDemand
-             } else if (card == CARD_ID::vineyard) {
-                 int brown_cards = player_east->AmountOfType(CARD_TYPE::materials)
-                                 + player_west->AmountOfType(CARD_TYPE::materials)
-@@ -242,13 +256,9 @@ bool Player::BuildStructure(DMAG::Card c, std::vector<DMAG::Card> cards, bool fr
+             }
+             break;
+ 
+@@ -242,13 +234,30 @@ bool Player::BuildStructure(DMAG::Card c, std::vector<DMAG::Card> cards, bool fr
              break;
      }
  
 -    cards_hand.erase(cards_hand.begin()+i);
      cards_played.push_back(c);
++    if (!defer_coin_effects) resources[RESOURCE::coins] += ImmediateCoins(c);
  
      if (!free_card) this->resources[RESOURCE::coins] -= cost;
 -    std::cout << this->id << " -> SUCCESS -> " << "builds " << c.GetName() << std::endl;
--
++}
+ 
 -    return true;
++// Requires the complete construction cohort (including the source building).
++int Player::ImmediateCoins(const Card& c) {
++    switch (c.GetId()) {
++        case CARD_ID::tavern: return 5;
++        case CARD_ID::vineyard:
++            return AmountOfType(CARD_TYPE::materials)
++                + player_east->AmountOfType(CARD_TYPE::materials)
++                + player_west->AmountOfType(CARD_TYPE::materials);
++        case CARD_ID::bazar:
++            return 2 * (AmountOfType(CARD_TYPE::manufactured)
++                + player_east->AmountOfType(CARD_TYPE::manufactured)
++                + player_west->AmountOfType(CARD_TYPE::manufactured));
++        case CARD_ID::haven: return AmountOfType(CARD_TYPE::materials);
++        case CARD_ID::lighthouse: return AmountOfType(CARD_TYPE::commercial);
++        case CARD_ID::chamber_of_commerce: return 2 * AmountOfType(CARD_TYPE::manufactured);
++        case CARD_ID::arena: return 3 * board->GetStage();
++        default: return 0;
++    }
  }
  
  // Checks if the player has a card that permits him to play card 'c' for free.
-@@ -417,6 +427,9 @@ void Player::ResetUsed() {
+@@ -417,6 +426,9 @@ void Player::ResetUsed() {
      this->used_clay_pit     = -1;
      this->used_forum        = -1;
      this->used_caravansery  = -1;
@@ -682,7 +1098,18 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..863d8c3ac96b97bbf830438a118f91f6
  }
  
  
-@@ -471,7 +484,7 @@ int Player::IncrementOnDemand(int resource, int needed, bool is_neighbor){
+@@ -429,6 +441,10 @@ void Player::ResetUsed() {
+ // If he can't produce by himself, try buying it from neighbors.
+ // - this function is a "step" in BuildStructure.
+ bool Player::ProduceResource(int resource, int quant){
++    // DecisionCore quotes the existing CanAddStage path with zero production,
++    // then executes that same stage only after a validated payment plan.
++    if (cost_probe) { (*cost_probe)[resource] += std::max(0, quant); return true; }
++    if (prepaid_wonder) return true;
+     // Produce "on demand" resources.
+     // Ugly, but hopefully it'll get the job done.
+ 
+@@ -471,7 +487,7 @@ int Player::IncrementOnDemand(int resource, int needed, bool is_neighbor){
              cont++;
          } if (this->AvailableCard(CARD_ID::timber_yard, resource)) {
              cont++;
@@ -691,7 +1118,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..863d8c3ac96b97bbf830438a118f91f6
              cont++;
          }
      } else if (resource == RESOURCE::clay) {
-@@ -481,7 +494,7 @@ int Player::IncrementOnDemand(int resource, int needed, bool is_neighbor){
+@@ -481,7 +497,7 @@ int Player::IncrementOnDemand(int resource, int needed, bool is_neighbor){
              cont++;
          } if (this->AvailableCard(CARD_ID::clay_pit, resource)) {
              cont++;
@@ -700,7 +1127,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..863d8c3ac96b97bbf830438a118f91f6
              cont++;
          }
      } else if (resource == RESOURCE::stone) {
-@@ -491,7 +504,7 @@ int Player::IncrementOnDemand(int resource, int needed, bool is_neighbor){
+@@ -491,7 +507,7 @@ int Player::IncrementOnDemand(int resource, int needed, bool is_neighbor){
              cont++;
          } if (this->AvailableCard(CARD_ID::mine, resource)) {
              cont++;
@@ -709,7 +1136,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..863d8c3ac96b97bbf830438a118f91f6
              cont++;
          }
      } else if (resource == RESOURCE::ore) {
-@@ -514,7 +527,6 @@ int Player::IncrementOnDemand(int resource, int needed, bool is_neighbor){
+@@ -514,7 +530,6 @@ int Player::IncrementOnDemand(int resource, int needed, bool is_neighbor){
  
      if (resource <= 3 && !is_neighbor) { // resource <= 3 is a raw
          if (this->ChooseExtraRaw(resource)) cont++;
@@ -717,7 +1144,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..863d8c3ac96b97bbf830438a118f91f6
      }
  
      curr_resource += cont;
-@@ -855,46 +867,20 @@ int Player::CalculateScientificScore(){
+@@ -855,46 +870,20 @@ int Player::CalculateScientificScore(){
          sci_extra++;
      }
  
@@ -776,7 +1203,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..863d8c3ac96b97bbf830438a118f91f6
  }
  
  int Player::CalculateWonderScore(){
-@@ -905,6 +891,10 @@ int Player::CalculateWonderScore(){
+@@ -905,6 +894,10 @@ int Player::CalculateWonderScore(){
  
  // Calculates the player's TOTAL score using the methods defined above.
  int Player::CalculateScore(){
@@ -787,7 +1214,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..863d8c3ac96b97bbf830438a118f91f6
      int civil_score = this->CalculateCivilianScore();
      int commercial_score = this->CalculateCommercialScore();
      int guild_score = this->CalculateGuildScore();
-@@ -917,7 +907,8 @@ int Player::CalculateScore(){
+@@ -917,7 +910,8 @@ int Player::CalculateScore(){
  
      this->victory_points = total_score;
  
@@ -797,7 +1224,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..863d8c3ac96b97bbf830438a118f91f6
  }
  
  //////////////////////////////////
-@@ -995,8 +986,10 @@ int Player::CalculateAmountManufacturedGood(){
+@@ -995,8 +989,10 @@ int Player::CalculateAmountManufacturedGood(){
  bool Player::ChooseExtraManuf(int resource){
      if (resource == RESOURCE::loom || resource == RESOURCE::glass || resource == RESOURCE::papyrus) {
          if (this->board->GetId() == WONDER_ID::alexandria_b && this->board->GetStage() >= 2) {
@@ -810,7 +1237,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..863d8c3ac96b97bbf830438a118f91f6
          }
      }
      return false;
-@@ -1010,9 +1003,10 @@ bool Player::ChooseExtraRaw(int resource){
+@@ -1010,9 +1006,10 @@ bool Player::ChooseExtraRaw(int resource){
          resource == RESOURCE::clay || resource == RESOURCE::stone) {
          int id = this->board->GetId();
          int stage = this->board->GetStage();
@@ -824,7 +1251,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..863d8c3ac96b97bbf830438a118f91f6
              return true;
          }
      }
-@@ -1036,9 +1030,22 @@ void Player::FreeCardOnce(bool flag) {
+@@ -1036,9 +1033,22 @@ void Player::FreeCardOnce(bool flag) {
      this->free_card_once = flag;
  }
  
@@ -849,7 +1276,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..863d8c3ac96b97bbf830438a118f91f6
  }
  
  // The player can buy resources for 1 coin instead of 2 from neighbors.
-@@ -1047,21 +1054,41 @@ void Player::CanBuyRawCheap(){
+@@ -1047,21 +1057,41 @@ void Player::CanBuyRawCheap(){
      this->wonder_raw_cheap = true;
  }
  
@@ -904,7 +1331,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..863d8c3ac96b97bbf830438a118f91f6
  }
  
  // Builds a card from the hand for free, once per Age, if the player has the requirements.
-@@ -1205,6 +1232,10 @@ void Player::SetNeighbors(DMAG::Player* east, DMAG::Player* west){
+@@ -1205,6 +1235,10 @@ void Player::SetNeighbors(DMAG::Player* east, DMAG::Player* west){
  }
  
  void Player::SetWonder(DMAG::Wonder *_board){
@@ -1573,364 +2000,12 @@ index 0000000000000000000000000000000000000000..417d043b6bd1480b145b7cb83f9c5eb1
 +        return 1;
 +    }
 +}
-diff --git a/tests/test_final_status.cpp b/tests/test_final_status.cpp
-new file mode 100644
-index 0000000000000000000000000000000000000000..7904601d9e9de9d92590694d091f8ef79d93b872
---- /dev/null
-+++ b/tests/test_final_status.cpp
-@@ -0,0 +1,72 @@
-+// Black-box final-turn exchange with a controlled in-memory game setup.
-+#define main sevenwonders_engine_main
-+#include "../main.cpp"
-+#undef main
-+
-+#include <filesystem>
-+#include <stdexcept>
-+
-+struct GameTestAccess {
-+    static std::vector<Player*>& players(Game& game) { return game.player_list; }
-+    static void final_turn(Game& game) { game.turn = 20; game.era = 3; }
-+};
-+
-+class CompletedOlympia : public Olympia_b {
-+public:
-+    CompletedOlympia() { stage = 3; }
-+};
-+
-+void require(bool condition, const char* message) {
-+    if (!condition) throw std::runtime_error(message);
-+}
-+
-+void build_free(Player* player, const Card& card) {
-+    player->ReceiveCards({card});
-+    require(player->BuildStructure(card, {card}, true), "Test setup card failed");
-+}
-+
-+int main() {
-+    try {
-+        std::filesystem::create_directories("io");
-+        Game game(0);
-+        game.Init();
-+        game.NewGame(3);
-+        auto& players = GameTestAccess::players(game);
-+        players[0]->SetWonder(new Babylon_b());
-+        players[0]->CanPlaySeventh();
-+        players[1]->SetWonder(new CompletedOlympia());
-+        players[2]->SetWonder(new Gizah_a());
-+        build_free(players[0], Card(CARD_ID::lumber_yard, "Lumber Yard", CARD_TYPE::materials,
-+                                  1, CARD_ID::none, std::vector<int>(8, 0), std::vector<int>(5, 1)));
-+        build_free(players[2], Card(CARD_ID::workers, "Workers Guild", CARD_TYPE::guild,
-+                                  3, CARD_ID::none, std::vector<int>(8, 0), std::vector<int>(5, 1)));
-+        players[0]->AddResource(RESOURCE::shields, 2);
-+        players[1]->AddResource(RESOURCE::shields, 1);
-+        Card altar = game.GetCardByName("Altar");
-+        for (Player* player : players) player->ReceiveCards({altar});
-+        GameTestAccess::final_turn(game);
-+        for (int seat = 0; seat < 3; ++seat) {
-+            json action = {{"turn", 20}, {"command", {{"subcommand", seat == 0 ? "build_structure" : "discard"},
-+                                                     {"argument", "Altar"}, {"extra", ""}}}};
-+            std::ofstream("io/player_" + std::to_string(seat + 1) + ".json") << action;
-+        }
-+        std::ofstream("io/ready.txt") << "ready\nready\nready\n";
-+        game.Loop();
-+        json status;
-+        std::ifstream("io/game_status.json") >> status;
-+        require(status["game"]["phase"] == "finished", "Missing final phase");
-+        require(status["game"]["turn"] == 21, "Missing final turn");
-+        require(status["players"]["0"]["points"]["civilian"] == 2, "Seventh card was not scored");
-+        require(status["players"]["0"]["points"]["military"] == 10, "Age-III battles missing or repeated");
-+        require(status["players"]["1"]["points"]["military"] == 4, "Incorrect final battle score");
-+        require(status["players"]["2"]["points"]["military"] == -2, "Final defeat tokens missing");
-+        require(status["players"]["1"]["points"]["guild"] == 1, "Guild copy missing from final JSON");
-+        require(status["last_actions"]["0"]["status"] == "applied", "Seventh action not acknowledged");
-+        require(status["last_actions"]["1"]["status"] == "skipped", "Ignored action reported as applied");
-+        require(status["players"]["1"]["resources"]["coins"] == 3, "Skipped discard changed coins");
-+        return 0;
-+    } catch (const std::exception& error) {
-+        std::cerr << error.what() << std::endl;
-+        return 1;
-+    }
-+}
-diff --git a/tests/test_joint_action_resources.cpp b/tests/test_joint_action_resources.cpp
-new file mode 100644
-index 0000000000000000000000000000000000000000..c094ce082b0e561dd7fcfc334d9bfb115a99ef46
---- /dev/null
-+++ b/tests/test_joint_action_resources.cpp
-@@ -0,0 +1,65 @@
-+// Regression for legal choice-resource actions rejected after another player's action.
-+#define main sevenwonders_engine_main
-+#include "../main.cpp"
-+#undef main
-+#include <filesystem>
-+
-+struct GameTestAccess {
-+    static std::vector<Player*>& players(Game& game) { return game.player_list; }
-+    static void final_turn(Game& game) { game.turn = 20; game.era = 3; }
-+};
-+
-+void require(bool condition, const char* message) {
-+    if (!condition) throw std::runtime_error(message);
-+}
-+
-+int main() {
-+    try {
-+        std::filesystem::create_directories("io");
-+        Game game(0);
-+        game.Init();
-+        game.NewGame(3);
-+        auto& players = GameTestAccess::players(game);
-+        players[0]->SetWonder(new Alexandria_b());
-+        players[1]->SetWonder(new Gizah_a());
-+        players[2]->SetWonder(new Ephesos_a());
-+        // Clear random starting resources, retain only the intended production.
-+        for (Player* player : players) {
-+            auto resources = player->GetResources();
-+            for (auto& entry : resources) entry.second = 0;
-+            resources[RESOURCE::coins] = 20;
-+            player->SetResources(resources);
-+            player->CanPlaySeventh();
-+        }
-+        Card clay_pit = game.GetCardByName("Clay Pit");
-+        players[0]->ReceiveCards({clay_pit});
-+        require(players[0]->BuildStructure(clay_pit, {clay_pit}, true), "Clay Pit setup failed");
-+        players[2]->AddResource(RESOURCE::clay, 1);
-+        Card altar = game.GetCardByName("Altar");
-+        Card forum = game.GetCardByName("Forum");
-+        players[0]->ReceiveCards({altar});
-+        players[1]->ReceiveCards({altar});
-+        players[2]->ReceiveCards({forum});
-+        require(players[0]->CanBuildWonder(), "Alexandria stage must be affordable");
-+        require(!players[2]->GetPlayableCards().empty(), "Forum must be legal before the joint action");
-+        GameTestAccess::final_turn(game);
-+        for (int seat = 0; seat < 3; ++seat) {
-+            std::string command = seat == 0 ? "build_wonder" : seat == 1 ? "discard" : "build_structure";
-+            json action = {{"turn", 20}, {"command", {{"subcommand", command},
-+                {"argument", seat == 2 ? "Forum" : "Altar"}, {"extra", ""}}}};
-+            std::ofstream("io/player_" + std::to_string(seat + 1) + ".json") << action;
-+        }
-+        std::ofstream("io/ready.txt") << "ready\nready\nready\n";
-+        game.Loop();
-+        json status;
-+        std::ifstream("io/game_status.json") >> status;
-+        require(status["players"]["0"]["wonder_stage"] == 1, "First action did not build Alexandria stage");
-+        require(status["last_actions"]["2"]["status"] == "applied",
-+                "Earlier player's choice use must not invalidate the next player's legal Forum");
-+        require(players[2]->HasPlayedCard(forum), "Forum was not built");
-+        return 0;
-+    } catch (const std::exception& error) {
-+        std::cerr << error.what() << std::endl;
-+        return 1;
-+    }
-+}
-diff --git a/tests/test_science_scoring.cpp b/tests/test_science_scoring.cpp
-new file mode 100644
-index 0000000000000000000000000000000000000000..3502da680111f546046a247bac6912f774275c62
---- /dev/null
-+++ b/tests/test_science_scoring.cpp
-@@ -0,0 +1,197 @@
-+// Scientific scoring through real cards, wonder markers and final publication.
-+#define main sevenwonders_engine_main
-+#include "../main.cpp"
-+#undef main
-+
-+#include <filesystem>
-+#include <sstream>
-+
-+struct GameTestAccess {
-+    static std::vector<Player*>& players(Game& game) { return game.player_list; }
-+    static void final_turn(Game& game) { game.turn = 20; game.era = 3; }
-+};
-+
-+template<class Board>
-+class AtStage : public Board {
-+public:
-+    explicit AtStage(int value) { this->stage = value; }
-+};
-+
-+void require(bool condition, const std::string& message) {
-+    if (!condition) throw std::runtime_error(message);
-+}
-+
-+Card scientific_card(int identity) {
-+    const std::map<int, std::string> names = {
-+        {CARD_ID::workshop, "Workshop"}, {CARD_ID::laboratory, "Laboratory"},
-+        {CARD_ID::apothecary, "Apothecary"}, {CARD_ID::scientists, "Scientists Guild"}};
-+    auto name = names.find(identity);
-+    return Card(identity, name == names.end() ? "Science fixture " + std::to_string(identity) : name->second,
-+                identity == CARD_ID::scientists ? CARD_TYPE::guild : CARD_TYPE::scientific,
-+                3, CARD_ID::none, std::vector<int>(8, 0), std::vector<int>(5, 1));
-+}
-+
-+void build_free(Player& player, const Card& card) {
-+    player.ReceiveCards({card});
-+    require(player.BuildStructure(card, {card}, true), "Could not construct fixture card");
-+}
-+
-+void add_symbols(Player& player, int gears, int compasses, int tablets) {
-+    const int gear_cards[] = {CARD_ID::workshop, CARD_ID::laboratory, CARD_ID::observatory, CARD_ID::study};
-+    const int compass_cards[] = {CARD_ID::apothecary, CARD_ID::dispensary, CARD_ID::lodge, CARD_ID::academy};
-+    const int tablet_cards[] = {CARD_ID::scriptorium, CARD_ID::library, CARD_ID::school, CARD_ID::university};
-+    for (int n = 0; n < gears; ++n) build_free(player, scientific_card(gear_cards[n]));
-+    for (int n = 0; n < compasses; ++n) build_free(player, scientific_card(compass_cards[n]));
-+    for (int n = 0; n < tablets; ++n) build_free(player, scientific_card(tablet_cards[n]));
-+}
-+
-+struct Fixture {
-+    Gizah_a plain;
-+    Player player, east, west;
-+    explicit Fixture(Wonder* board = nullptr) {
-+        player.SetWonder(board ? board : &plain);
-+        east.SetWonder(&plain);
-+        west.SetWonder(&plain);
-+        player.SetNeighbors(&east, &west);
-+        east.SetNeighbors(&west, &player);
-+        west.SetNeighbors(&player, &east);
-+    }
-+};
-+
-+// Independent oracle: assign each individual joker recursively, rather than
-+// enumerating integer partitions as the production implementation does.
-+int oracle(int gear, int compass, int tablet, int jokers) {
-+    if (!jokers) return gear * gear + compass * compass + tablet * tablet
-+                        + 7 * std::min({gear, compass, tablet});
-+    return std::max({oracle(gear + 1, compass, tablet, jokers - 1),
-+                     oracle(gear, compass + 1, tablet, jokers - 1),
-+                     oracle(gear, compass, tablet + 1, jokers - 1)});
-+}
-+
-+void counterexample() {
-+    Fixture fixture;
-+    add_symbols(fixture.player, 2, 1, 0);
-+    build_free(fixture.player, scientific_card(CARD_ID::scientists));
-+    const int actual = fixture.player.CalculateScientificScore();
-+    require(actual == 13, "Workshop + Laboratory + Apothecary + Scientists Guild: expected 13, got "
-+                          + std::to_string(actual));
-+}
-+
-+void exhaustive_counts() {
-+    for (int gear = 0; gear <= 4; ++gear)
-+        for (int compass = 0; compass <= 4; ++compass)
-+            for (int tablet = 0; tablet <= 4; ++tablet)
-+                for (int jokers = 0; jokers <= 2; ++jokers) {
-+                    AtStage<Babylon_a> babylon(2);
-+                    Fixture fixture(jokers == 2 ? &babylon : nullptr);
-+                    add_symbols(fixture.player, gear, compass, tablet);
-+                    if (jokers) build_free(fixture.player, scientific_card(CARD_ID::scientists));
-+                    const auto resources = fixture.player.GetResources();
-+                    const auto cards = fixture.player.GetPlayedCards();
-+                    const int expected = oracle(gear, compass, tablet, jokers);
-+                    for (int repeat = 0; repeat < 3; ++repeat) {
-+                        require(fixture.player.CalculateScientificScore() == expected,
-+                                "Scientific score disagrees with recursive joker oracle");
-+                        const auto scores = fixture.player.CalculateScores();
-+                        require(scores[4] == expected && scores[6] == expected + 1,
-+                                "Scientific category or total differs from optimal score");
-+                        require(fixture.player.CalculateScore() == scores[6], "Total scoring disagrees");
-+                    }
-+                    require(fixture.player.GetResources() == resources, "Scoring changed resources");
-+                    require(fixture.player.GetPlayedCards().size() == cards.size(), "Scoring added cards");
-+                    require(fixture.player.GetHandCards().empty(), "Scoring changed hand");
-+                    require(fixture.player.GetBoard()->GetStage() == (jokers == 2 ? 2 : 0),
-+                            "Scoring changed wonder stage");
-+                }
-+}
-+
-+template<class Board>
-+void wonder_boundary(int stage, int expected) {
-+    AtStage<Board> board(stage);
-+    Fixture fixture(&board);
-+    add_symbols(fixture.player, 2, 1, 0);
-+    require(fixture.player.CalculateScientificScore() == expected, "Babylon joker stage boundary");
-+}
-+
-+void copied_joker() {
-+    AtStage<Olympia_b> olympia(3);
-+    Fixture fixture(&olympia);
-+    add_symbols(fixture.player, 2, 1, 0);
-+    build_free(fixture.player, scientific_card(CARD_ID::scientists));
-+    build_free(fixture.east, scientific_card(CARD_ID::scientists));
-+    require(fixture.player.CalculateScientificScore() == 13, "Owned Scientists Guild joker missing");
-+    require(fixture.player.CopyGuild(), "Available Scientists Guild was not copied");
-+    require(fixture.player.GetPlayedCards().size() == 5, "Guild copy did not add exactly one card");
-+    require(fixture.player.CalculateScientificScore() == 18, "Owned and copied jokers must each count once");
-+    require(fixture.player.CalculateScientificScore() == 18, "Repeated scoring duplicated copied joker");
-+}
-+
-+json read_status() {
-+    json status;
-+    std::ifstream("io/game_status.json") >> status;
-+    return status;
-+}
-+
-+void final_publication() {
-+    std::filesystem::create_directories("io");
-+    Game game(0, 0, true);
-+    game.Init();
-+    game.NewGame(3);
-+    auto& players = GameTestAccess::players(game);
-+    players[0]->SetWonder(new AtStage<Babylon_a>(2));
-+    players[1]->SetWonder(new AtStage<Olympia_b>(3));
-+    players[2]->SetWonder(new Gizah_a());
-+    add_symbols(*players[0], 2, 1, 0);
-+    build_free(*players[0], scientific_card(CARD_ID::scientists));
-+    add_symbols(*players[1], 2, 1, 0);
-+    game.WriteGameStatus();
-+    const auto before = read_status();
-+    require(before["players"]["0"]["points"]["scientific"] == 18, "Published combined jokers wrong");
-+    require(before["players"]["1"]["points"]["scientific"] == 5, "Guild copied before endgame");
-+    const Card altar = game.GetCardByName("Altar");
-+    for (Player* player : players) player->ReceiveCards({altar});
-+    GameTestAccess::final_turn(game);
-+    for (int seat = 0; seat < 3; ++seat) {
-+        json action = {{"turn", 20}, {"command", {{"subcommand", "discard"}, {"argument", "Altar"}, {"extra", ""}}}};
-+        std::ofstream("io/player_" + std::to_string(seat + 1) + ".json") << action;
-+    }
-+    std::ofstream("io/ready.txt") << "ready\nready\nready\n";
-+    game.Loop();
-+    const auto final = read_status();
-+    require(final["game"]["phase"] == "finished", "Missing finished status");
-+    require(final["players"]["0"]["points"]["scientific"] == 18, "Combined final jokers wrong");
-+    require(final["players"]["1"]["points"]["scientific"] == 13, "Copied final joker wrong");
-+    std::ifstream result_file("results.txt");
-+    const std::string results((std::istreambuf_iterator<char>(result_file)), std::istreambuf_iterator<char>());
-+    for (int seat = 0; seat < 3; ++seat) {
-+        const auto scores = players[seat]->CalculateScores();
-+        const auto& points = final["players"][std::to_string(seat)]["points"];
-+        require(points["scientific"] == scores[4] && points["total"] == scores[6], "Final score publication differs");
-+        const int sum = points["civilian"].get<int>() + points["commercial"].get<int>()
-+                      + points["guild"].get<int>() + points["military"].get<int>()
-+                      + points["scientific"].get<int>() + points["wonder"].get<int>();
-+        require(sum == scores[6], "Score categories do not sum to total");
-+        require(results.find("Player " + std::to_string(seat + 1) + " score: " + std::to_string(scores[6]) + "\n")
-+                != std::string::npos, "results.txt differs from published total");
-+    }
-+    game.WriteGameStatus();
-+    require(read_status() == final, "Repeated final publication changed state or score");
-+}
-+
-+int main() {
-+    try {
-+        std::cout.setstate(std::ios_base::failbit);
-+        counterexample();
-+        exhaustive_counts();
-+        for (int stage = 0; stage <= 3; ++stage) {
-+            wonder_boundary<Babylon_a>(stage, stage >= 2 ? 13 : 5);
-+            wonder_boundary<Babylon_b>(stage, stage >= 3 ? 13 : 5);
-+        }
-+        copied_joker();
-+        final_publication();
-+        return 0;
-+    } catch (const std::exception& error) {
-+        std::cerr << error.what() << std::endl;
-+        return 1;
-+    }
-+}
 diff --git a/tests/test_discard_safety.cpp b/tests/test_discard_safety.cpp
 new file mode 100644
-index 0000000000000000000000000000000000000000..1924470a93b060dd629d58975e234c791ffcdd03
+index 0000000000000000000000000000000000000000..64b8263507e72b5093e2c60b0504ba25b29aec4b
 --- /dev/null
 +++ b/tests/test_discard_safety.cpp
-@@ -0,0 +1,385 @@
+@@ -0,0 +1,347 @@
 +// Discard ownership, source isolation and free-build right regressions.
 +#define main sevenwonders_engine_main
 +#include "../main.cpp"
@@ -1939,6 +2014,7 @@ index 0000000000000000000000000000000000000000..1924470a93b060dd629d58975e234c79
 +#include <set>
 +#include <cstdlib>
 +#include <new>
++#include "decision_helpers.h"
 +
 +// Fail every allocation point in the transaction, including the city append
 +// after a staged immediate effect. No production-only test hook is needed.
@@ -1960,7 +2036,6 @@ index 0000000000000000000000000000000000000000..1924470a93b060dd629d58975e234c79
 +    static std::vector<Card>& pile(Game& game) { return game.discard_pile; }
 +    static std::vector<Card>& deck(Game& game, int age) { return game.deck[age-1]; }
 +    static void final_turn(Game& game) { game.turn = 20; game.era = 3; }
-+    static void extras(Game& game, const std::vector<std::string>& values) { game.ResolveDiscardExtras(values); }
 +};
 +
 +void require(bool condition, const std::string& message) {
@@ -2238,54 +2313,18 @@ index 0000000000000000000000000000000000000000..1924470a93b060dd629d58975e234c79
 +    for (Player* player : GameTestAccess::players(game))
 +        for (const Card& card : player->GetHandCards())
 +            require(seen.count(card.GetInstanceId()), "Dealing changed physical identity");
-+    const auto before = identities(GameTestAccess::players(game)[0]->GetHandCards());
-+    game.NextTurn();
-+    require(identities(GameTestAccess::players(game)[0]->GetWestNeighbor()->GetHandCards()) == before,
-+            "Passing changed physical identity");
-+}
-+
-+void legacy_seat_loop(bool own_extra) {
-+    std::filesystem::create_directories("io");
-+    Game game(0, 0, true);
-+    game.Init(); game.NewGame(3);
-+    auto& players = GameTestAccess::players(game);
-+    players[0]->SetWonder(new AtStage<Halikarnassos_b>(1));
-+    players[1]->SetWonder(new Gizah_a());
-+    players[2]->SetWonder(new Gizah_a());
-+    players[0]->DiscardFree(true);
-+    Card picked = fixture_card(CARD_ID::tavern, CARD_TYPE::commercial);
-+    GameTestAccess::pile(game) = {picked};
-+    GameTestAccess::final_turn(game);
-+    for (int seat = 0; seat < 3; ++seat) {
-+        Card hand = fixture_card(CARD_ID::altar);
-+        players[seat]->ReceiveCards({hand}); players[seat]->CanPlaySeventh();
-+        const std::string extra = seat == (own_extra ? 0 : 2) ? picked.GetName() : "";
-+        json action = {{"turn", 20}, {"command", {{"subcommand", "discard"},
-+                       {"argument", hand.GetName()}, {"extra", extra}}}};
-+        std::ofstream("io/player_"+std::to_string(seat+1)+".json") << action;
-+    }
-+    std::ofstream("io/ready.txt") << "ready\nready\nready\n";
-+    game.Loop();
-+    require(players[0]->HasPlayedCard(picked) == own_extra, "V2 extra belonged to a different seat");
-+    require(!players[0]->HasDiscardFree(), "V2 left an unfulfilled right for the next turn");
-+    require(players[0]->GetHandCards().empty(), "V2 discard build damaged hand removal");
-+    require(GameTestAccess::pile(game).size() == (own_extra ? 3 : 4), "Loop did not update central discard pile exactly once");
-+}
-+
-+void legacy_ambiguity() {
-+    Game game(0, 0, true);
-+    game.Init(); game.NewGame(3);
-+    auto& players = GameTestAccess::players(game);
-+    players[0]->SetWonder(new AtStage<Halikarnassos_b>(1));
-+    players[1]->SetWonder(new Gizah_a()); players[2]->SetWonder(new Gizah_a());
-+    players[0]->DiscardFree(true);
-+    Card a = fixture_card(CARD_ID::altar), b = fixture_card(CARD_ID::altar);
-+    GameTestAccess::pile(game) = {a, b};
-+    GameTestAccess::extras(game, {a.GetName(), "", ""});
-+    require(!players[0]->HasPlayedCard(a) && GameTestAccess::pile(game).size() == 2,
-+            "Ambiguous V2 name silently picked a physical copy");
-+    players[0]->DiscardFree(true);
-+    require(!players[0]->HasDiscardFree(), "V2 preselection expiration re-armed old stage");
++    auto engine=game.Decisions();
++    const auto before=engine->Status();
++    std::vector<json> inputs;
++    for(int s=0;s<3;++s) inputs.push_back(choose(*engine,s,"discard"));
++    std::vector<std::string> remainder;
++    for(const auto& card:before["players"]["0"]["hand_cards"])
++        if(card["instance_id"]!=inputs[0]["action"]["card_instance_id"]) remainder.push_back(card["instance_id"]);
++    finish_cohort(*engine,inputs);
++    std::vector<std::string> passed;
++    const auto after=engine->Status();
++    for(const auto& card:after["players"]["2"]["hand_cards"]) passed.push_back(card["instance_id"]);
++    require(passed==remainder,"Passing changed physical identity");
 +}
 +
 +int main(int argc, char** argv) {
@@ -2306,13 +2345,1364 @@ index 0000000000000000000000000000000000000000..1924470a93b060dd629d58975e234c79
 +            hand_source_guard();
 +            allocation_rollback();
 +            real_deck_identities();
-+            legacy_seat_loop(true);
-+            legacy_seat_loop(false);
-+            legacy_ambiguity();
++
 +        }
 +        return 0;
 +    } catch (const std::exception& error) {
 +        std::cerr << error.what() << std::endl;
 +        return 1;
 +    }
++}
+diff --git a/tests/test_final_status.cpp b/tests/test_final_status.cpp
+new file mode 100644
+index 0000000000000000000000000000000000000000..f7bb22fca75b9338b7bde095cfdd3644256679ed
+--- /dev/null
++++ b/tests/test_final_status.cpp
+@@ -0,0 +1,70 @@
++// Black-box final-turn exchange with a controlled in-memory game setup.
++#define main sevenwonders_engine_main
++#include "../main.cpp"
++#undef main
++
++#include <filesystem>
++#include <stdexcept>
++#include "decision_helpers.h"
++
++struct GameTestAccess {
++    static std::vector<Player*>& players(Game& game) { return game.player_list; }
++    static void final_turn(Game& game) { game.turn = 20; game.era = 3; }
++};
++
++class CompletedOlympia : public Olympia_b {
++public:
++    CompletedOlympia() { stage = 3; }
++};
++
++void require(bool condition, const char* message) {
++    if (!condition) throw std::runtime_error(message);
++}
++
++void build_free(Player* player, const Card& card) {
++    static std::uint64_t instance=300000;
++    const Card physical=card.GetInstanceId()?card:card.CreateInstance(instance++);
++    player->ReceiveCards({physical});
++    require(player->BuildStructure(physical, {physical}, true), "Test setup card failed");
++}
++
++int main() {
++    try {
++        std::filesystem::create_directories("io");
++        Game game(0);
++        game.Init();
++        game.NewGame(3);
++        auto& players = GameTestAccess::players(game);
++        players[0]->SetWonder(new Babylon_b());
++        players[0]->CanPlaySeventh();
++        players[1]->SetWonder(new CompletedOlympia());
++        players[2]->SetWonder(new Gizah_a());
++        build_free(players[0], Card(CARD_ID::lumber_yard, "Lumber Yard", CARD_TYPE::materials,
++                                  1, CARD_ID::none, std::vector<int>(8, 0), std::vector<int>(5, 1)));
++        build_free(players[2], Card(CARD_ID::workers, "Workers Guild", CARD_TYPE::guild,
++                                  3, CARD_ID::none, std::vector<int>(8, 0), std::vector<int>(5, 1)));
++        players[0]->AddResource(RESOURCE::shields, 2);
++        players[1]->AddResource(RESOURCE::shields, 1);
++        Card altar = game.GetCardByName("Altar");
++        players[0]->ReceiveCards({altar});
++        players[1]->ReceiveCards({});players[2]->ReceiveCards({});
++        GameTestAccess::final_turn(game);
++        auto engine=game.Decisions();
++        require(engine->Status()["waiting_for"]==json({0}),"Uninvolved seats received fake seventh actions");
++        applied(*engine,choose(*engine,0,"build_structure",CARD_ID::altar));
++        const json status=engine->Status();
++        require(status["game"]["phase"] == "finished", "Missing final phase");
++        require(status["game"]["turn"] == 21, "Missing final turn");
++        require(status["players"]["0"]["points"]["civilian"] == 2, "Seventh card was not scored");
++        require(status["players"]["0"]["points"]["military"] == 10, "Age-III battles missing or repeated");
++        require(status["players"]["1"]["points"]["military"] == 4, "Incorrect final battle score");
++        require(status["players"]["2"]["points"]["military"] == -2, "Final defeat tokens missing");
++        require(status["players"]["1"]["points"]["guild"] == 1, "Guild copy missing from final JSON");
++        require(status["receipts"].size()==1 && status["receipts"][0]["status"]=="applied", "Real seventh action not acknowledged exactly once");
++        require(status["players"]["1"]["resources"]["coins"] == 3, "Skipped discard changed coins");
++        return 0;
++    } catch (const std::exception& error) {
++        std::cerr << error.what() << std::endl;
++        return 1;
++    }
++}
+diff --git a/tests/test_joint_action_resources.cpp b/tests/test_joint_action_resources.cpp
+new file mode 100644
+index 0000000000000000000000000000000000000000..faff0efe483eb8acf60b883136c194d626c1a1dc
+--- /dev/null
++++ b/tests/test_joint_action_resources.cpp
+@@ -0,0 +1,62 @@
++// Regression for legal choice-resource actions rejected after another player's action.
++#define main sevenwonders_engine_main
++#include "../main.cpp"
++#undef main
++#include <filesystem>
++#include "decision_helpers.h"
++
++struct GameTestAccess {
++    static std::vector<Player*>& players(Game& game) { return game.player_list; }
++    static void final_turn(Game& game) { game.turn = 19; game.era = 3; }
++};
++
++void require(bool condition, const char* message) {
++    if (!condition) throw std::runtime_error(message);
++}
++
++int main() {
++    try {
++        std::filesystem::create_directories("io");
++        Game game(0);
++        game.Init();
++        game.NewGame(3);
++        auto& players = GameTestAccess::players(game);
++        players[0]->SetWonder(new Alexandria_b());
++        players[1]->SetWonder(new Gizah_a());
++        players[2]->SetWonder(new Ephesos_a());
++        // Clear random starting resources, retain only the intended production.
++        for (Player* player : players) {
++            auto resources = player->GetResources();
++            for (auto& entry : resources) entry.second = 0;
++            resources[RESOURCE::coins] = 20;
++            player->SetResources(resources);
++
++        }
++        Card clay_pit = game.GetCardByName("Clay Pit");
++        players[0]->ReceiveCards({clay_pit});
++        require(players[0]->BuildStructure(clay_pit, {clay_pit}, true), "Clay Pit setup failed");
++        Card clay_pool = game.GetCardByName("Clay Pool");
++        players[2]->ReceiveCards({clay_pool});
++        require(players[2]->BuildStructure(clay_pool,{clay_pool},true),"Tradable Clay Pool setup failed");
++        Card forum = game.GetCardByName("Forum");
++        players[0]->ReceiveCards({test_card(CARD_ID::altar)});
++        players[1]->ReceiveCards({test_card(CARD_ID::altar)});
++        players[2]->ReceiveCards({forum});
++        require(players[0]->CanBuildWonder(), "Alexandria stage must be affordable");
++        require(!players[2]->GetPlayableCards().empty(), "Forum must be legal before the joint action");
++        GameTestAccess::final_turn(game);
++        auto engine=game.Decisions();
++        auto forum_action=choose(*engine,2,"build_structure",CARD_ID::forum);
++        finish_cohort(*engine,{choose(*engine,0,"build_wonder"),choose(*engine,1,"discard"),forum_action});
++        const auto status=engine->Status();
++        require(status["players"]["0"]["wonder_stage"] == 1, "First action did not build Alexandria stage");
++        require(engine->Submit(forum_action)["status"]=="applied", "Joint choice resource plan did not apply");
++        bool built=false;
++        for(const auto& c:status["players"]["2"]["built_cards"]) if(c["type_id"]==CARD_ID::forum) built=true;
++        require(built,"Forum was not built");
++        return 0;
++    } catch (const std::exception& error) {
++        std::cerr << error.what() << std::endl;
++        return 1;
++    }
++}
+diff --git a/tests/test_science_scoring.cpp b/tests/test_science_scoring.cpp
+new file mode 100644
+index 0000000000000000000000000000000000000000..82b0b41bb01587e69f15d8b808cc97c065439b04
+--- /dev/null
++++ b/tests/test_science_scoring.cpp
+@@ -0,0 +1,185 @@
++// Scientific scoring through real cards, wonder markers and final publication.
++#define main sevenwonders_engine_main
++#include "../main.cpp"
++#undef main
++
++#include <filesystem>
++#include <sstream>
++#include "decision_helpers.h"
++
++struct GameTestAccess {
++    static std::vector<Player*>& players(Game& game) { return game.player_list; }
++    static void final_turn(Game& game) { game.turn = 19; game.era = 3; }
++};
++
++template<class Board>
++class AtStage : public Board {
++public:
++    explicit AtStage(int value) { this->stage = value; }
++};
++
++void require(bool condition, const std::string& message) {
++    if (!condition) throw std::runtime_error(message);
++}
++
++Card scientific_card(int identity) {
++    const std::map<int, std::string> names = {
++        {CARD_ID::workshop, "Workshop"}, {CARD_ID::laboratory, "Laboratory"},
++        {CARD_ID::apothecary, "Apothecary"}, {CARD_ID::scientists, "Scientists Guild"}};
++    auto name = names.find(identity);
++    static std::uint64_t instance=200000;
++    return Card(identity, name == names.end() ? "Science fixture " + std::to_string(identity) : name->second,
++                identity == CARD_ID::scientists ? CARD_TYPE::guild : CARD_TYPE::scientific,
++                3, CARD_ID::none, std::vector<int>(8, 0), std::vector<int>(5, 1)).CreateInstance(instance++);
++}
++
++void build_free(Player& player, const Card& card) {
++    player.ReceiveCards({card});
++    require(player.BuildStructure(card, {card}, true), "Could not construct fixture card");
++}
++
++void add_symbols(Player& player, int gears, int compasses, int tablets) {
++    const int gear_cards[] = {CARD_ID::workshop, CARD_ID::laboratory, CARD_ID::observatory, CARD_ID::study};
++    const int compass_cards[] = {CARD_ID::apothecary, CARD_ID::dispensary, CARD_ID::lodge, CARD_ID::academy};
++    const int tablet_cards[] = {CARD_ID::scriptorium, CARD_ID::library, CARD_ID::school, CARD_ID::university};
++    for (int n = 0; n < gears; ++n) build_free(player, scientific_card(gear_cards[n]));
++    for (int n = 0; n < compasses; ++n) build_free(player, scientific_card(compass_cards[n]));
++    for (int n = 0; n < tablets; ++n) build_free(player, scientific_card(tablet_cards[n]));
++}
++
++struct Fixture {
++    Gizah_a plain;
++    Player player, east, west;
++    explicit Fixture(Wonder* board = nullptr) {
++        player.SetWonder(board ? board : &plain);
++        east.SetWonder(&plain);
++        west.SetWonder(&plain);
++        player.SetNeighbors(&east, &west);
++        east.SetNeighbors(&west, &player);
++        west.SetNeighbors(&player, &east);
++    }
++};
++
++// Independent oracle: assign each individual joker recursively, rather than
++// enumerating integer partitions as the production implementation does.
++int oracle(int gear, int compass, int tablet, int jokers) {
++    if (!jokers) return gear * gear + compass * compass + tablet * tablet
++                        + 7 * std::min({gear, compass, tablet});
++    return std::max({oracle(gear + 1, compass, tablet, jokers - 1),
++                     oracle(gear, compass + 1, tablet, jokers - 1),
++                     oracle(gear, compass, tablet + 1, jokers - 1)});
++}
++
++void counterexample() {
++    Fixture fixture;
++    add_symbols(fixture.player, 2, 1, 0);
++    build_free(fixture.player, scientific_card(CARD_ID::scientists));
++    const int actual = fixture.player.CalculateScientificScore();
++    require(actual == 13, "Workshop + Laboratory + Apothecary + Scientists Guild: expected 13, got "
++                          + std::to_string(actual));
++}
++
++void exhaustive_counts() {
++    for (int gear = 0; gear <= 4; ++gear)
++        for (int compass = 0; compass <= 4; ++compass)
++            for (int tablet = 0; tablet <= 4; ++tablet)
++                for (int jokers = 0; jokers <= 2; ++jokers) {
++                    AtStage<Babylon_a> babylon(2);
++                    Fixture fixture(jokers == 2 ? &babylon : nullptr);
++                    add_symbols(fixture.player, gear, compass, tablet);
++                    if (jokers) build_free(fixture.player, scientific_card(CARD_ID::scientists));
++                    const auto resources = fixture.player.GetResources();
++                    const auto cards = fixture.player.GetPlayedCards();
++                    const int expected = oracle(gear, compass, tablet, jokers);
++                    for (int repeat = 0; repeat < 3; ++repeat) {
++                        require(fixture.player.CalculateScientificScore() == expected,
++                                "Scientific score disagrees with recursive joker oracle");
++                        const auto scores = fixture.player.CalculateScores();
++                        require(scores[4] == expected && scores[6] == expected + 1,
++                                "Scientific category or total differs from optimal score");
++                        require(fixture.player.CalculateScore() == scores[6], "Total scoring disagrees");
++                    }
++                    require(fixture.player.GetResources() == resources, "Scoring changed resources");
++                    require(fixture.player.GetPlayedCards().size() == cards.size(), "Scoring added cards");
++                    require(fixture.player.GetHandCards().empty(), "Scoring changed hand");
++                    require(fixture.player.GetBoard()->GetStage() == (jokers == 2 ? 2 : 0),
++                            "Scoring changed wonder stage");
++                }
++}
++
++template<class Board>
++void wonder_boundary(int stage, int expected) {
++    AtStage<Board> board(stage);
++    Fixture fixture(&board);
++    add_symbols(fixture.player, 2, 1, 0);
++    require(fixture.player.CalculateScientificScore() == expected, "Babylon joker stage boundary");
++}
++
++void copied_joker() {
++    AtStage<Olympia_b> olympia(3);
++    Fixture fixture(&olympia);
++    add_symbols(fixture.player, 2, 1, 0);
++    build_free(fixture.player, scientific_card(CARD_ID::scientists));
++    build_free(fixture.east, scientific_card(CARD_ID::scientists));
++    require(fixture.player.CalculateScientificScore() == 13, "Owned Scientists Guild joker missing");
++    require(fixture.player.CopyGuild(), "Available Scientists Guild was not copied");
++    require(fixture.player.GetPlayedCards().size() == 5, "Guild copy did not add exactly one card");
++    require(fixture.player.CalculateScientificScore() == 18, "Owned and copied jokers must each count once");
++    require(fixture.player.CalculateScientificScore() == 18, "Repeated scoring duplicated copied joker");
++}
++
++json read_status() {
++    json status;
++    std::ifstream("io/game_status.json") >> status;
++    return status;
++}
++
++void final_publication() {
++    std::filesystem::create_directories("io");
++    Game game(0, 0, true);
++    game.Init();
++    game.NewGame(3);
++    auto& players = GameTestAccess::players(game);
++    players[0]->SetWonder(new AtStage<Babylon_a>(2));
++    players[1]->SetWonder(new AtStage<Olympia_b>(3));
++    players[2]->SetWonder(new Gizah_a());
++    add_symbols(*players[0], 2, 1, 0);
++    build_free(*players[0], scientific_card(CARD_ID::scientists));
++    add_symbols(*players[1], 2, 1, 0);
++    for(Player* player:players) player->ReceiveCards({test_card(CARD_ID::altar)});
++    const auto before = game.Decisions()->Status();
++    require(before["players"]["0"]["points"]["scientific"] == 18, "Published combined jokers wrong");
++    require(before["players"]["1"]["points"]["scientific"] == 5, "Guild copied before endgame");
++    GameTestAccess::final_turn(game);
++    auto engine=game.Decisions();
++    finish_cohort(*engine,{choose(*engine,0,"discard"),choose(*engine,1,"discard"),choose(*engine,2,"discard")});
++    const auto final=engine->Status();
++    require(final["game"]["phase"]=="finished","Missing finished status");
++    require(final["players"]["0"]["points"]["scientific"]==18,"Combined final jokers wrong");
++    require(final["players"]["1"]["points"]["scientific"]==13,"Copied final joker wrong");
++    for(int seat=0;seat<3;++seat) {
++        const auto& points=final["players"][std::to_string(seat)]["points"];
++        const int sum=points["civilian"].get<int>()+points["commercial"].get<int>()+points["guild"].get<int>()
++            +points["military"].get<int>()+points["scientific"].get<int>()+points["wonder"].get<int>();
++        require(points["total"]==sum && final["result"]["totals"][std::to_string(seat)]==sum,"Final science/categories/result disagree");
++    }
++    require(engine->Status()==final,"Repeated final publication changed state or score");
++}
++
++int main() {
++    try {
++        std::cout.setstate(std::ios_base::failbit);
++        counterexample();
++        exhaustive_counts();
++        for (int stage = 0; stage <= 3; ++stage) {
++            wonder_boundary<Babylon_a>(stage, stage >= 2 ? 13 : 5);
++            wonder_boundary<Babylon_b>(stage, stage >= 3 ? 13 : 5);
++        }
++        copied_joker();
++        final_publication();
++        return 0;
++    } catch (const std::exception& error) {
++        std::cerr << error.what() << std::endl;
++        return 1;
++    }
++}
+diff --git a/include/decision.h b/include/decision.h
+new file mode 100644
+index 0000000000000000000000000000000000000000..3b8da1ab9761c6794a18cc914753e23c7dbc6811
+--- /dev/null
++++ b/include/decision.h
+@@ -0,0 +1,36 @@
++#ifndef SEVENWONDERS_DECISION_H
++#define SEVENWONDERS_DECISION_H
++
++#include <array>
++#include <chrono>
++#include <memory>
++#include <random>
++#include <player.h>
++#include <nlohmann/json.hpp>
++
++namespace DMAG {
++class DecisionCore;
++struct DecisionTestAccess;
++
++// Protocol 3 owns a deep, isolated game state. No legacy file handshake is read.
++class DecisionEngine {
++    friend struct DecisionTestAccess;
++    std::unique_ptr<DecisionCore> core;
++public:
++    using Clock = std::chrono::steady_clock;
++    DecisionEngine(const std::vector<Player*>& players,
++                   const std::array<std::vector<Card>, 3>& decks,
++                   const std::vector<Card>& discarded, std::mt19937_64 rng,
++                   std::uint64_t seed, unsigned timeout_ms = 0, int turn = 0);
++    ~DecisionEngine();
++    nlohmann::json Status() const;
++    nlohmann::json Submit(const nlohmann::json& request);
++    bool Bundle(const nlohmann::json& commands, const nlohmann::json& ready);
++    void Published(Clock::time_point now = Clock::now());
++    void CheckTimeout(Clock::time_point now = Clock::now());
++    void Abort(const std::string& reason);
++    bool Terminal() const;
++    std::uint64_t Revision() const;
++};
++}
++#endif
+diff --git a/src/decision.cpp b/src/decision.cpp
+new file mode 100644
+index 0000000000000000000000000000000000000000..8b14dee134b4213a0203ef25a01b814960a37b7a
+--- /dev/null
++++ b/src/decision.cpp
+@@ -0,0 +1,605 @@
++// Downstream simultaneous settlement and decision transport; see ENG-014.
++#include <decision.h>
++#include <algorithm>
++#include <functional>
++#include <numeric>
++#include <set>
++#include <sstream>
++#include <stdexcept>
++#include <tuple>
++#include <type_traits>
++
++#ifndef ENGINE_SOURCE_COMMIT
++#define ENGINE_SOURCE_COMMIT "unconfigured"
++#endif
++#ifndef ENGINE_SOURCE_DIRTY
++#define ENGINE_SOURCE_DIRTY true
++#endif
++
++namespace DMAG {
++using json = nlohmann::json;
++using Clock = DecisionEngine::Clock;
++
++struct RoundState {
++    std::array<Player, 3> players;
++    std::array<std::unique_ptr<Wonder>, 3> boards;
++    std::array<std::vector<Card>, 3> decks;
++    std::array<std::vector<Card>, 3> buried, copied;
++    std::vector<Card> discarded;
++    std::mt19937_64 rng;
++    RoundState(const std::vector<Player*>& input,
++               const std::array<std::vector<Card>,3>& cards,
++               const std::vector<Card>& pile, std::mt19937_64 random)
++        : decks(cards), discarded(pile), rng(random) {
++        if (input.size() != 3) throw std::invalid_argument("Decision engine requires three seats");
++        for (int s = 0; s < 3; ++s) {
++            players[s] = *input[s]; boards[s] = input[s]->board->Clone();
++        }
++        std::set<std::uint64_t> physical;
++        auto validate = [&](const std::vector<Card>& cards) {
++            for(const Card& c:cards)
++                if(!c.GetInstanceId() || !physical.insert(c.GetInstanceId()).second)
++                    throw std::invalid_argument("Physical cards need unique nonzero identities across locations");
++        };
++        for(const Player& p:players) { validate(p.cards_hand);validate(p.cards_played); }
++        validate(discarded);
++        Bind();
++    }
++    RoundState(const RoundState& from)
++        : players(from.players), decks(from.decks), buried(from.buried),
++          copied(from.copied), discarded(from.discarded), rng(from.rng) {
++        for (int s=0;s<3;++s) boards[s] = from.boards[s]->Clone();
++        Bind();
++    }
++    void Bind() {
++        for (int s=0;s<3;++s) {
++            players[s].board = boards[s].get(); players[s].id = s;
++            players[s].player_east = &players[(s+2)%3];
++            players[s].player_west = &players[(s+1)%3];
++            players[s].cost_probe = nullptr;
++        }
++    }
++};
++
++namespace {
++json CardRef(const Card& card) {
++    return {{"instance_id", std::to_string(card.GetInstanceId())}, {"type_id",card.GetId()},
++            {"age",card.GetEra()}, {"name",card.GetName()}};
++}
++json Cards(const std::vector<Card>& cards) {
++    json result = json::array();
++    for (const Card& card : cards) result.push_back(CardRef(card));
++    return result;
++}
++bool Keys(const json& j, std::initializer_list<const char*> keys) {
++    if (!j.is_object() || j.size() != keys.size()) return false;
++    for (auto k : keys) if (!j.contains(k)) return false;
++    return true;
++}
++bool Text(const json& j) { return j.is_string() && !j.get<std::string>().empty() && j.get<std::string>().size() <= 256; }
++bool Integer(const json& j, long long low, long long high) {
++    if (!j.is_number_integer()) return false;
++    try { const auto n = j.get<long long>(); return n >= low && n <= high; }
++    catch (...) { return false; }
++}
++struct Source { std::string id; int owner; std::vector<int> choices; int quantity; int price; };
++struct Payment {
++    int bank = 0;
++    std::array<int,3> to{{0,0,0}};
++    json allocation = json::array();
++    int Total() const { return bank + std::accumulate(to.begin(),to.end(),0); }
++    json Json() const { return {{"bank",bank},{"to_seats",{{"0",to[0]},{"1",to[1]},{"2",to[2]}}}}; }
++};
++struct Plan { std::string id, kind, free; Card card; Payment payment; };
++struct Offer {
++    json wire;
++    std::map<std::string,Plan> plans;
++    std::string state = "open", selected, request;
++    Clock::time_point published{};
++};
++struct Stored { json request; size_t receipt; };
++}
++
++class DecisionCore {
++    friend class DecisionEngine;
++    friend struct DecisionTestAccess;
++    std::unique_ptr<RoundState> world;
++    std::string game_id, phase = "collect_actions", abort_reason, terminal_resolution;
++    int turn = 0;
++    std::uint64_t revision = 1, event_count = 0, decision_count = 0, seed;
++    unsigned timeout_ms;
++    std::map<std::string,Offer> offers;
++    std::vector<std::string> current;
++    std::map<std::string,Stored> ledger;
++    std::map<std::string,json> error_cache;
++    json receipts = json::array(), events = json::array(), grants = json::array(), request_errors = json::array();
++    std::map<std::string,json> batches;
++    json transport = nullptr;
++
++    int Age() const { return turn/7+1; }
++    int Round() const { return turn%7+1; }
++    std::string Resolution() const {
++        return turn==21 && !terminal_resolution.empty()?terminal_resolution:game_id+":r"+std::to_string(turn);
++    }
++    std::string Base() const { return Resolution()+":base"; }
++    std::string Event(const std::string& kind, json actor = nullptr, json decision = nullptr,
++                      json grant = nullptr, json card = nullptr) {
++        const auto id = game_id+":e"+std::to_string(++event_count);
++        events.push_back({{"event_id",id},{"kind",kind},{"actor",actor},
++                          {"decision_id",decision},{"grant_id",grant},{"card_instance_id",card}});
++        return id;
++    }
++    json Receipt(const json& r, const std::string& status, json code = nullptr, json event = nullptr) const {
++        return {{"request_id",r.contains("request_id") && Text(r["request_id"])?r["request_id"]:json(nullptr)},
++                {"decision_id",r.contains("decision_id") && Text(r["decision_id"])?r["decision_id"]:json(nullptr)},
++                {"actor",r.contains("actor") && Integer(r["actor"],0,2)?r["actor"]:json(nullptr)}, {"status",status},
++                {"code",code},{"recorded_revision",revision},{"effect_event_id",event}};
++    }
++    json Reject(const json& r, const std::string& code, bool cache = false) {
++        const bool memoize=!cache && r.is_object() && r.contains("request_id") && Text(r["request_id"]);
++        const std::string key=memoize?r.dump():"";
++        auto prior=error_cache.find(key);
++        if(memoize && prior!=error_cache.end()) return prior->second;
++        ++revision;
++        const auto reply = Receipt(r.is_object()?r:json::object(),"rejected",code);
++        if(cache) receipts.push_back(reply);
++        else request_errors.push_back(reply);
++        if (cache && r.contains("request_id") && Text(r["request_id"]))
++            ledger.emplace(r["request_id"].get<std::string>(),Stored{r,receipts.size()-1});
++        if(memoize) error_cache.emplace(key,reply);
++        return reply;
++    }
++
++    // Production is allocated independently for each buyer. Own production may
++    // include yellow/wonder choices; tradable neighbor sources cannot.
++    std::vector<Source> Sources(int buyer) const {
++        std::vector<Source> result;
++        for (int owner=0;owner<3;++owner) {
++            const Player& p = world->players[owner];
++            const bool self = owner==buyer;
++            const Player& b = world->players[buyer];
++            std::array<int,7> own_remaining{};
++            if(self) for(int r=0;r<7;++r) own_remaining[r]=p.resources.at(r);
++            auto price = [&](int resource) {
++                if (self) return 0;
++                if (resource >= RESOURCE::loom) return b.manuf_cheap ? 1 : 2;
++                const bool cheap = owner==(buyer+2)%3 ? b.raw_cheap_east : b.raw_cheap_west;
++                return cheap || b.wonder_raw_cheap ? 1 : 2;
++            };
++            auto fixed = [&](const std::string& id,int resource,int quantity) {
++                if(self) { quantity=std::min(quantity,own_remaining[resource]);own_remaining[resource]-=quantity; }
++                if (quantity>0) result.push_back({id,owner,{resource},quantity,price(resource)});
++            };
++            fixed("wonder:"+std::to_string(owner),p.board->GetProduction(),1);
++            for (const Card& c : p.cards_played) {
++                const std::string id = "card:"+std::to_string(owner)+":"+std::to_string(c.GetInstanceId());
++                std::vector<int> choices;
++                int resource = -1, quantity=1;
++                switch (c.GetId()) {
++                    case CARD_ID::tree_farm: choices={RESOURCE::wood,RESOURCE::clay}; break;
++                    case CARD_ID::forest_cave: choices={RESOURCE::wood,RESOURCE::ore}; break;
++                    case CARD_ID::timber_yard: choices={RESOURCE::wood,RESOURCE::stone}; break;
++                    case CARD_ID::excavation: choices={RESOURCE::clay,RESOURCE::stone}; break;
++                    case CARD_ID::mine: choices={RESOURCE::ore,RESOURCE::stone}; break;
++                    case CARD_ID::clay_pit: choices={RESOURCE::ore,RESOURCE::clay}; break;
++                    case CARD_ID::forum: if (self) choices={4,5,6}; break;
++                    case CARD_ID::caravansery: if (self) choices={0,1,2,3}; break;
++                    case CARD_ID::lumber_yard: resource=RESOURCE::wood; break;
++                    case CARD_ID::stone_pit: resource=RESOURCE::stone; break;
++                    case CARD_ID::clay_pool: resource=RESOURCE::clay; break;
++                    case CARD_ID::ore_vein: resource=RESOURCE::ore; break;
++                    case CARD_ID::sawmill: resource=RESOURCE::wood; quantity=2; break;
++                    case CARD_ID::quarry: resource=RESOURCE::stone; quantity=2; break;
++                    case CARD_ID::brickyard: resource=RESOURCE::clay; quantity=2; break;
++                    case CARD_ID::foundry: resource=RESOURCE::ore; quantity=2; break;
++                    case CARD_ID::loom: resource=RESOURCE::loom; break;
++                    case CARD_ID::glassworks: resource=RESOURCE::glass; break;
++                    case CARD_ID::press: resource=RESOURCE::papyrus; break;
++                }
++                if (resource>=0 && (c.GetType()==CARD_TYPE::materials || c.GetType()==CARD_TYPE::manufactured))
++                    fixed(id,resource,quantity);
++                if (!choices.empty()) {
++                    std::sort(choices.begin(),choices.end());
++                    result.push_back({id,owner,choices,1,price(choices.front())});
++                }
++            }
++            if (self) {
++                // Direct AddResource fixtures may contain additional fixed
++                // production. Real games are explained entirely by instances
++                // and the starting resource above.
++                for(int r=0;r<7;++r) fixed("fixture-extra:"+std::to_string(r),r,own_remaining[r]);
++                Player probe=p;
++                probe.ResetUsed();
++                if (probe.ChooseExtraRaw(RESOURCE::wood)) result.push_back({"wonder-raw",owner,{0,1,2,3},1,0});
++                if (probe.ChooseExtraManuf(RESOURCE::loom)) result.push_back({"wonder-manuf",owner,{4,5,6},1,0});
++            }
++        }
++        std::sort(result.begin(),result.end(),[](const Source& a,const Source& b){return a.id<b.id;});
++        return result;
++    }
++
++    bool Quote(int actor, const std::map<int,int>& cost, Payment& best) const {
++        const auto sources=Sources(actor);
++        std::array<int,7> needs{};
++        for (int r=0;r<7;++r) { auto it=cost.find(r); if(it!=cost.end()) needs[r]=it->second; }
++        const auto coin=cost.find(RESOURCE::coins);
++        const int bank=coin==cost.end()?0:coin->second;
++        struct Tail { bool valid=false; std::array<int,3> to{}; std::vector<std::tuple<std::string,int,int>> allocations; };
++        std::map<std::pair<size_t,std::array<int,7>>,Tail> memo;
++        auto less = [&](const Tail& a,const Tail& b) {
++            auto rank = [&](const Tail& t) { return std::make_tuple(std::accumulate(t.to.begin(),t.to.end(),0),t.to[(actor+2)%3],t.to[(actor+1)%3],t.allocations); };
++            return rank(a)<rank(b);
++        };
++        std::function<Tail(size_t,std::array<int,7>)> solve = [&](size_t at,std::array<int,7> need)->Tail {
++            if (std::all_of(need.begin(),need.end(),[](int n){return n==0;})) { Tail t; t.valid=true; return t; }
++            if (at==sources.size()) return {};
++            const auto key=std::make_pair(at,need);
++            auto prior=memo.find(key); if(prior!=memo.end()) return prior->second;
++            Tail value=solve(at+1,need);
++            const Source& source=sources[at];
++            for (int r:source.choices) {
++                for(int quantity=1;quantity<=std::min(need[r],source.quantity);++quantity) {
++                    auto remaining=need; remaining[r]-=quantity;
++                    Tail t=solve(at+1,remaining); if(!t.valid) continue;
++                    if(source.owner!=actor) t.to[source.owner]+=source.price*quantity;
++                    t.allocations.insert(t.allocations.begin(),{source.id,r,quantity});
++                    if(!value.valid || less(t,value)) value=std::move(t);
++                }
++            }
++            memo.emplace(key,value); return value;
++        };
++        Tail result=solve(0,needs);
++        if(!result.valid) return false;
++        best.bank=bank; best.to=result.to;
++        for(const auto& [source,resource,quantity]:result.allocations)
++            best.allocation.push_back({{"source",source},{"resource",resource},{"quantity",quantity}});
++        return best.Total()<=world->players[actor].resources.at(RESOURCE::coins);
++    }
++
++    Offer NewOffer(int actor, const std::string& kind, json grant=nullptr) {
++        const auto id=Resolution()+":"+kind+":"+std::to_string(actor)+":"+std::to_string(++decision_count);
++        Offer o;
++        o.wire={{"decision_id",id},{"actor",actor},{"kind",kind},{"offered_revision",revision},
++                {"snapshot_id",kind=="discard"?Resolution()+":choice:"+std::to_string(decision_count):Base()},
++                {"source_grant_id",grant},{"can_skip",false},
++                {"timeout_ms",timeout_ms?json(timeout_ms):json(nullptr)},{"options",json::array()}};
++        return o;
++    }
++    void Add(Offer& offer, const std::string& kind, const Card& card, const Payment& payment={},
++             const std::string& free="", bool selectable=true) {
++        const auto id=offer.wire["decision_id"].get<std::string>()+":o"+std::to_string(offer.plans.size());
++        offer.plans.emplace(id,Plan{id,kind,free,card,payment});
++        offer.wire["options"].push_back({{"option_id",id},{"kind",kind},{"card",CardRef(card)},
++            {"payment",payment.Json()},{"free_source",free.empty()?json(nullptr):json(free)},
++            {"selectable",selectable},{"reason",selectable?json(nullptr):json("duplicate_in_city")},
++            {"production_allocation",payment.allocation}});
++    }
++    void OfferRound() {
++        phase="collect_actions"; current.clear();
++        for (int s=0;s<3;++s) {
++            Player& p=world->players[s];
++            if (Round()==7 && (!p.PlaySeventh() || p.cards_hand.empty())) continue;
++            Offer o=NewOffer(s,Round()==7?"seventh":"regular");
++            RoundState probe(*world);
++            std::map<int,int> wonder_cost;
++            Player& q=probe.players[s];
++            for(int r=0;r<7;++r) q.resources[r]=0;
++            q.cost_probe=&wonder_cost;
++            const bool can_stage=q.board->CanAddStage(&q);
++            q.cost_probe=nullptr;
++            Payment wp;
++            const bool wonder_legal=can_stage && Quote(s,wonder_cost,wp);
++            for(const Card& card:p.cards_hand) {
++                Add(o,"discard",card);
++                if (!p.HasPlayedCard(card)) {
++                    if (p.CheckFreeCard(card)) Add(o,"build_structure",card,{},"chain");
++                    else { Payment payment; if(Quote(s,card.cost,payment)) Add(o,"build_structure",card,payment); }
++                    if(p.CanBuildHandFree() && !p.CheckFreeCard(card)) Add(o,"build_structure",card,{},"legacy_olympia_once");
++                }
++                if(wonder_legal) Add(o,"build_wonder",card,wp);
++            }
++            if(o.plans.empty()) throw std::runtime_error("Required seat has no hand option");
++            const auto id=o.wire["decision_id"].get<std::string>();
++            current.push_back(id); offers.emplace(id,std::move(o));
++        }
++        if(current.empty()) throw std::runtime_error("Round has no eligible actor");
++    }
++
++    void AgeEnd() {
++        phase="age_end";
++        const int age=Age();
++        for(Player& p:world->players) p.Battle(age);
++        Event("military_resolved");
++        if(age==3) {
++            for(int s=0;s<3;++s) {
++                Player& p=world->players[s]; const auto size=p.cards_played.size();
++                p.CopyGuild();
++                if(p.cards_played.size()>size) world->copied[s].push_back(p.cards_played.back());
++            }
++            terminal_resolution=Resolution();
++            turn=21; phase="finished"; current.clear(); ++revision; Event("game_finished");
++            return;
++        }
++        turn=age*7; ++revision;
++        auto& deck=world->decks[age];
++        std::shuffle(deck.begin(),deck.end(),world->rng);
++        if(deck.size()!=21) throw std::runtime_error("Three-player age deck must contain 21 cards");
++        for(int s=0;s<3;++s) {
++            world->players[s].ReceiveCards({deck.begin()+s*7,deck.begin()+(s+1)*7});
++            world->players[s].FreeCardOnce(true);
++        }
++        OfferRound();
++    }
++    void Advance() {
++        phase="advance";
++        if(Round()<6) {
++            std::array<std::vector<Card>,3> hands;
++            for(int s=0;s<3;++s) hands[s]=world->players[s].cards_hand;
++            const bool left=Age()!=2;
++            for(int s=0;s<3;++s) world->players[(s+(left?2:1))%3].ReceiveCards(hands[s]);
++            ++turn; ++revision; OfferRound();
++        } else if(Round()==6 && std::any_of(world->players.begin(),world->players.end(),[](Player& p){return p.PlaySeventh() && !p.cards_hand.empty();})) {
++            ++turn; ++revision; OfferRound();
++        } else AgeEnd();
++    }
++    void NextGrant() {
++        current.clear();
++        for(auto& grant:grants) {
++            if(grant["status"]!="pending") continue;
++            const int s=grant["actor"];
++            Player& p=world->players[s];
++            Offer o=NewOffer(s,"discard",grant["grant_id"]);
++            const auto id=o.wire["decision_id"].get<std::string>();
++            for(const Card& card:world->discarded)
++                Add(o,"build_discard_free",card,{},"discard_grant",!p.HasPlayedCard(card));
++            if(p.CloseDiscardIfNoOptions(world->discarded)) {
++                grant["status"]="consumed_no_options";
++                const auto event=Event("grant_no_options",s,id,grant["grant_id"]);
++                grant["effect_event_id"]=event;
++                offers.emplace(id,std::move(o)).first->second.state="closed";
++                receipts.push_back(Receipt({{"decision_id",id},{"actor",s}},"skipped_no_options",nullptr,event));
++                continue;
++            }
++            if(!p.HasDiscardFree()) throw std::runtime_error("Source grant missing its internal right");
++            grant["status"]="active"; phase="discard_choice";
++            offers.emplace(id,std::move(o)); current.push_back(id); return;
++        }
++        Advance();
++    }
++    void ResolveRound() {
++        phase="resolve_actions";
++        std::array<int,3> income{};
++        std::vector<std::pair<int,Card>> constructed;
++        for(const auto& id:current) {
++            Offer& o=offers.at(id); const int s=o.wire["actor"];
++            const Plan& plan=o.plans.at(o.selected);
++            Player& p=world->players[s];
++            auto hand=std::find_if(p.cards_hand.begin(),p.cards_hand.end(),[&](const Card& c){return c.GetInstanceId()==plan.card.GetInstanceId();});
++            if(hand==p.cards_hand.end() || plan.payment.Total()>p.resources[RESOURCE::coins])
++                throw std::runtime_error("Frozen regular plan became invalid");
++            p.resources[RESOURCE::coins]-=plan.payment.Total();
++            for(int to=0;to<3;++to) income[to]+=plan.payment.to[to];
++            if(plan.kind=="discard") { world->discarded.push_back(*hand); p.resources[RESOURCE::coins]+=3; }
++            else if(plan.kind=="build_structure") {
++                if(plan.free=="legacy_olympia_once") p.free_card_once=false;
++                p.defer_coin_effects=true; p.ApplyBuilding(*hand,true); p.defer_coin_effects=false;
++                constructed.emplace_back(s,*hand);
++            } else {
++                p.prepaid_wonder=true;
++                if(!p.board->AddStage(&p)) throw std::runtime_error("Quoted stage could not be built");
++                p.prepaid_wonder=false;
++                world->buried[s].push_back(*hand);
++            }
++            const auto event=Event("regular_applied",s,id,nullptr,std::to_string(plan.card.GetInstanceId()));
++            if(plan.kind=="build_wonder" && p.HasDiscardFree()) {
++                const auto grant=event+":grant";
++                grants.push_back({{"grant_id",grant},{"actor",s},{"source",{{"kind","wonder_stage"},
++                    {"wonder_id",p.board->GetId()},{"stage",p.board->GetStage()},{"event_id",event}}},
++                    {"resolution_id",Resolution()},{"status","pending"},{"effect_event_id",nullptr}});
++            }
++            p.cards_hand.erase(hand); o.state="closed";
++            receipts.at(ledger.at(o.request).receipt)=Receipt(ledger.at(o.request).request,"applied",nullptr,event);
++        }
++        for(int s=0;s<3;++s) world->players[s].resources[RESOURCE::coins]+=income[s];
++        for(const auto& [s,card]:constructed) world->players[s].resources[RESOURCE::coins]+=world->players[s].ImmediateCoins(card);
++        if(Round()==6) {
++            for(int s=0;s<3;++s) {
++                Player& p=world->players[s];
++                if(p.PlaySeventh()) continue;
++                for(const Card& c:p.cards_hand) {
++                    world->discarded.push_back(c); Event("automatic_discard",s,nullptr,nullptr,std::to_string(c.GetInstanceId()));
++                }
++                p.cards_hand.clear();
++            }
++        }
++        ++revision;
++        NextGrant();
++    }
++
++public:
++    DecisionCore(const std::vector<Player*>& players,const std::array<std::vector<Card>,3>& decks,
++                 const std::vector<Card>& pile,std::mt19937_64 rng,std::uint64_t seed,unsigned timeout,int turn)
++        : world(std::make_unique<RoundState>(players,decks,pile,rng)),turn(turn),seed(seed),timeout_ms(timeout) {
++        std::random_device random;
++        std::ostringstream id; id<<std::hex<<random()<<random()<<random()<<random();
++        game_id=id.str();
++        if(turn<0 || turn>20) throw std::invalid_argument("Invalid initial turn");
++        OfferRound();
++    }
++    DecisionCore(const DecisionCore& from)
++        : world(std::make_unique<RoundState>(*from.world)),game_id(from.game_id),phase(from.phase),
++          abort_reason(from.abort_reason),terminal_resolution(from.terminal_resolution),turn(from.turn),revision(from.revision),event_count(from.event_count),
++          decision_count(from.decision_count),seed(from.seed),timeout_ms(from.timeout_ms),offers(from.offers),
++          current(from.current),ledger(from.ledger),error_cache(from.error_cache),receipts(from.receipts),events(from.events),grants(from.grants),request_errors(from.request_errors),
++          batches(from.batches),transport(from.transport) {}
++
++    bool Terminal() const { return phase=="finished" || phase=="aborted"; }
++    void Abort(const std::string& reason) {
++        if(Terminal()) return;
++        ++revision; abort_reason=reason; phase="aborted";
++        const auto event=Event("game_aborted");
++        for(const auto& id:current) {
++            Offer& o=offers.at(id);
++            if(o.state=="accepted") receipts.at(ledger.at(o.request).receipt)=Receipt(ledger.at(o.request).request,"cancelled",reason,event);
++            else if(o.state=="open") receipts.push_back(Receipt({{"decision_id",id},{"actor",o.wire["actor"]}},"cancelled",reason,event));
++            o.state="closed";
++        }
++        for(auto& g:grants) if(g["status"]=="active" || g["status"]=="pending") g["status"]="cancelled_abort";
++        for(Player& p:world->players) p.DiscardFree(false);
++        current.clear();
++    }
++    json Submit(const json& r) {
++        if(!r.is_object() || !r.contains("protocol_version") || !Integer(r["protocol_version"],3,3)) return Reject(r,"unsupported_protocol");
++        if(!r.contains("game_id") || r["game_id"]!=game_id) return Reject(r,"wrong_game");
++        if(!r.contains("request_id") || !Text(r["request_id"])) return Reject(r,"malformed_request");
++        const auto request=r["request_id"].get<std::string>();
++        auto prior=ledger.find(request);
++        if(prior!=ledger.end()) {
++            if(prior->second.request==r) return receipts.at(prior->second.receipt);
++            return Reject(r,"request_id_conflict");
++        }
++        if(r.contains("control")) {
++            if(!Keys(r,{"protocol_version","game_id","request_id","control","reason"}) || r["control"]!="abort_game" || !Text(r["reason"])) return Reject(r,"malformed_request",true);
++            if(Terminal()) return Reject(r,"decision_closed",true);
++            Abort(r["reason"]);
++            const auto reply=Receipt(r,"applied",nullptr,events.back()["event_id"]);
++            receipts.push_back(reply); ledger.emplace(request,Stored{r,receipts.size()-1}); return reply;
++        }
++        if(!Keys(r,{"protocol_version","game_id","request_id","actor","decision_id","offered_revision","action"})
++            || !Integer(r["actor"],0,2) || !Text(r["decision_id"]) || !Integer(r["offered_revision"],0,9223372036854775807LL)
++            || !Keys(r["action"],{"kind","option_id","card_instance_id"}) || !Text(r["action"]["kind"])
++            || !Text(r["action"]["option_id"]) || !Text(r["action"]["card_instance_id"])) return Reject(r,"malformed_request",true);
++        auto found=offers.find(r["decision_id"].get<std::string>());
++        if(found==offers.end()) return Reject(r,"unknown_decision",true);
++        Offer& o=found->second;
++        if(r["actor"]!=o.wire["actor"]) return Reject(r,"wrong_actor",true);
++        if(o.state=="closed" || Terminal()) return Reject(r,"decision_closed",true);
++        if(o.state=="accepted") return Reject(r,"decision_locked",true);
++        if(r["offered_revision"]!=o.wire["offered_revision"]) return Reject(r,"stale_offer",true);
++        auto selected=o.plans.find(r["action"]["option_id"].get<std::string>());
++        if(selected==o.plans.end()) return Reject(r,"unknown_option",true);
++        const Plan& plan=selected->second;
++        if(r["action"]["kind"]!=plan.kind || r["action"]["card_instance_id"]!=std::to_string(plan.card.GetInstanceId())) return Reject(r,"card_mismatch",true);
++        if(plan.kind=="build_discard_free" && world->players[r["actor"].get<int>()].HasPlayedCard(plan.card)) return Reject(r,"duplicate_in_city",true);
++        ++revision;
++        o.request=request; o.selected=plan.id; o.state="accepted";
++        receipts.push_back(Receipt(r,"accepted")); ledger.emplace(request,Stored{r,receipts.size()-1});
++        if(plan.kind=="build_discard_free") {
++            phase="resolve_discard";
++            const int actor=r["actor"];
++            if(!world->players[actor].BuildDiscardFree(plan.card,world->discarded)) throw std::runtime_error("Offered discard plan failed");
++            const auto event=Event("discard_build_applied",actor,r["decision_id"],o.wire["source_grant_id"],r["action"]["card_instance_id"]);
++            for(auto& g:grants) if(g["grant_id"]==o.wire["source_grant_id"]) { g["status"]="consumed_build"; g["effect_event_id"]=event; }
++            o.state="closed"; receipts.at(ledger.at(request).receipt)=Receipt(r,"applied",nullptr,event);
++            NextGrant();
++        } else if(std::all_of(current.begin(),current.end(),[&](const std::string& id){return offers.at(id).state=="accepted";})) ResolveRound();
++        return receipts.at(ledger.at(request).receipt);
++    }
++
++    json Status() const {
++        json out={{"protocol_version",3},{"contract_id","decision-v1"},{"game_id",game_id},{"revision",revision},
++          {"engine",{{"release","v0.2.0-dev"},{"source_commit",ENGINE_SOURCE_COMMIT},{"source_dirty",ENGINE_SOURCE_DIRTY},
++            {"ruleset","bga-second-edition-development"},{"second_edition_implemented",false},
++            {"capabilities",{"regular_options_v1","discard_choice_v1","simultaneous_settlement_v1","legacy_wonder_abilities_v1"}}}},
++          {"game",{{"turn",turn},{"age",Age()},{"round_in_age",turn==21?json(nullptr):json(Round())},
++            {"round_kind",turn==21?json(nullptr):json(Round()==7?"seventh":"regular")},{"phase",phase},
++            {"resolution_id",Resolution()},{"snapshot_id",Base()},{"scores_final",phase=="finished"},{"engine_seed",seed}}},
++          {"waiting_for",json::array()},{"decisions",json::array()},{"players",json::object()},
++          {"discard_count",world->discarded.size()},{"receipts",receipts},{"events",events},{"grants",grants},
++          {"result",nullptr},{"transport",transport},{"request_errors",request_errors}};
++        if(phase=="aborted") out["abort_reason"]=abort_reason;
++        for(const auto& id:current) {
++            const Offer& o=offers.at(id); if(o.state!="open") continue;
++            out["waiting_for"].push_back(o.wire["actor"]); out["decisions"].push_back(o.wire);
++        }
++        const char* resources[]={"wood","ore","clay","stone","loom","glass","papyrus","gear","compass","tablet","coins","shields"};
++        const char* categories[]={"civilian","commercial","guild","military","scientific","wonder","total"};
++        for(int s=0;s<3;++s) {
++            const Player& p=world->players[s];
++            json j={{"neighbors",{{"left",(s+2)%3},{"right",(s+1)%3}}},{"wonder_id",p.board->GetId()},
++              {"wonder_name",p.board->GetName()},{"wonder_stage",p.board->GetStage()},{"hand_cards",Cards(p.cards_hand)},
++              {"built_cards",json::array()},{"copied_guilds",json::array()},{"available_abilities",json::array()}};
++            const size_t physical=p.cards_played.size()-world->copied[s].size();
++            for(size_t n=0;n<physical;++n) j["built_cards"].push_back(CardRef(p.cards_played[n]));
++            for(const Card& card:world->copied[s]) j["copied_guilds"].push_back({{"source_instance_id",std::to_string(card.GetInstanceId())},{"type_id",card.GetId()},{"name",card.GetName()}});
++            for(int r=0;r<12;++r) j["resources"][resources[r]]=p.resources.at(r);
++            Player scored=p; const auto scores=scored.CalculateScores();
++            for(int c=0;c<7;++c) j["points"][categories[c]]=scores[c];
++            if(!Terminal()) {
++                if(p.play_seventh) j["available_abilities"].push_back({{"code","play_seventh_card"},{"availability",Round()==7?"decision":"future_seventh"}});
++                if(scored.CanBuildHandFree()) j["available_abilities"].push_back({{"code","legacy_olympia_once"},{"availability","offered_options"}});
++                for(const auto& g:grants) if(g["actor"]==s && g["status"]=="active")
++                    j["available_abilities"].push_back({{"code","discard_build_for_free"},{"availability","decision"},{"grant_id",g["grant_id"]}});
++            }
++            out["players"][std::to_string(s)]=std::move(j);
++            if(phase=="finished") out["result"]["totals"][std::to_string(s)]=scores[6];
++        }
++        return out;
++    }
++};
++
++DecisionEngine::DecisionEngine(const std::vector<Player*>& players,const std::array<std::vector<Card>,3>& decks,
++    const std::vector<Card>& pile,std::mt19937_64 rng,std::uint64_t seed,unsigned timeout,int turn)
++    :core(std::make_unique<DecisionCore>(players,decks,pile,rng,seed,timeout,turn)) {}
++DecisionEngine::~DecisionEngine() = default;
++json DecisionEngine::Status() const { return core->Status(); }
++bool DecisionEngine::Terminal() const { return core->Terminal(); }
++std::uint64_t DecisionEngine::Revision() const { return core->revision; }
++void DecisionEngine::Abort(const std::string& reason) {
++    auto next=std::make_unique<DecisionCore>(*core); next->Abort(reason); core.swap(next);
++}
++json DecisionEngine::Submit(const json& r) {
++    try {
++        auto next=std::make_unique<DecisionCore>(*core);
++        auto reply=next->Submit(r); core.swap(next); return reply;
++    } catch(const std::exception&) {
++        Abort("resolution_error");
++        const auto reply=core->Receipt(r.is_object()?r:json::object(),"cancelled","resolution_error",core->events.back()["event_id"]);
++        if(r.is_object() && r.contains("request_id") && Text(r["request_id"]) && !core->ledger.count(r["request_id"].get<std::string>())) {
++            core->receipts.push_back(reply);
++            core->ledger.emplace(r["request_id"].get<std::string>(),Stored{r,core->receipts.size()-1});
++        }
++        return reply;
++    }
++}
++bool DecisionEngine::Bundle(const json& commands,const json& ready) {
++    if(!Keys(ready,{"protocol_version","game_id","batch_id"})
++       || !Keys(commands,{"protocol_version","game_id","batch_id","requests"})
++       || !Integer(ready["protocol_version"],3,3) || !Integer(commands["protocol_version"],3,3) || !Text(ready["batch_id"])
++       || ready["game_id"]!=core->game_id || !commands["requests"].is_array()) return false;
++    for(const auto& key:{"protocol_version","game_id","batch_id"}) if(ready[key]!=commands[key]) return false;
++    const auto id=ready["batch_id"].get<std::string>();
++    auto prior=core->batches.find(id);
++    if(prior!=core->batches.end() && prior->second!=commands) {
++        core->transport={{"batch_id",id},{"status","rejected"},{"code","batch_id_conflict"}};
++        return true;
++    }
++    core->batches.emplace(id,commands);
++    json responses=json::array();
++    for(const auto& request:commands["requests"]) responses.push_back(Submit(request));
++    for(size_t n=0;n<commands["requests"].size();++n) {
++        const auto& request=commands["requests"][n];
++        if(!request.is_object() || !request.contains("request_id") || !Text(request["request_id"])) continue;
++        auto record=core->ledger.find(request["request_id"].get<std::string>());
++        if(record!=core->ledger.end() && record->second.request==request)
++            responses[n]=core->receipts.at(record->second.receipt);
++    }
++    core->transport={{"batch_id",id},{"status","processed"},{"code",nullptr},{"responses",responses}};
++    return true;
++}
++void DecisionEngine::Published(Clock::time_point now) {
++    for(const auto& id:core->current) {
++        auto& o=core->offers.at(id);
++        if(o.state=="open" && o.published==Clock::time_point{}) o.published=now;
++    }
++}
++void DecisionEngine::CheckTimeout(Clock::time_point now) {
++    if(!core->timeout_ms || Terminal()) return;
++    for(const auto& id:core->current) {
++        const auto& o=core->offers.at(id);
++        if(o.state=="open" && o.published!=Clock::time_point{} && now-o.published>=std::chrono::milliseconds(core->timeout_ms)) {
++            Abort("decision_timeout"); return;
++        }
++    }
++}
++}
+diff --git a/tests/decision_helpers.h b/tests/decision_helpers.h
+new file mode 100644
+index 0000000000000000000000000000000000000000..a7da49075ec6c3f2f8087e28a23e485daa518867
+--- /dev/null
++++ b/tests/decision_helpers.h
+@@ -0,0 +1,65 @@
++#ifndef DECISION_TEST_HELPERS_H
++#define DECISION_TEST_HELPERS_H
++#include <decision.h>
++#include <stdexcept>
++#include <functional>
++using DMAG::DecisionEngine;
++using json = nlohmann::json;
++
++inline void expect(bool ok,const std::string& text) { if(!ok) throw std::runtime_error(text); }
++inline DMAG::Card test_card(int type,int color=CARD_TYPE::civilian,int age=1,
++                          std::vector<int> cost=std::vector<int>(8,0)) {
++    static std::uint64_t next=100000;
++    return DMAG::Card(type,"Fixture "+std::to_string(type),color,age,CARD_ID::none,
++                      cost,std::vector<int>(5,1)).CreateInstance(next++);
++}
++struct DecisionFixture {
++    std::array<DMAG::Gizah_a,3> boards;
++    std::array<DMAG::Player,3> players;
++    std::vector<DMAG::Player*> refs;
++    std::array<std::vector<DMAG::Card>,3> decks;
++    std::vector<DMAG::Card> pile;
++    DecisionFixture() {
++        for(int s=0;s<3;++s) {
++            auto& p=players[s];p.SetId(s);p.SetWonder(&boards[s]);
++            p.SetNeighbors(&players[(s+2)%3],&players[(s+1)%3]);
++            auto r=p.GetResources();for(auto& e:r)e.second=0;r[RESOURCE::coins]=3;p.SetResources(r);
++            p.ReceiveCards({test_card(CARD_ID::altar),test_card(CARD_ID::theater)});
++            refs.push_back(&p);
++            for(int age=0;age<3;++age) for(int n=0;n<7;++n)
++                decks[age].push_back(test_card(CARD_ID::altar,CARD_TYPE::civilian,age+1));
++        }
++    }
++    std::unique_ptr<DecisionEngine> Engine(int turn=0,unsigned timeout=0) {
++        return std::make_unique<DecisionEngine>(refs,decks,pile,std::mt19937_64(42),42,timeout,turn);
++    }
++};
++inline json choose(DecisionEngine& engine,int actor,const std::string& kind,
++                   int card_type=-1,const std::string& free="*") {
++    static int request=0;
++    const auto state=engine.Status();
++    for(const auto& d:state["decisions"]) {
++        if(d["actor"]!=actor) continue;
++        for(const auto& o:d["options"]) {
++            if(o["kind"]!=kind || !o["selectable"].get<bool>()) continue;
++            if(card_type>=0 && o["card"]["type_id"]!=card_type) continue;
++            if(free!="*" && o["free_source"]!=(free.empty()?json(nullptr):json(free))) continue;
++            return {{"protocol_version",3},{"game_id",state["game_id"]},
++                    {"request_id","test-request-"+std::to_string(++request)},
++                    {"actor",actor},{"decision_id",d["decision_id"]},{"offered_revision",d["offered_revision"]},
++                    {"action",{{"kind",kind},{"option_id",o["option_id"]},{"card_instance_id",o["card"]["instance_id"]}}}};
++        }
++    }
++    throw std::runtime_error("Missing action "+kind+" for seat "+std::to_string(actor));
++}
++inline bool offered(DecisionEngine& e,int actor,const std::string& kind,int type) {
++    try { choose(e,actor,kind,type);return true; } catch(const std::runtime_error&) {return false;}
++}
++inline void applied(DecisionEngine& e,const json& r) {
++    const auto receipt=e.Submit(r);
++    expect(receipt["status"]=="applied" || receipt["status"]=="accepted","Valid request failed: "+receipt.dump());
++}
++inline void finish_cohort(DecisionEngine& e,const std::vector<json>& actions) {
++    for(const auto& r:actions) applied(e,r);
++}
++#endif
+diff --git a/tests/test_decision_resolution.cpp b/tests/test_decision_resolution.cpp
+new file mode 100644
+index 0000000000000000000000000000000000000000..e8b9e9d62fb1a92f12bb8eaf8c0eae545da44306
+--- /dev/null
++++ b/tests/test_decision_resolution.cpp
+@@ -0,0 +1,288 @@
++#include "decision_helpers.h"
++#include <iostream>
++
++void frozen_income_production() {
++    DecisionFixture f;
++    auto& p=f.players;
++    auto own=test_card(CARD_ID::baths,CARD_TYPE::civilian,1,{1,0,0,0,0,0,0,0});
++    auto wood=test_card(CARD_ID::lumber_yard,CARD_TYPE::materials);
++    auto paid=test_card(CARD_ID::temple,CARD_TYPE::civilian,1,{0,0,0,0,0,0,0,2});
++    p[0].ReceiveCards({wood,test_card(CARD_ID::theater)});
++    p[1].ReceiveCards({own,paid,test_card(CARD_ID::altar)});
++    auto money=p[1].GetResources();money[RESOURCE::coins]=0;p[1].SetResources(money);
++    auto e=f.Engine();
++    expect(!offered(*e,1,"build_structure",CARD_ID::baths),"New producer was available in the round-start offer");
++    expect(!offered(*e,1,"build_structure",CARD_ID::temple),"Future income was available in the round-start offer");
++    const auto before=e->Status();
++    auto r=choose(*e,0,"build_structure",CARD_ID::lumber_yard);
++    expect(e->Submit(r)["status"]=="accepted","First input must only be accepted");
++    auto accepted=e->Status();
++    expect(accepted["players"]==before["players"],"Accepted input already changed money/cards");
++    expect(accepted["waiting_for"]==json({1,2}),"Accepted seat still waiting");
++    expect(!offered(*e,1,"build_structure",CARD_ID::baths),"Acceptance changed another seat's frozen options");
++    finish_cohort(*e,{choose(*e,1,"discard",CARD_ID::altar),choose(*e,2,"discard")});
++    expect(e->Status()["game"]["turn"]==1,"Ordinary cohort did not advance");
++
++    // Existing seller production can be bought; that payment still cannot
++    // finance its own concurrent choice. Different receipt order is irrelevant.
++    DecisionFixture trade;
++    auto sellerwood=test_card(CARD_ID::lumber_yard,CARD_TYPE::materials);
++    trade.players[1].ReceiveCards({sellerwood});
++    expect(trade.players[1].BuildStructure(sellerwood,{sellerwood},true),"Seller fixture failed");
++    trade.players[0].ReceiveCards({own,test_card(CARD_ID::altar)});
++    trade.players[1].ReceiveCards({paid,test_card(CARD_ID::altar)});
++    auto zero=trade.players[1].GetResources();zero[RESOURCE::coins]=0;trade.players[1].SetResources(zero);
++    auto t=trade.Engine();
++    expect(offered(*t,0,"build_structure",CARD_ID::baths),"Existing seller production not buyable");
++    expect(!offered(*t,1,"build_structure",CARD_ID::temple),"Trading income spent before settlement");
++    auto buy=choose(*t,0,"build_structure",CARD_ID::baths);
++    finish_cohort(*t,{buy,choose(*t,1,"discard"),choose(*t,2,"discard")});
++    expect(t->Status()["players"]["1"]["resources"]["coins"]==5,"Seller payment/own sale not both retained");
++}
++
++void simultaneous_counts() {
++    DecisionFixture f;
++    f.players[0].ReceiveCards({test_card(CARD_ID::vineyard,CARD_TYPE::commercial,2),test_card(CARD_ID::altar)});
++    f.players[1].ReceiveCards({test_card(CARD_ID::lumber_yard,CARD_TYPE::materials),test_card(CARD_ID::altar)});
++    f.players[2].ReceiveCards({test_card(CARD_ID::lighthouse,CARD_TYPE::commercial,3),test_card(CARD_ID::altar)});
++    auto e=f.Engine();
++    auto a=choose(*e,0,"build_structure",CARD_ID::vineyard);
++    auto b=choose(*e,1,"build_structure",CARD_ID::lumber_yard);
++    auto c=choose(*e,2,"build_structure",CARD_ID::lighthouse);
++    finish_cohort(*e,{c,a,b});
++    const auto after=e->Status();
++    expect(after["players"]["0"]["resources"]["coins"]==4,"Vineyard missed concurrent neighbor brown");
++    expect(after["players"]["2"]["resources"]["coins"]==4,"Lighthouse did not count itself");
++}
++
++void choice_and_payment_plans() {
++    DecisionFixture f;
++    auto pit=test_card(CARD_ID::clay_pit,CARD_TYPE::materials);
++    f.players[0].ReceiveCards({pit});
++    expect(f.players[0].BuildStructure(pit,{pit},true),"Clay Pit fixture failed");
++    f.players[0].ReceiveCards({test_card(CARD_ID::baths,CARD_TYPE::civilian,1,{0,1,0,0,0,0,0,0}),test_card(CARD_ID::altar)});
++    for(int s=1;s<3;++s) f.players[s].ReceiveCards({test_card(CARD_ID::temple,CARD_TYPE::civilian,1,{0,0,1,0,0,0,0,0}),test_card(CARD_ID::altar)});
++    auto e=f.Engine();
++    finish_cohort(*e,{choose(*e,0,"build_structure",CARD_ID::baths),choose(*e,1,"build_structure",CARD_ID::temple),choose(*e,2,"build_structure",CARD_ID::temple)});
++    auto after=e->Status();
++    expect(after["players"]["0"]["resources"]["coins"]==7,"Two independent buyers did not both pay the seller");
++    expect(after["players"]["1"]["resources"]["coins"]==1 && after["players"]["2"]["resources"]["coins"]==1,"Choice production leaked between buyers");
++
++    // A fixed source with quantity 2 must be usable partially alongside a
++    // cheaper single source; greedy all-or-nothing purchasing costs 4 vs 3.
++    DecisionFixture partial;
++    auto saw=test_card(CARD_ID::sawmill,CARD_TYPE::materials);
++    auto lumber=test_card(CARD_ID::lumber_yard,CARD_TYPE::materials);
++    partial.players[1].ReceiveCards({saw});partial.players[1].BuildStructure(saw,{saw},true);
++    partial.players[2].ReceiveCards({lumber});partial.players[2].BuildStructure(lumber,{lumber},true);
++    auto discount=test_card(CARD_ID::east_trading_post,CARD_TYPE::commercial);
++    partial.players[0].ReceiveCards({discount});partial.players[0].BuildStructure(discount,{discount},true);
++    partial.players[0].ReceiveCards({test_card(CARD_ID::baths,CARD_TYPE::civilian,1,{2,0,0,0,0,0,0,0}),test_card(CARD_ID::altar)});
++    partial.players[1].ReceiveCards({test_card(CARD_ID::altar),test_card(CARD_ID::theater)});
++    partial.players[2].ReceiveCards({test_card(CARD_ID::altar),test_card(CARD_ID::theater)});
++    auto q=partial.Engine(); auto request=choose(*q,0,"build_structure",CARD_ID::baths);
++    const auto status=q->Status();
++    for(const auto& d:status["decisions"]) for(const auto& o:d["options"])
++        if(o["option_id"]==request["action"]["option_id"])
++            expect(o["payment"]["to_seats"]["1"]==2 && o["payment"]["to_seats"]["2"]==1,"Canonical split purchase was not minimal");
++}
++
++class ReadyOlympia : public DMAG::Olympia_a {
++public: ReadyOlympia() { stage=2; }
++};
++void free_modes_and_frozen_discount() {
++    DecisionFixture f;ReadyOlympia olympia;
++    f.players[0].SetWonder(&olympia);
++    auto altar=test_card(CARD_ID::altar);f.players[0].ReceiveCards({altar});
++    expect(f.players[0].BuildStructure(altar,{altar},true),"Chain source setup failed");
++    DMAG::Card chained(CARD_ID::temple,"Chain fixture",CARD_TYPE::civilian,2,CARD_ID::altar,
++                       std::vector<int>(8,99),std::vector<int>(5,1));
++    f.players[0].ReceiveCards({chained.CreateInstance(600000),test_card(CARD_ID::theater)});
++    auto e=f.Engine();
++    auto free=choose(*e,0,"build_structure",CARD_ID::temple,"chain");
++    finish_cohort(*e,{free,choose(*e,1,"discard"),choose(*e,2,"discard")});
++    auto after=e->Status();bool available=false;
++    for(const auto& ability:after["players"]["0"]["available_abilities"]) available|=ability["code"]=="legacy_olympia_once";
++    expect(available,"Chain construction consumed separate once-per-age power");
++
++    DecisionFixture once;ReadyOlympia second;
++    once.players[0].SetWonder(&second);
++    once.players[0].ReceiveCards({test_card(CARD_ID::library,CARD_TYPE::scientific,2,std::vector<int>(8,99)),test_card(CARD_ID::altar)});
++    auto one=once.Engine();
++    finish_cohort(*one,{choose(*one,0,"build_structure",CARD_ID::library,"legacy_olympia_once"),choose(*one,1,"discard"),choose(*one,2,"discard")});
++    expect(one->Status()["players"]["0"]["available_abilities"].empty(),"Once-per-age mode did not consume its own power");
++
++    DecisionFixture discounted;DMAG::Olympia_b board;
++    discounted.players[0].SetWonder(&board);
++    auto money=discounted.players[0].GetResources();money[RESOURCE::coins]=1;discounted.players[0].SetResources(money);
++    auto wood=test_card(CARD_ID::lumber_yard,CARD_TYPE::materials);
++    discounted.players[1].ReceiveCards({wood});discounted.players[1].BuildStructure(wood,{wood},true);
++    discounted.players[1].ReceiveCards({test_card(CARD_ID::altar),test_card(CARD_ID::theater)});
++    auto before=discounted.Engine();
++    expect(!offered(*before,0,"build_wonder",CARD_ID::altar),"New stage discount financed its own source stage");
++    discounted.players[0].CanBuyRawCheap(); // Separate prior-effect fixture.
++    auto prior=discounted.Engine();
++    expect(offered(*prior,0,"build_wonder",CARD_ID::altar),"Existing start-of-round discount not used");
++}
++
++void discard_barrier_and_replay() {
++    DecisionFixture f;
++    DMAG::Halikarnassos_b hali;
++    f.players[0].SetWonder(&hali);f.players[0].AddResource(RESOURCE::ore,2);
++    f.pile={test_card(CARD_ID::lumber_yard,CARD_TYPE::materials)};
++    auto e=f.Engine(19);
++    const auto original=e->Status();
++    auto stage=choose(*e,0,"build_wonder");
++    auto sale=choose(*e,1,"discard"),other=choose(*e,2,"discard");
++    finish_cohort(*e,{stage,sale,other});
++    auto wait=e->Status();
++    expect(wait["game"]["phase"]=="discard_choice" && wait["game"]["turn"]==19,"Final round passed an unresolved grant");
++    expect(wait["waiting_for"]==json({0}) && wait["result"].is_null() && !e->Terminal(),"Pending choice published final result");
++    expect(wait["discard_count"]==6,"Current sales/remainders absent before final discard choice");
++    expect(wait["players"]["0"]["hand_cards"].empty(),"Wonder source left an unclassified hand");
++    auto choice=choose(*e,0,"build_discard_free",CARD_ID::lumber_yard);
++    auto stale=choice;stale["request_id"]="stale";stale["offered_revision"]=0;
++    expect(e->Submit(stale)["code"]=="stale_offer","Stale discard offer accepted");
++    auto foreign=choice;foreign["request_id"]="foreign";foreign["actor"]=1;
++    expect(e->Submit(foreign)["code"]=="wrong_actor","Wrong discard actor accepted");
++    auto skip=choice;skip["request_id"]="skip";skip["action"]["kind"]="skip";
++    expect(e->Submit(skip)["status"]=="rejected","Voluntary skip accepted");
++    auto reply=e->Submit(choice);
++    expect(reply["status"]=="applied","Legal mandatory discard choice failed after invalid attempts");
++    auto final=e->Status();
++    expect(final["game"]["phase"]=="finished" && final["game"]["turn"]==21,"Game did not finish after last choice");
++    expect(final["game"]["resolution_id"]==wait["game"]["resolution_id"],"Final state invented a skipped seventh resolution");
++    expect(final["discard_count"]==5 && final["grants"][0]["status"]=="consumed_build","Discard instance not consumed exactly once");
++    expect(e->Submit(choice)==reply && e->Status()==final,"Identical terminal replay repeated effect/revision");
++    auto conflict=choice;conflict["action"]["card_instance_id"]="wrong";
++    expect(e->Submit(conflict)["code"]=="request_id_conflict","Reused request identity changed a card");
++    const auto conflict_state=e->Status();
++    expect(e->Submit(conflict)["code"]=="request_id_conflict" && e->Status()==conflict_state,"Repeated conflict changed revision/error ledger");
++    expect(e->Submit(choice)==reply,"Conflict overwrote original successful receipt");
++    auto closed=choice;closed["request_id"]="closed";
++    expect(e->Submit(closed)["code"]=="decision_closed","Closed decision reused under new ID");
++    expect(e->Status()["players"]==final["players"],"Invalid/replayed terminal input changed results");
++}
++
++void fresh_seventh_and_queue() {
++    DecisionFixture f;
++    DMAG::Babylon_b babylon;
++    f.players[0].SetWonder(&babylon);
++    auto r=f.players[0].GetResources();for(auto& e:r)e.second=30;f.players[0].SetResources(r);
++    // Actual first legacy stage, then build the second on the sixth turn.
++    auto buried=test_card(CARD_ID::altar);f.players[0].ReceiveCards({buried});
++    expect(f.players[0].CanBuildWonder() && f.players[0].BuildWonder(buried),"Babylon stage-one setup failed");
++    f.players[0].ReceiveCards({test_card(CARD_ID::baths),test_card(CARD_ID::temple)});
++    auto e=f.Engine(5);
++    auto base=e->Status()["game"]["snapshot_id"];
++    finish_cohort(*e,{choose(*e,0,"build_wonder",CARD_ID::baths),choose(*e,1,"discard"),choose(*e,2,"discard")});
++    auto seventh=e->Status();
++    expect(seventh["game"]["turn"]==6 && seventh["waiting_for"]==json({0}),"New Babylon right did not retain the seventh card");
++    expect(seventh["game"]["snapshot_id"]!=base && seventh["players"]["0"]["hand_cards"].size()==1,"Seventh turn has no fresh basis");
++    applied(*e,choose(*e,0,"discard"));
++    expect(e->Status()["game"]["turn"]==7,"Seventh turn did not reach next age");
++
++    // Synthetic same-family fixture: queue by seat, refresh after each choice.
++    DecisionFixture queue; DMAG::Halikarnassos_b h0,h2;
++    queue.players[0].SetWonder(&h0);queue.players[2].SetWonder(&h2);
++    queue.players[0].AddResource(RESOURCE::ore,2);queue.players[2].AddResource(RESOURCE::ore,2);
++    queue.pile={test_card(CARD_ID::lumber_yard,CARD_TYPE::materials),test_card(CARD_ID::ore_vein,CARD_TYPE::materials)};
++    auto q=queue.Engine(19);
++    finish_cohort(*q,{choose(*q,2,"build_wonder"),choose(*q,0,"build_wonder"),choose(*q,1,"discard")});
++    expect(q->Status()["waiting_for"]==json({0}),"Synthetic grant queue did not begin with lowest seat");
++    auto first=choose(*q,0,"build_discard_free",CARD_ID::lumber_yard);
++    applied(*q,first);auto second=q->Status();
++    expect(second["waiting_for"]==json({2}) && !q->Terminal(),"Second grant was skipped/finalized early");
++    for(const auto& o:second["decisions"][0]["options"]) expect(o["card"]["instance_id"]!=first["action"]["card_instance_id"],"Consumed instance reappeared in next offer");
++    applied(*q,choose(*q,2,"build_discard_free",CARD_ID::ore_vein));
++    expect(q->Terminal() && q->Status()["game"]["phase"]=="finished","Last queued grant failed to release endgame");
++}
++
++void no_options_late_coins_and_last_seventh() {
++    DecisionFixture empty;DMAG::Halikarnassos_b h;
++    empty.players[0].SetWonder(&h);empty.players[0].AddResource(RESOURCE::ore,2);
++    for(int type:{CARD_ID::altar,CARD_ID::theater}) {
++        auto c=test_card(type);empty.players[0].ReceiveCards({c});
++        expect(empty.players[0].BuildStructure(c,{c},true),"All-duplicate source setup failed");
++    }
++    empty.players[0].ReceiveCards({test_card(CARD_ID::altar),test_card(CARD_ID::theater)});
++    auto e=empty.Engine(19);
++    finish_cohort(*e,{choose(*e,0,"build_wonder"),choose(*e,1,"discard"),choose(*e,2,"discard")});
++    expect(e->Terminal() && e->Status()["grants"][0]["status"]=="consumed_no_options","All-duplicate grant did not close automatically");
++    expect(e->Status()["receipts"].back()["status"]=="skipped_no_options","Automatic no-options receipt missing");
++
++    DecisionFixture late;DMAG::Halikarnassos_b source;
++    late.players[0].SetWonder(&source);late.players[0].AddResource(RESOURCE::ore,2);
++    late.players[1].ReceiveCards({test_card(CARD_ID::bazar,CARD_TYPE::commercial,2),test_card(CARD_ID::altar)});
++    late.players[2].ReceiveCards({test_card(CARD_ID::press,CARD_TYPE::manufactured),test_card(CARD_ID::altar)});
++    auto l=late.Engine();
++    finish_cohort(*l,{choose(*l,0,"build_wonder"),choose(*l,1,"build_structure",CARD_ID::bazar),choose(*l,2,"discard",CARD_ID::press)});
++    expect(l->Status()["players"]["1"]["resources"]["coins"]==3,"Bazar counted unbuilt discarded grey");
++    const auto request=choose(*l,0,"build_discard_free",CARD_ID::press);
++    applied(*l,request);
++    expect(l->Status()["players"]["1"]["resources"]["coins"]==3,"Later discard construction retroactively paid Bazar");
++
++    DecisionFixture last;DMAG::Halikarnassos_b final_source;
++    last.players[0].SetWonder(&final_source);last.players[0].CanPlaySeventh();last.players[0].AddResource(RESOURCE::ore,2);
++    last.players[0].ReceiveCards({test_card(CARD_ID::altar)});
++    last.players[1].ReceiveCards({});last.players[2].ReceiveCards({});
++    last.pile={test_card(CARD_ID::lumber_yard,CARD_TYPE::materials)};
++    auto final=last.Engine(20);
++    applied(*final,choose(*final,0,"build_wonder"));
++    expect(!final->Terminal() && final->Status()["game"]["turn"]==20,"Last seventh-card grant finalized before choice");
++    applied(*final,choose(*final,0,"build_discard_free",CARD_ID::lumber_yard));
++    const auto finished=final->Status();
++    expect(final->Terminal() && finished["result"]["totals"]["0"]==finished["players"]["0"]["points"]["total"],"Final seventh-card choice result inconsistent");
++    int battles=0;for(const auto& event:finished["events"]) battles+=event["kind"]=="military_resolved";
++    expect(battles==1,"Final seventh-card choice repeated/missed conflict resolution");
++}
++
++class BrokenStage : public DMAG::Halikarnassos_b {
++public:
++    std::unique_ptr<DMAG::Wonder> Clone() const override { return std::make_unique<BrokenStage>(*this); }
++    bool AddStage(DMAG::Player* p) override { DMAG::Halikarnassos_b::AddStage(p);throw std::runtime_error("Injected stage failure"); }
++};
++void timeout_abort_rollback() {
++    DecisionFixture f;auto e=f.Engine(0,10);
++    const auto now=DecisionEngine::Clock::now();e->Published(now);
++    auto first=choose(*e,0,"discard");e->Submit(first);
++    auto wrong=choose(*e,1,"discard");wrong["actor"]=0;
++    e->Submit(wrong);e->Published(now+std::chrono::milliseconds(9));
++    e->CheckTimeout(now+std::chrono::milliseconds(10));
++    expect(e->Status()["abort_reason"]=="decision_timeout" && e->Status()["result"].is_null(),"Deadline extended by invalid request/publication");
++    expect(e->Submit(first)["status"]=="cancelled","Accepted input survived timeout as applied");
++
++    DecisionFixture pending;DMAG::Halikarnassos_b grant_source;
++    pending.players[0].SetWonder(&grant_source);pending.players[0].AddResource(RESOURCE::ore,2);
++    pending.pile={test_card(CARD_ID::lumber_yard,CARD_TYPE::materials)};
++    auto cancelled=pending.Engine(19);
++    auto built=choose(*cancelled,0,"build_wonder");
++    finish_cohort(*cancelled,{built,choose(*cancelled,1,"discard"),choose(*cancelled,2,"discard")});
++    const auto committed=cancelled->Status();
++    json stop={{"protocol_version",3},{"game_id",committed["game_id"]},{"request_id","abort-discard"},
++               {"control","abort_game"},{"reason","window_closed"}};
++    expect(cancelled->Submit(stop)["status"]=="applied","Explicit pending-discard abort rejected");
++    const auto stopped=cancelled->Status();
++    expect(stopped["grants"][0]["status"]=="cancelled_abort" && stopped["result"].is_null(),"Abort retained an open source grant/result");
++    expect(stopped["discard_count"]==committed["discard_count"] && stopped["players"]["0"]["wonder_stage"]==1,
++           "Abort lost the preceding consistent regular commit");
++    expect(cancelled->Submit(built)["status"]=="applied","Abort overwrote prior successfully applied action");
++
++    DecisionFixture broken;BrokenStage stage;broken.players[0].SetWonder(&stage);broken.players[0].AddResource(RESOURCE::ore,2);
++    auto b=broken.Engine();auto before=b->Status()["players"];
++    finish_cohort(*b,{choose(*b,1,"discard"),choose(*b,2,"discard")});
++    b->Submit(choose(*b,0,"build_wonder"));
++    auto aborted=b->Status();
++    expect(aborted["game"]["phase"]=="aborted" && aborted["abort_reason"]=="resolution_error","Internal stage failure not controlled");
++    expect(aborted["players"]==before && aborted["discard_count"]==0,"Failed shared commit leaked a partial world");
++    expect(aborted["events"].size()==1 && aborted["events"][0]["kind"]=="game_aborted","Rolled-back construction events leaked");
++}
++
++int main() {
++    try {
++        std::cout.setstate(std::ios_base::failbit);
++        frozen_income_production();simultaneous_counts();choice_and_payment_plans();free_modes_and_frozen_discount();
++        discard_barrier_and_replay();fresh_seventh_and_queue();no_options_late_coins_and_last_seventh();timeout_abort_rollback();
++        return 0;
++    } catch(const std::exception& e) {std::cerr<<e.what()<<'\n';return 1;}
 +}

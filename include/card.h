@@ -117,9 +117,11 @@ enum type{
 }
 
 namespace DMAG {
+class DecisionCore;
 
 class Card
 {
+    friend class DecisionCore;
 private:
     // Zero identifies a definition/legacy fixture, not a physical deck card.
     std::uint64_t instance_id = 0;

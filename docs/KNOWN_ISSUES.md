@@ -13,13 +13,13 @@ is a fully verified implementation of either printed edition.
   from the number of scientific cards, not its actual marginal science score.
   With no scientific cards it can reject copying a joker worth one point.
   Other guild-copy selection/idempotency issues are outside the scoring fix.
-- Halikarnassos' internal discard build now removes one central physical card
-  atomically, leaves the hand intact and preserves the right on invalid input.
-  V2 `extra` remains a preselection by name without an interactive choice;
-  ambiguous names are rejected and unfulfilled rights expire at turn end.
-  The smoke client leaves `extra` empty. The full choice queue remains 4b-II.
-- Resolution remains sequential. Resetting selectable-production state between
-  seats fixes one reproduced conflict, not every simultaneity/payment issue.
+- Protocol 3 now resolves frozen regular actions together and offers mandatory
+  discard decisions after them. Old V2 preselection and sequential settlement
+  are removed from the active path. The GUI and RL consumers still require
+  protocol 2 and have not been migrated; the GUI explicitly rejects version 3.
+- Wonder definitions and ability stages are still legacy, including Babylon
+  and Olympia's once-per-age free build. The status labels that mode explicitly
+  rather than advertising future first/sixth-card powers.
 - Three players are hard-coded. There is no general two-to-seven-player API,
   payment-choice action space, or mid-game state restoration.
 
@@ -32,4 +32,5 @@ Package 4a documents the future [decision/resolution contract](DECISION_PROTOCOL
 The user settled both timing/decline questions on 5 November 2026: no retroactive
 ordinary coin payout after discard construction, and no voluntary decline when
 a legal discard build exists. This is a project rule decision, not independent
-BGA server verification. Simultaneous resolution remains unimplemented.
+BGA server verification. See [SIMULTANEOUS_RESOLUTION.md](SIMULTANEOUS_RESOLUTION.md)
+for the implemented resolution boundary and current protocol-3 checks.

@@ -220,6 +220,67 @@ Workspace-Abgleich benötigt seine eingefrorenen C++-Quelldateien, deren
 Prüfsummen nicht überschrieben werden. Patch/Inventar sind aktualisiert.
 Details und verbleibende Grenzen: [DISCARD_SAFETY.md](DISCARD_SAFETY.md).
 
+## ENG-014 – Simultane Auflösung und Protokoll 3
+
+5. November 2026, Paket 4b-II, weiter `v0.2.0-dev`,
+`ruleset=bga-second-edition-development`, `second_edition_implemented=false`.
+Der aktive Transport ist jetzt **3**, Vertrag `decision-v1`; Version 2 wird
+nicht parallel interpretiert. Betroffen: neuer `DecisionEngine`-Kern,
+Player-Produktionsprobe und verzögerte Sofortmünzen, kopierbare Wunderzustände,
+Game-Schleife/Dateitransport, Buildkonfiguration und gezielte Regressionen.
+
+Vier rote Fälle gegen `da93178` belegen neue Produktion und Einnahmen während
+derselben sequenziellen Runde, verpasste simultane Vineyard-Zähler sowie
+vorzeitigen Abschluss trotz legaler Halikarnassos-Pflichtwahl. Der neue Kern
+plant alle regulären Optionen gegen einen unveränderlichen Anfangszustand.
+Produktion wird mit unabhängigen Käuferbelegungen und minimalen festen
+Zahlungsplänen ermittelt; Karten- und Startquellen bleiben nachvollziehbar.
+Wunderkosten werden aus dem bestehenden `CanAddStage()`-Pfad erfasst, ohne
+Kosten-/Stufentabellen umzuschreiben. Nach Quote wird dieselbe alte Stufe
+mit bereits abgerechneten Zahlungen angewandt.
+
+Spieler, Wunder, Kartenorte und Zufall werden tief in eine isolierte Runde
+kopiert. Erst nach allen regulären Annahmen werden die Konstruktionen und
+Zahlungen gemeinsam übernommen. Sofortmünzen werden nach dem gemeinsamen
+Bauzustand gezählt; Lighthouse zählt sich selbst. Neue Münzen/Produktion
+finanzieren keine andere Aktion dieses Zugs. Eine nachfolgende Ablagewahl
+erhöht keine vorherige reguläre Münzauszahlung rückwirkend (RQ-1/USER).
+
+Quellgrants, aktuelle Verkäufe und Restkarten werden vor der sichtbaren
+Ablagewahl aufgelöst. Bei legalen Karten ist die Auswahl Pflicht, andernfalls
+automatische Erledigung ohne Ersatz (RQ-2/USER). Der sichere Instanzbau aus
+ENG-013 bleibt die Entnahmeoperation. Weitergabe, neuer Babylon-Zug, Militär
+und Schlusswertung warten auf alle Folgeentscheidungen; unbeteiligte Sitze
+erhalten keine siebten Fake-Aktionen. Die bisherigen Wunderfähigkeiten und
+ihre Aktivierungsstufen bleiben erhalten, einschließlich Legacy-Olympia.
+
+Neue Dateibundles und Ready-JSON verwenden Partie-/Bundle-/Request-/
+Entscheidungskennungen und angebotene Revisionen. Nach Annahme bleibt ein
+Request gesperrt; Wiederholung liefert seinen aktuellsten Receipt zurück.
+Konfliktantworten überschreiben ihn nicht und werden getrennt nachvollzogen.
+Falsche/veraltete Eingaben führen zu keinem Ersatzabwurf. Optionale Fristen,
+expliziter Abbruch und interner Fehler erzeugen `aborted` ohne Siegerresultat.
+Nur normaler Abschluss schreibt `results.txt` einmal atomar; während einer
+kurzen konfigurierbaren Abschlussfrist werden Wiederzustellungen beantwortet.
+
+Der neue Standardbibliotheksclient und sechs Prozessregressionen prüfen den
+Dateipfad, komplette Partien einschließlich Halikarnassos, Babylon und
+Terminalwiederholung. `decision_resolution` prüft unabhängig erwartete
+Ökonomie, Freibaumodi, Quellen-/Zahlungspläne, Pflichtwahl, Queue, Fristen,
+Grenzfälle der letzten regulären/siebten Karte und Rückrollen nach einem
+bewusst während des Stufenbaus ausgelösten Fehler. Vorhandene Schluss-,
+Ressourcen-, Wissenschafts- und Ablagesicherheitstests verwenden den neuen
+Kern; die zwei älteren direkten Produktionstests bleiben erhalten.
+
+Keine Kartenwerte oder Wunderstufendefinitionen, keine Wissenschafts- oder
+Gildenkopie-Kandidatenwahl, keine GUI-/RL-Laufzeitdateien, Exporte, Features
+oder Trainingsstände geändert. Die alte GUI lehnt Version 3 ab; ihre fünf
+V2-Prozessprüfungen sind als historische Tests ausgelassen, die Versionsgrenze
+ist separat getestet. Keine RL-Übernahme, Pin-/Lock-Änderung oder Veröffentlichung.
+Aktiver Vertrag und Herkunftspatch/Inventar sind aktualisiert. Details:
+[SIMULTANEOUS_RESOLUTION.md](SIMULTANEOUS_RESOLUTION.md),
+[PROTOCOL.md](PROTOCOL.md), [resolution-validation.json](resolution-validation.json).
+
 ## Abgrenzung
 
 Es findet keine pauschale Behauptung vollständiger Regelkorrektheit statt. Insbesondere werden die Wunder-Ausbauschritte nicht zur neuen Edition migriert. Auch Kartenwerte werden durch den aktuellen Self-Play-Umbau nicht geändert. Falls frühere Kartenänderungen nicht im exakten Unterschied zu diesem Upstream-Commit erscheinen, werden sie nicht ohne Nachweis als Änderungen dieser C++-Fassung behauptet. Für jede zukünftige Änderung ist ein neuer Eintrag mit Anlass, genauer Funktion, Wirkung, Test und Grenzen anzulegen und der exakte Nachweis neu zu erzeugen.

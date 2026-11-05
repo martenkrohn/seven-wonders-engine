@@ -202,7 +202,7 @@ void Player::ApplyBuilding(DMAG::Card c, bool free_card) {
 
         case CARD_TYPE::commercial:
             if (card == CARD_ID::tavern) {
-                this->resources[RESOURCE::coins] += 5;
+                // Immediate coins are settled after the city entry below.
             } else if (card == CARD_ID::east_trading_post) {
                 this->raw_cheap_east = true;
             } else if (card == CARD_ID::west_trading_post) {
@@ -213,28 +213,6 @@ void Player::ApplyBuilding(DMAG::Card c, bool free_card) {
                 // handled via AvailableCard + used_forum in IncrementOnDemand
             } else if (card == CARD_ID::caravansery) {
                 // handled via AvailableCard + used_caravansery in IncrementOnDemand
-            } else if (card == CARD_ID::vineyard) {
-                int brown_cards = player_east->AmountOfType(CARD_TYPE::materials)
-                                + player_west->AmountOfType(CARD_TYPE::materials)
-                                + this->AmountOfType(CARD_TYPE::materials);
-                this->resources[RESOURCE::coins] += 1 * brown_cards;
-            } else if (card == CARD_ID::bazar) {
-                int grey_cards = player_east->AmountOfType(CARD_TYPE::manufactured)
-                                + player_west->AmountOfType(CARD_TYPE::manufactured)
-                                + this->AmountOfType(CARD_TYPE::manufactured);
-                this->resources[RESOURCE::coins] += 2 * grey_cards;
-            } else if (card == CARD_ID::haven) {
-                int brown_cards = this->AmountOfType(CARD_TYPE::materials);
-                this->resources[RESOURCE::coins] += 1 * brown_cards;
-            } else if (card == CARD_ID::lighthouse) {
-                int yellow_cards = this->AmountOfType(CARD_TYPE::commercial);
-                this->resources[RESOURCE::coins] += 1 * yellow_cards;
-            } else if (card == CARD_ID::chamber_of_commerce) {
-                int grey_cards = this->AmountOfType(CARD_TYPE::manufactured);
-                this->resources[RESOURCE::coins] += 2 * grey_cards;
-            } else if (card == CARD_ID::arena) {
-                int stages = this->board->GetStage();
-                this->resources[RESOURCE::coins] += 3 * stages;
             }
             break;
 
@@ -257,8 +235,29 @@ void Player::ApplyBuilding(DMAG::Card c, bool free_card) {
     }
 
     cards_played.push_back(c);
+    if (!defer_coin_effects) resources[RESOURCE::coins] += ImmediateCoins(c);
 
     if (!free_card) this->resources[RESOURCE::coins] -= cost;
+}
+
+// Requires the complete construction cohort (including the source building).
+int Player::ImmediateCoins(const Card& c) {
+    switch (c.GetId()) {
+        case CARD_ID::tavern: return 5;
+        case CARD_ID::vineyard:
+            return AmountOfType(CARD_TYPE::materials)
+                + player_east->AmountOfType(CARD_TYPE::materials)
+                + player_west->AmountOfType(CARD_TYPE::materials);
+        case CARD_ID::bazar:
+            return 2 * (AmountOfType(CARD_TYPE::manufactured)
+                + player_east->AmountOfType(CARD_TYPE::manufactured)
+                + player_west->AmountOfType(CARD_TYPE::manufactured));
+        case CARD_ID::haven: return AmountOfType(CARD_TYPE::materials);
+        case CARD_ID::lighthouse: return AmountOfType(CARD_TYPE::commercial);
+        case CARD_ID::chamber_of_commerce: return 2 * AmountOfType(CARD_TYPE::manufactured);
+        case CARD_ID::arena: return 3 * board->GetStage();
+        default: return 0;
+    }
 }
 
 // Checks if the player has a card that permits him to play card 'c' for free.
@@ -442,6 +441,10 @@ void Player::ResetUsed() {
 // If he can't produce by himself, try buying it from neighbors.
 // - this function is a "step" in BuildStructure.
 bool Player::ProduceResource(int resource, int quant){
+    // DecisionCore quotes the existing CanAddStage path with zero production,
+    // then executes that same stage only after a validated payment plan.
+    if (cost_probe) { (*cost_probe)[resource] += std::max(0, quant); return true; }
+    if (prepaid_wonder) return true;
     // Produce "on demand" resources.
     // Ugly, but hopefully it'll get the job done.
 

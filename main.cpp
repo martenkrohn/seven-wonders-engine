@@ -9,6 +9,8 @@
 #include <cstdint>
 #include <stdexcept>
 #include <card.h>
+#include <decision.h>
+#include <filesystem>
 #include <player.h>
 #include <wonder.h>
 #include <resources.h>
@@ -45,39 +47,8 @@ class Game{
         uint64_t engine_seed;
         unsigned int poll_us;
         bool quiet;
-        json last_actions = json::object();
-
-        static const Card* UniqueNamedCard(const vector<Card>& cards, const string& name) {
-            const Card* found = nullptr;
-            for (const Card& card : cards) {
-                if (card.GetName() != name) continue;
-                if (found) return nullptr;
-                found = &card;
-            }
-            return found;
-        }
-
-        // V2 still preselects by name. Bind it only to the submitting seat and
-        // one real pile instance; the interactive decision queue belongs to 4b-II.
-        void ResolveDiscardExtras(const vector<string>& extras) {
-            if (extras.size() != player_list.size())
-                throw std::invalid_argument("Discard extras must belong to individual seats");
-            try {
-                for (size_t seat = 0; seat < player_list.size(); ++seat) {
-                    Player* player = player_list[seat];
-                    if (player->HasDiscardFree() && !player->CloseDiscardIfNoOptions(discard_pile)) {
-                        const Card* selected = UniqueNamedCard(discard_pile, extras[seat]);
-                        if (selected) player->BuildDiscardFree(*selected, discard_pile);
-                    }
-                    // Invalid/absent V2 preselection is not a successful build.
-                    // Its unfulfilled right expires at this turn boundary.
-                    player->DiscardFree(false);
-                }
-            } catch (...) {
-                for (Player* player : player_list) player->DiscardFree(false);
-                throw;
-            }
-        }
+        unsigned decision_timeout_ms = 0;
+        unsigned terminal_grace_ms = 100;
 
     public:
 
@@ -144,62 +115,6 @@ class Game{
          * or, if at the end of an era, giving 7 new cards to
          * each player.
          */
-        void NextTurn(){
-
-            // TODO: check if the player has the wonder effects that make
-            // possible to play another card in the same round and do it
-
-            turn++;
-
-            // if end of an era (turns 7 14 and 21)
-            if (turn % 7 == 0) {
-                for (Player* & player : player_list) {
-                    player->FreeCardOnce(true);
-                    player->Battle(era);
-                }
-
-                era++;
-                cout << "-----------------------------------------------------------------\n";
-                if(era < 4)
-                    cout << "Nova era: "<< era << endl;
-                else{
-                    cout << "End of game" << endl;
-                    return;
-                }
-                    
-                // transfer the remaining card in each player's hand to the discarded card list
-                for (Player* & player : player_list) {
-                    vector<Card> cards = player->GetHandCards();
-                    // cards must be size 1!!
-                    for (int i = 0; i < cards.size(); i++)
-                        discard_pile.push_back(cards[i]);
-                }
-
-                GiveCards();
-            }
-            else {
-                Player *player, *p1, *neighbor;
-                p1 = player = player_list.front();
-                vector<Card> neighbor_deck, player_deck = p1->GetHandCards();
-
-                bool clockwise = (era == 1 || era == 3);
-                do {
-                    // Get the neighbor of player p who will receive the cards
-                    // Keep his deck from being overwritten and lost
-                    // The neighbor receives the cards from player p
-                    // The neighbor becomes the player p
-                    // Continue until you reach the first player again
-                    neighbor = clockwise ? player->GetWestNeighbor() : player->GetEastNeighbor();
-                    neighbor_deck = neighbor->GetHandCards();
-                    neighbor->ReceiveCards(player_deck);
-                    player = neighbor;
-                    player_deck = neighbor_deck;
-                    //cout << "Passou" << endl;
-                } while (p1 != player);
-                //cout << "Passou tudo" << endl;
-            }
-        }
-
         /*
          * Gives 7 cards to each player.
          */
@@ -416,245 +331,64 @@ class Game{
 
         }
 
-        void WriteGameStatus() {
-            json status;
-            std::vector<DMAG::Card> cards;
-            std::vector<std::string> card_names;
-            std::vector<int> card_ids;
-            std::map<int, int> resources;
-            DMAG::Wonder* wonder;
+        void SetDecisionTimeout(unsigned value) { decision_timeout_ms = value; }
+        void SetTerminalGrace(unsigned value) { terminal_grace_ms = value; }
 
-            status["protocol_version"] = 2;
-            status["game"]["phase"] = InGame() ? "playing" : "finished";
-            status["game"]["engine_seed"] = engine_seed;
-            status["last_actions"] = last_actions;
-
-            status["game"]["era"] = era;
-            status["game"]["turn"] = turn;
-            status["game"]["clockwise"] = (era == 1 || era == 3);
-
-            for (int i = 0; i < number_of_players; i++) {
-                wonder = player_list[i]->GetBoard();
-                status["players"][to_string(i)]["wonder_id"] = wonder->GetId();
-                status["players"][to_string(i)]["wonder_name"] = wonder->GetName();
-                status["players"][to_string(i)]["wonder_stage"] = wonder->GetStage();
-                status["players"][to_string(i)]["can_build_hand_free"] = player_list[i]->CanBuildHandFree();
-                // status["players"][to_string(i)]["can_build_wonder"] = true; // ToDo: have enough resources to build a wonder stage?
-                status["players"][to_string(i)]["can_build_wonder"] = player_list[i]->CanBuildWonder();
-
-                // hand cards
-                cards = player_list[i]->GetHandCards();
-                card_names.clear();
-                for (DMAG::Card c : cards)
-                    card_names.push_back(c.GetName());
-                status["players"][to_string(i)]["cards_hand"] = card_names;
-
-                // card IDS
-                card_ids.clear();
-                for(DMAG::Card c: cards)
-                    card_ids.push_back(c.GetId());
-                status["players"][to_string(i)]["cards_hand_id"] = card_ids;
-
-
-
-                // played cards
-                cards = player_list[i]->GetPlayedCards();
-                card_names.clear();
-                for (DMAG::Card c : cards)
-                    card_names.push_back(c.GetName());
-                status["players"][to_string(i)]["cards_played"] = card_names;
-
-                // playable cards
-                cards = player_list[i]->GetPlayableCards();
-                card_names.clear();
-                for (DMAG::Card c : cards)
-                    card_names.push_back(c.GetName());
-                status["players"][to_string(i)]["cards_playable"] = card_names;
-
-                // Playable cards ids
-                // this is for simpler bot usage
-                card_ids.clear();
-                for(DMAG::Card c: cards)
-                    card_ids.push_back(c.GetId());
-                status["players"][to_string(i)]["cards_playable_id"] = card_ids;
-
-                // resources
-                resources = player_list[i]->GetResources();
-                status["players"][to_string(i)]["resources"]["wood"] = resources[RESOURCE::wood];
-                status["players"][to_string(i)]["resources"]["ore"] = resources[RESOURCE::ore];
-                status["players"][to_string(i)]["resources"]["clay"] = resources[RESOURCE::clay];
-                status["players"][to_string(i)]["resources"]["stone"] = resources[RESOURCE::stone];
-                status["players"][to_string(i)]["resources"]["loom"] = resources[RESOURCE::loom];
-                status["players"][to_string(i)]["resources"]["glass"] = resources[RESOURCE::glass];
-                status["players"][to_string(i)]["resources"]["papyrus"] = resources[RESOURCE::papyrus];
-                status["players"][to_string(i)]["resources"]["gear"] = resources[RESOURCE::gear];
-                status["players"][to_string(i)]["resources"]["compass"] = resources[RESOURCE::compass];
-                status["players"][to_string(i)]["resources"]["tablet"] = resources[RESOURCE::tablet];
-                status["players"][to_string(i)]["resources"]["coins"] = resources[RESOURCE::coins];
-                status["players"][to_string(i)]["resources"]["shields"] = resources[RESOURCE::shields];
-
-                // victory points
-                const auto scores = player_list[i]->CalculateScores();
-                const char* categories[] = {"civilian", "commercial", "guild", "military",
-                                            "scientific", "wonder", "total"};
-                for (int category = 0; category < 7; ++category)
-                    status["players"][to_string(i)]["points"][categories[category]] = scores[category];
-
-                // Amount resources by type
-                status["players"][to_string(i)]["amount"]["civilian"] = player_list[i]->CalculateAmountCivilianCards();
-                status["players"][to_string(i)]["amount"]["commercial"] = player_list[i]->CalculateAmountCommercialCards();
-                status["players"][to_string(i)]["amount"]["military"] = player_list[i]->CalculateAmountMilitaryCards();
-                status["players"][to_string(i)]["amount"]["guild"] = player_list[i]->CalculateAmountGuildCards();
-                status["players"][to_string(i)]["amount"]["scientific"] = player_list[i]->CalculateAmountScientificCards();
-                status["players"][to_string(i)]["amount"]["raw_material"] = player_list[i]->CalculateAmountRawMaterial();
-                status["players"][to_string(i)]["amount"]["manufactured_goods"] = player_list[i]->CalculateAmountManufacturedGood();
-            }
-
-            fp.WriteMessage(status, "./io/game_status.json");
+        std::unique_ptr<DecisionEngine> Decisions() {
+            std::array<vector<Card>,3> decks{{deck[0],deck[1],deck[2]}};
+            return std::make_unique<DecisionEngine>(player_list,decks,discard_pile,rng,engine_seed,decision_timeout_ms,turn);
         }
 
-        void Loop(){
-            json json_object;
-            std::string command, argument;
-            std::vector<DMAG::Card> hand_cards_bkp;
-            // fp.StartLog(time(0));
-
-            while(InGame()){
-
-                WriteGameStatus();
-
-                if (!quiet) {
-                cout << "\n:::TURN " << (short)this->turn << ":::" << endl;
-
-                // Print Playable Cards for each player.
-                for (int i = 0; i < number_of_players; i++) {
-                    cout << "> Playable cards for player " << i << ":" << endl;
-                    for (DMAG::Card const& card : player_list[i]->GetPlayableCards()) {
-                        cout << "  (" << i << ") " << card.GetName() << endl;
+        bool Loop() {
+            auto session=Decisions();
+            auto& engine=*session;
+            bool results_written = false;
+            auto terminal_since = DecisionEngine::Clock::time_point{};
+            auto publish = [&]() {
+                const auto status=engine.Status();
+                fp.WriteMessage(status,"io/game_status.json");
+                engine.Published();
+                if(status["game"]["phase"]=="finished" && !results_written) {
+                    std::ofstream results("results.txt.tmp");
+                    if(!results) throw std::runtime_error("Cannot write results file");
+                    for(int s=0;s<3;++s) results<<"Player "<<s+1<<" score: "<<status["result"]["totals"][to_string(s)]<<'\n';
+                    results.close();
+                    if(!results || std::rename("results.txt.tmp","results.txt")) throw std::runtime_error("Cannot publish results file");
+                    results_written=true;
+                }
+            };
+            // One process owns one fresh runtime directory; stale results are
+            // never left visible during a pending/aborted game.
+            std::filesystem::remove("results.txt");
+            publish();
+            std::uint64_t published_revision=engine.Revision();
+            for(;;) {
+                engine.CheckTimeout();
+                bool processed=false;
+                try {
+                    json ready,commands;
+                    std::ifstream signal("io/ready.json"),batch("io/commands.json");
+                    if(signal && batch) {
+                        signal>>ready; batch>>commands;
+                        processed=engine.Bundle(commands,ready);
                     }
-                    if (player_list[i]->CanBuildWonder()) {
-                        cout << "> Player " << i << " CAN build a wonder stage! " << endl;
-                    } else cout << "> Player " << i << " CANNOT build a wonder stage! " << endl;
+                } catch(const json::exception&) {
+                    // Incomplete/nonmatching bundles are not accepted. Their
+                    // offers retain the original deadline.
                 }
-
-                cout << "<Waiting players...>" << endl;
+                if(processed || engine.Revision()!=published_revision) { publish();published_revision=engine.Revision(); }
+                // Publish the acknowledgement before releasing the one-flight
+                // signal, including redelivery of the same batch identity.
+                if(processed) std::filesystem::remove("io/ready.json");
+                if(engine.Terminal()) {
+                    if(terminal_since==DecisionEngine::Clock::time_point{}) terminal_since=DecisionEngine::Clock::now();
+                    if(DecisionEngine::Clock::now()-terminal_since>=std::chrono::milliseconds(terminal_grace_ms)) break;
                 }
-                while (!fp.ArePlayersReady()) {
-                    if (poll_us) std::this_thread::sleep_for(std::chrono::microseconds(poll_us));
-                }
-                last_actions = json::object();
-                vector<string> extras(number_of_players);
-
-                for(int i = 0; i < number_of_players; i++){
-                    json_object = fp.ReadMessages(i);
-                    if (json_object.contains("turn") && json_object["turn"].get<int>() != turn)
-                        throw std::runtime_error("Action belongs to a different turn");
-                    // handle command inside json_object
-                    command = json_object["command"]["subcommand"];
-                    argument = json_object["command"]["argument"];
-
-                    extras[i] = json_object["command"]["extra"];
-                    last_actions[to_string(i)] = {{"requested", command}, {"executed", command},
-                                                   {"status", "applied"}, {"turn", turn}};
-
-                    // Turns 6 13 and 20 -> last card in hand card.
-                    // If the player doesn't have the ability to play the seventh card,
-                    // just skip the turn (i.e. don't do anything).
-                    if (this->turn == 6 || this->turn == 13 || this->turn == 20) {
-                        if (!player_list[i]->PlaySeventh()) {
-                            last_actions[to_string(i)]["status"] = "skipped";
-                            last_actions[to_string(i)]["executed"] = nullptr;
-                            continue;
-                        }
-                    }
-
-                    // Choice allocations belong to one player's purchase, not
-                    // the entire simultaneous turn. Another player may use or
-                    // buy the same production independently. See ENG-006 in
-                    // docs/SIMULATOR_CHANGES.md and joint_action_resources test.
-                    for (Player* player : player_list) player->ResetUsed();
-                    hand_cards_bkp = player_list[i]->GetHandCards();
-                    const Card* selected = UniqueNamedCard(hand_cards_bkp, argument);
-                    if (!selected) throw std::runtime_error("Action must name exactly one card in this seat's hand");
-                    Card card_played = *selected;
-
-                    if (command == "build_structure"){
-                        if(player_list[i]->BuildStructure(card_played, player_list[i]->GetHandCards(), false)) {
-                            cout << "<BuildStructure OK>" << endl;
-                        } else {
-                            cout << "<BuildStructure NOK>" << endl;
-                            command = "discard";
-                        }
-
-                    } else if (command == "build_hand_free"){
-                        if (player_list[i]->BuildHandFree(card_played)) {
-                            cout << "<BuildHandFree OK>" << endl;
-                        } else {
-                            cout << "<BuildHandFree NOK>" << endl;
-                            command = "discard";
-                        }
-
-                    } else if(command == "build_wonder"){
-                        if (player_list[i]->BuildWonder(card_played)) {
-                            cout << "<BuildWonder OK>" << endl;
-                        } else {
-                            cout << "<BuildWonder NOK>" << endl;
-                            command = "discard";
-                        }
-                    }
-
-                    if (command == "discard"){
-                        player_list[i]->Discard(card_played); //Gives player 3 coins.
-                        cout << "<Discard OK>" << endl;
-                        discard_pile.push_back(card_played);
-                    }
-                    last_actions[to_string(i)]["executed"] = command;
-                    if (last_actions[to_string(i)]["requested"] != command)
-                        last_actions[to_string(i)]["status"] = "fallback_discard";
-
-                    // fp.WriteLog(era, turn, player_list[i]->GetId(), hand_cards_bkp, command, argument);
-                }
-
-                // Moves the game to the next turn.
-                // VERY IMPORTANT: call player->ResetUsed() for each player at the end of a turn!
-                for (int i = 0; i < player_list.size(); i++) {
-                    player_list[i]->ResetUsed();
-                }
-                ResolveDiscardExtras(extras);
-
-                NextTurn();
-
-
-                // TODO: show info
-#ifndef NDEBUG
-                ShowInfo();
-#endif
-
-
-                //get commands
-
-
+                if(poll_us) std::this_thread::sleep_for(std::chrono::microseconds(poll_us));
             }
-
-            //calculate stuff
-            std::ofstream results;
-            results.open("results.txt");
-
-            for (Player* player : player_list) player->CopyGuild();
-            // Publish only after the final action, age-III battles and all guild copies.
-            WriteGameStatus();
-            for(int i = 0; i< NUM_PLAYERS; ++i){
-                results << "Player " << i+1 << " score: " << player_list[i]->CalculateScore() << std::endl;
-            }
-
-            results << std::endl;
-            results.close();
-
-            //end game?
-            // output results after game
-            // match_log_results after end game
-            fp.WriteMatchLog(player_list, time(0));
+            return engine.Status()["game"]["phase"]=="finished";
         }
+
 };
 
 
@@ -671,17 +405,22 @@ int main(int argc, char **argv)
     uint64_t seed = (uint64_t(std::random_device{}()) << 32) ^ std::random_device{}();
     unsigned int poll_us = 1000;
     bool quiet = false;
+    unsigned decision_timeout_ms = 0, terminal_grace_ms = 100;
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
         if (arg == "--quiet") { quiet = true; continue; }
-        if ((arg != "--seed" && arg != "--poll-us") || i + 1 >= argc)
-            throw std::invalid_argument("Usage: 7Wonders [--seed UINT64] [--poll-us 0..1000000] [--quiet]");
+        if ((arg != "--seed" && arg != "--poll-us" && arg != "--decision-timeout-ms" && arg != "--terminal-grace-ms") || i + 1 >= argc)
+            throw std::invalid_argument("Usage: 7Wonders [--seed UINT64] [--poll-us 0..1000000] [--decision-timeout-ms UINT] [--terminal-grace-ms UINT] [--quiet]");
         std::string value = argv[++i];
         if (value.empty() || value.find_first_not_of("0123456789") != std::string::npos)
             throw std::invalid_argument("Expected unsigned integer for " + arg);
         uint64_t parsed = std::stoull(value);
         if (arg == "--seed") seed = parsed;
-        else {
+        else if(arg=="--decision-timeout-ms" || arg=="--terminal-grace-ms") {
+            if(parsed>3600000) throw std::invalid_argument("Timeout exceeds 3600000 ms");
+            if(arg=="--decision-timeout-ms") decision_timeout_ms=static_cast<unsigned>(parsed);
+            else terminal_grace_ms=static_cast<unsigned>(parsed);
+        } else {
             if (parsed > 1000000) throw std::invalid_argument("poll-us exceeds 1000000");
             poll_us = static_cast<unsigned int>(parsed);
         }
@@ -691,12 +430,13 @@ int main(int argc, char **argv)
 
     g.Init();
     g.NewGame(NUM_PLAYERS);
+    g.SetDecisionTimeout(decision_timeout_ms);
+    g.SetTerminalGrace(terminal_grace_ms);
 
-    //    g.NextTurn(p, 0); //this function is not completed
-    g.Loop();
+    const bool completed=g.Loop();
     g.Close();
 
-    return 0;
+    return completed?0:2;
     } catch (const std::exception& error) {
         std::cerr << error.what() << std::endl;
         return 1;

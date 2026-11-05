@@ -1,5 +1,12 @@
 # Alte grafische Oberfläche verwenden
 
+**Aktueller Entwicklungsbaum ab Paket 4b-II:** Die Engine verwendet Protokoll 3.
+Diese alte Oberfläche benötigt Protokoll 2 und lehnt das neue Binary ausdrücklich
+ab. Für den alten GUI-Stand den reproduzierbaren Legacy-Tag verwenden; die
+GUI-Migration folgt in Paket 7. Der aktuelle Testclient steht unter
+[scripts/smoke_protocol.py](../scripts/smoke_protocol.py), sein Vertrag unter
+[PROTOCOL.md](PROTOCOL.md). Der folgende Bedienungstext beschreibt die alte GUI.
+
 Die ursprüngliche Tk-Oberfläche ist als optionales Frontend wieder eingebunden.
 Sie verwendet weiterhin den bisherigen Regelstand und benötigt kein RL-Paket.
 `gui/legacy_view.py` stammt aus dem ursprünglichen `Game.py`; Start, Dateiaustausch

@@ -1,5 +1,9 @@
 # Wissenschaftswertung – Paket 3
 
+Historischer Paket-3-Abnahmestand. Die Wissenschaftsformel bleibt unverändert;
+Paket 4b-II verwendet inzwischen [Protokoll 3](PROTOCOL.md) und den neuen
+Auflösungskern. Die ursprünglichen Nachweise unten beziehen sich auf Paket 3.
+
 Stand: 5. November 2026. Der Entwicklungsstand `v0.2.0-dev` mit Regelnamen
 `bga-second-edition-development` maximiert die Wissenschaftspunkte über alle
 Jokerverteilungen. `second_edition_implemented=false` und Transportversion 2

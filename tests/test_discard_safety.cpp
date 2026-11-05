@@ -6,6 +6,7 @@
 #include <set>
 #include <cstdlib>
 #include <new>
+#include "decision_helpers.h"
 
 // Fail every allocation point in the transaction, including the city append
 // after a staged immediate effect. No production-only test hook is needed.
@@ -27,7 +28,6 @@ struct GameTestAccess {
     static std::vector<Card>& pile(Game& game) { return game.discard_pile; }
     static std::vector<Card>& deck(Game& game, int age) { return game.deck[age-1]; }
     static void final_turn(Game& game) { game.turn = 20; game.era = 3; }
-    static void extras(Game& game, const std::vector<std::string>& values) { game.ResolveDiscardExtras(values); }
 };
 
 void require(bool condition, const std::string& message) {
@@ -305,54 +305,18 @@ void real_deck_identities() {
     for (Player* player : GameTestAccess::players(game))
         for (const Card& card : player->GetHandCards())
             require(seen.count(card.GetInstanceId()), "Dealing changed physical identity");
-    const auto before = identities(GameTestAccess::players(game)[0]->GetHandCards());
-    game.NextTurn();
-    require(identities(GameTestAccess::players(game)[0]->GetWestNeighbor()->GetHandCards()) == before,
-            "Passing changed physical identity");
-}
-
-void legacy_seat_loop(bool own_extra) {
-    std::filesystem::create_directories("io");
-    Game game(0, 0, true);
-    game.Init(); game.NewGame(3);
-    auto& players = GameTestAccess::players(game);
-    players[0]->SetWonder(new AtStage<Halikarnassos_b>(1));
-    players[1]->SetWonder(new Gizah_a());
-    players[2]->SetWonder(new Gizah_a());
-    players[0]->DiscardFree(true);
-    Card picked = fixture_card(CARD_ID::tavern, CARD_TYPE::commercial);
-    GameTestAccess::pile(game) = {picked};
-    GameTestAccess::final_turn(game);
-    for (int seat = 0; seat < 3; ++seat) {
-        Card hand = fixture_card(CARD_ID::altar);
-        players[seat]->ReceiveCards({hand}); players[seat]->CanPlaySeventh();
-        const std::string extra = seat == (own_extra ? 0 : 2) ? picked.GetName() : "";
-        json action = {{"turn", 20}, {"command", {{"subcommand", "discard"},
-                       {"argument", hand.GetName()}, {"extra", extra}}}};
-        std::ofstream("io/player_"+std::to_string(seat+1)+".json") << action;
-    }
-    std::ofstream("io/ready.txt") << "ready\nready\nready\n";
-    game.Loop();
-    require(players[0]->HasPlayedCard(picked) == own_extra, "V2 extra belonged to a different seat");
-    require(!players[0]->HasDiscardFree(), "V2 left an unfulfilled right for the next turn");
-    require(players[0]->GetHandCards().empty(), "V2 discard build damaged hand removal");
-    require(GameTestAccess::pile(game).size() == (own_extra ? 3 : 4), "Loop did not update central discard pile exactly once");
-}
-
-void legacy_ambiguity() {
-    Game game(0, 0, true);
-    game.Init(); game.NewGame(3);
-    auto& players = GameTestAccess::players(game);
-    players[0]->SetWonder(new AtStage<Halikarnassos_b>(1));
-    players[1]->SetWonder(new Gizah_a()); players[2]->SetWonder(new Gizah_a());
-    players[0]->DiscardFree(true);
-    Card a = fixture_card(CARD_ID::altar), b = fixture_card(CARD_ID::altar);
-    GameTestAccess::pile(game) = {a, b};
-    GameTestAccess::extras(game, {a.GetName(), "", ""});
-    require(!players[0]->HasPlayedCard(a) && GameTestAccess::pile(game).size() == 2,
-            "Ambiguous V2 name silently picked a physical copy");
-    players[0]->DiscardFree(true);
-    require(!players[0]->HasDiscardFree(), "V2 preselection expiration re-armed old stage");
+    auto engine=game.Decisions();
+    const auto before=engine->Status();
+    std::vector<json> inputs;
+    for(int s=0;s<3;++s) inputs.push_back(choose(*engine,s,"discard"));
+    std::vector<std::string> remainder;
+    for(const auto& card:before["players"]["0"]["hand_cards"])
+        if(card["instance_id"]!=inputs[0]["action"]["card_instance_id"]) remainder.push_back(card["instance_id"]);
+    finish_cohort(*engine,inputs);
+    std::vector<std::string> passed;
+    const auto after=engine->Status();
+    for(const auto& card:after["players"]["2"]["hand_cards"]) passed.push_back(card["instance_id"]);
+    require(passed==remainder,"Passing changed physical identity");
 }
 
 int main(int argc, char** argv) {
@@ -373,9 +337,7 @@ int main(int argc, char** argv) {
             hand_source_guard();
             allocation_rollback();
             real_deck_identities();
-            legacy_seat_loop(true);
-            legacy_seat_loop(false);
-            legacy_ambiguity();
+
         }
         return 0;
     } catch (const std::exception& error) {

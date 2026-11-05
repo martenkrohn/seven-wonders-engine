@@ -5,6 +5,7 @@
 
 #include <filesystem>
 #include <stdexcept>
+#include "decision_helpers.h"
 
 struct GameTestAccess {
     static std::vector<Player*>& players(Game& game) { return game.player_list; }
@@ -21,8 +22,10 @@ void require(bool condition, const char* message) {
 }
 
 void build_free(Player* player, const Card& card) {
-    player->ReceiveCards({card});
-    require(player->BuildStructure(card, {card}, true), "Test setup card failed");
+    static std::uint64_t instance=300000;
+    const Card physical=card.GetInstanceId()?card:card.CreateInstance(instance++);
+    player->ReceiveCards({physical});
+    require(player->BuildStructure(physical, {physical}, true), "Test setup card failed");
 }
 
 int main() {
@@ -43,17 +46,13 @@ int main() {
         players[0]->AddResource(RESOURCE::shields, 2);
         players[1]->AddResource(RESOURCE::shields, 1);
         Card altar = game.GetCardByName("Altar");
-        for (Player* player : players) player->ReceiveCards({altar});
+        players[0]->ReceiveCards({altar});
+        players[1]->ReceiveCards({});players[2]->ReceiveCards({});
         GameTestAccess::final_turn(game);
-        for (int seat = 0; seat < 3; ++seat) {
-            json action = {{"turn", 20}, {"command", {{"subcommand", seat == 0 ? "build_structure" : "discard"},
-                                                     {"argument", "Altar"}, {"extra", ""}}}};
-            std::ofstream("io/player_" + std::to_string(seat + 1) + ".json") << action;
-        }
-        std::ofstream("io/ready.txt") << "ready\nready\nready\n";
-        game.Loop();
-        json status;
-        std::ifstream("io/game_status.json") >> status;
+        auto engine=game.Decisions();
+        require(engine->Status()["waiting_for"]==json({0}),"Uninvolved seats received fake seventh actions");
+        applied(*engine,choose(*engine,0,"build_structure",CARD_ID::altar));
+        const json status=engine->Status();
         require(status["game"]["phase"] == "finished", "Missing final phase");
         require(status["game"]["turn"] == 21, "Missing final turn");
         require(status["players"]["0"]["points"]["civilian"] == 2, "Seventh card was not scored");
@@ -61,8 +60,7 @@ int main() {
         require(status["players"]["1"]["points"]["military"] == 4, "Incorrect final battle score");
         require(status["players"]["2"]["points"]["military"] == -2, "Final defeat tokens missing");
         require(status["players"]["1"]["points"]["guild"] == 1, "Guild copy missing from final JSON");
-        require(status["last_actions"]["0"]["status"] == "applied", "Seventh action not acknowledged");
-        require(status["last_actions"]["1"]["status"] == "skipped", "Ignored action reported as applied");
+        require(status["receipts"].size()==1 && status["receipts"][0]["status"]=="applied", "Real seventh action not acknowledged exactly once");
         require(status["players"]["1"]["resources"]["coins"] == 3, "Skipped discard changed coins");
         return 0;
     } catch (const std::exception& error) {

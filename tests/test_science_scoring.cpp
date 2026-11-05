@@ -5,10 +5,11 @@
 
 #include <filesystem>
 #include <sstream>
+#include "decision_helpers.h"
 
 struct GameTestAccess {
     static std::vector<Player*>& players(Game& game) { return game.player_list; }
-    static void final_turn(Game& game) { game.turn = 20; game.era = 3; }
+    static void final_turn(Game& game) { game.turn = 19; game.era = 3; }
 };
 
 template<class Board>
@@ -26,9 +27,10 @@ Card scientific_card(int identity) {
         {CARD_ID::workshop, "Workshop"}, {CARD_ID::laboratory, "Laboratory"},
         {CARD_ID::apothecary, "Apothecary"}, {CARD_ID::scientists, "Scientists Guild"}};
     auto name = names.find(identity);
+    static std::uint64_t instance=200000;
     return Card(identity, name == names.end() ? "Science fixture " + std::to_string(identity) : name->second,
                 identity == CARD_ID::scientists ? CARD_TYPE::guild : CARD_TYPE::scientific,
-                3, CARD_ID::none, std::vector<int>(8, 0), std::vector<int>(5, 1));
+                3, CARD_ID::none, std::vector<int>(8, 0), std::vector<int>(5, 1)).CreateInstance(instance++);
 }
 
 void build_free(Player& player, const Card& card) {
@@ -144,38 +146,24 @@ void final_publication() {
     add_symbols(*players[0], 2, 1, 0);
     build_free(*players[0], scientific_card(CARD_ID::scientists));
     add_symbols(*players[1], 2, 1, 0);
-    game.WriteGameStatus();
-    const auto before = read_status();
+    for(Player* player:players) player->ReceiveCards({test_card(CARD_ID::altar)});
+    const auto before = game.Decisions()->Status();
     require(before["players"]["0"]["points"]["scientific"] == 18, "Published combined jokers wrong");
     require(before["players"]["1"]["points"]["scientific"] == 5, "Guild copied before endgame");
-    const Card altar = game.GetCardByName("Altar");
-    for (Player* player : players) player->ReceiveCards({altar});
     GameTestAccess::final_turn(game);
-    for (int seat = 0; seat < 3; ++seat) {
-        json action = {{"turn", 20}, {"command", {{"subcommand", "discard"}, {"argument", "Altar"}, {"extra", ""}}}};
-        std::ofstream("io/player_" + std::to_string(seat + 1) + ".json") << action;
+    auto engine=game.Decisions();
+    finish_cohort(*engine,{choose(*engine,0,"discard"),choose(*engine,1,"discard"),choose(*engine,2,"discard")});
+    const auto final=engine->Status();
+    require(final["game"]["phase"]=="finished","Missing finished status");
+    require(final["players"]["0"]["points"]["scientific"]==18,"Combined final jokers wrong");
+    require(final["players"]["1"]["points"]["scientific"]==13,"Copied final joker wrong");
+    for(int seat=0;seat<3;++seat) {
+        const auto& points=final["players"][std::to_string(seat)]["points"];
+        const int sum=points["civilian"].get<int>()+points["commercial"].get<int>()+points["guild"].get<int>()
+            +points["military"].get<int>()+points["scientific"].get<int>()+points["wonder"].get<int>();
+        require(points["total"]==sum && final["result"]["totals"][std::to_string(seat)]==sum,"Final science/categories/result disagree");
     }
-    std::ofstream("io/ready.txt") << "ready\nready\nready\n";
-    game.Loop();
-    const auto final = read_status();
-    require(final["game"]["phase"] == "finished", "Missing finished status");
-    require(final["players"]["0"]["points"]["scientific"] == 18, "Combined final jokers wrong");
-    require(final["players"]["1"]["points"]["scientific"] == 13, "Copied final joker wrong");
-    std::ifstream result_file("results.txt");
-    const std::string results((std::istreambuf_iterator<char>(result_file)), std::istreambuf_iterator<char>());
-    for (int seat = 0; seat < 3; ++seat) {
-        const auto scores = players[seat]->CalculateScores();
-        const auto& points = final["players"][std::to_string(seat)]["points"];
-        require(points["scientific"] == scores[4] && points["total"] == scores[6], "Final score publication differs");
-        const int sum = points["civilian"].get<int>() + points["commercial"].get<int>()
-                      + points["guild"].get<int>() + points["military"].get<int>()
-                      + points["scientific"].get<int>() + points["wonder"].get<int>();
-        require(sum == scores[6], "Score categories do not sum to total");
-        require(results.find("Player " + std::to_string(seat + 1) + " score: " + std::to_string(scores[6]) + "\n")
-                != std::string::npos, "results.txt differs from published total");
-    }
-    game.WriteGameStatus();
-    require(read_status() == final, "Repeated final publication changed state or score");
+    require(engine->Status()==final,"Repeated final publication changed state or score");
 }
 
 int main() {

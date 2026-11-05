@@ -28,8 +28,11 @@ The complete card/wonder comparison remains in the RL project's
 source hashes and identity mapping in [data/bga-second-edition](../data/bga-second-edition/README.md).
 Package 3 starts runtime migration with optimal science joker scoring. The
 development contract is `v0.2.0-dev` / `bga-second-edition-development`, with
-`second_edition_implemented=false`. Card/wonder data and transport version 2
-remain unchanged; this is not a new released legacy or complete BGA version.
+`second_edition_implemented=false`. Card/wonder data remain unchanged.
+Package 4b-II implements protocol 3 (`decision-v1`) with simultaneous settlement
+and mandatory discard choices; this is not a released complete BGA version.
+The current GUI/RL integration still requires version 2 and is deliberately
+not adopted here. Use `scripts/smoke_protocol.py` for the new headless path.
 The legacy tags and RL consumer pin remain available unchanged. Details and
 remaining boundaries: [SCIENCE_SCORING.md](SCIENCE_SCORING.md).
 

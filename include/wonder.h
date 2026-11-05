@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <memory>
 
 namespace WONDER_ID{
     enum{
@@ -98,6 +99,8 @@ protected:
 
 public:
     Wonder();
+    virtual ~Wonder() = default;
+    virtual std::unique_ptr<Wonder> Clone() const { return std::make_unique<Wonder>(*this); }
     std::string GetName() const;
     int GetId() const;
     int GetProduction() const;
@@ -114,6 +117,7 @@ class Gizah_a : public Wonder
 {
 public:
     Gizah_a();
+    std::unique_ptr<Wonder> Clone() const override { return std::make_unique<Gizah_a>(*this); }
     bool AddStage(Player* p) override;
     bool CanAddStage(Player* p) override;
 };
@@ -122,6 +126,7 @@ class Gizah_b : public Wonder
 {
 public:
     Gizah_b();
+    std::unique_ptr<Wonder> Clone() const override { return std::make_unique<Gizah_b>(*this); }
     bool AddStage(Player* p) override;
     bool CanAddStage(Player* p) override;
 };
@@ -130,6 +135,7 @@ class Babylon_a : public Wonder
 {
 public:
     Babylon_a();
+    std::unique_ptr<Wonder> Clone() const override { return std::make_unique<Babylon_a>(*this); }
     bool AddStage(Player* p) override;
     bool CanAddStage(Player* p) override;
 };
@@ -138,6 +144,7 @@ class Babylon_b : public Wonder
 {
 public:
     Babylon_b();
+    std::unique_ptr<Wonder> Clone() const override { return std::make_unique<Babylon_b>(*this); }
     bool AddStage(Player* p) override;
     bool CanAddStage(Player* p) override;
 };
@@ -146,6 +153,7 @@ class Olympia_a : public Wonder
 {
 public:
     Olympia_a();
+    std::unique_ptr<Wonder> Clone() const override { return std::make_unique<Olympia_a>(*this); }
     bool AddStage(Player* p) override;
     bool CanAddStage(Player* p) override;
 };
@@ -154,6 +162,7 @@ class Olympia_b : public Wonder
 {
 public:
     Olympia_b();
+    std::unique_ptr<Wonder> Clone() const override { return std::make_unique<Olympia_b>(*this); }
     bool AddStage(Player* p) override;
     bool CanAddStage(Player* p) override;
 };
@@ -162,6 +171,7 @@ class Rhodos_a : public Wonder
 {
 public:
     Rhodos_a();
+    std::unique_ptr<Wonder> Clone() const override { return std::make_unique<Rhodos_a>(*this); }
     bool AddStage(Player* p) override;
     bool CanAddStage(Player* p) override;
 };
@@ -170,6 +180,7 @@ class Rhodos_b : public Wonder
 {
 public:
     Rhodos_b();
+    std::unique_ptr<Wonder> Clone() const override { return std::make_unique<Rhodos_b>(*this); }
     bool AddStage(Player* p) override;
     bool CanAddStage(Player* p) override;
 };
@@ -178,6 +189,7 @@ class Ephesos_a : public Wonder
 {
 public:
     Ephesos_a();
+    std::unique_ptr<Wonder> Clone() const override { return std::make_unique<Ephesos_a>(*this); }
     bool AddStage(Player* p) override;
     bool CanAddStage(Player* p) override;
 };
@@ -186,6 +198,7 @@ class Ephesos_b : public Wonder
 {
 public:
     Ephesos_b();
+    std::unique_ptr<Wonder> Clone() const override { return std::make_unique<Ephesos_b>(*this); }
     bool AddStage(Player* p) override;
     bool CanAddStage(Player* p) override;
 };
@@ -194,6 +207,7 @@ class Alexandria_a : public Wonder
 {
 public:
     Alexandria_a();
+    std::unique_ptr<Wonder> Clone() const override { return std::make_unique<Alexandria_a>(*this); }
     bool AddStage(Player* p) override;
     bool CanAddStage(Player* p) override;
 };
@@ -202,6 +216,7 @@ class Alexandria_b : public Wonder
 {
 public:
     Alexandria_b();
+    std::unique_ptr<Wonder> Clone() const override { return std::make_unique<Alexandria_b>(*this); }
     bool AddStage(Player* p) override;
     bool CanAddStage(Player* p) override;
 };
@@ -210,6 +225,7 @@ class Halikarnassos_a : public Wonder
 {
 public:
     Halikarnassos_a();
+    std::unique_ptr<Wonder> Clone() const override { return std::make_unique<Halikarnassos_a>(*this); }
     bool AddStage(Player* p) override;
     bool CanAddStage(Player* p) override;
 };
@@ -218,6 +234,7 @@ class Halikarnassos_b : public Wonder
 {
 public:
     Halikarnassos_b();
+    std::unique_ptr<Wonder> Clone() const override { return std::make_unique<Halikarnassos_b>(*this); }
     bool AddStage(Player* p) override;
     bool CanAddStage(Player* p) override;
 };

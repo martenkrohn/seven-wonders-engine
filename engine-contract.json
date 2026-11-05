@@ -2,7 +2,7 @@
   "format_version": 1,
   "release": "v0.2.0-dev",
   "ruleset": "bga-second-edition-development",
-  "protocol_version": 2,
+  "protocol_version": 3,
   "players": 3,
   "second_edition_implemented": false,
   "upstream_repository": "https://github.com/dmag-ufsm/7Wonders",

@@ -15,6 +15,8 @@ namespace DMAG {
 
 class Player
 {
+    friend class DecisionCore;
+    friend struct RoundState;
 private:
     unsigned int id;
     DMAG::Wonder *board;
@@ -32,6 +34,9 @@ private:
     bool free_card_once;       // EXTRA check whether the player can build a card for free once per Age or not.
     bool discard_free;         // Checks if the player can build an extra card from the discard pile.
     int discard_grant_stage = 0; // Last source event; closing a right never re-arms this stage.
+    std::map<int, int>* cost_probe = nullptr;
+    bool prepaid_wonder = false;
+    bool defer_coin_effects = false;
     bool can_build_wonder;     // Checks if the player can build the next stage of a Wonder each round.
 
 
@@ -71,6 +76,7 @@ private:
 
     // Applies a building to this player without taking a card from any source.
     void ApplyBuilding(DMAG::Card c, bool free_card);
+    int ImmediateCoins(const DMAG::Card& c);
 
 public:
     Player();

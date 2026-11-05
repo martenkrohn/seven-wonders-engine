@@ -5,16 +5,13 @@ A standalone C++17 simulator for three-player **7 Wonders**, forked from
 JSON file protocol for bots and other clients. No RL framework is required.
 
 **Development tree: `v0.2.0-dev`, ruleset `bga-second-edition-development`.**
-Package 3 now scores science jokers optimally. Card and wonder definitions
-still use the legacy data; the full second-edition/BGA rules are not implemented
-(`second_edition_implemented=false`). The versioned
-[engine contract](engine-contract.json) identifies this development ruleset
-separately from transport protocol 2. See the [science validation](docs/SCIENCE_SCORING.md).
-Package 4a adds a [decision/resolution specification](docs/DECISION_PROTOCOL_DRAFT.md)
-for later implementation; its proposed transport 3 is not active.
-Package 4b-I secures [internal discard construction](docs/DISCARD_SAFETY.md)
-with stable physical identities and atomic removal. Interactive discard choices
-and simultaneous settlement are still separate work.
+Science jokers are scored optimally. Package 4b-II implements simultaneous
+settlement and mandatory discard decisions with stable physical card identities,
+request deduplication and end-of-age barriers. The active [protocol is 3](docs/PROTOCOL.md),
+contract `decision-v1`; the [engine contract](engine-contract.json) distinguishes
+transport from rules. Card/wonder definitions and activation stages still use
+the legacy data; `second_edition_implemented=false`. See the
+[resolution validation](docs/SIMULTANEOUS_RESOLUTION.md) for scope and evidence.
 
 The tagged `v0.1.1-legacy` release preserves the restored original Tk GUI and
 the simulator used by [Seven Wonders RL](https://github.com/martenkrohn/seven-wonders-rl).
@@ -51,19 +48,14 @@ cross-platform shuffle equivalence is not guaranteed.
 
 ## Optional graphical client
 
-The original Tk interface is available again. It supports local human seats
-and simple companion bots, using the current development engine with legacy
-card/wonder definitions and corrected science scoring:
+The original Tk interface remains in this repository for the retained legacy
+release. It requires protocol 2 and explicitly rejects the current development
+binary. Its migration follows in package 7; use the standalone headless client
+above for protocol 3. For the restored legacy GUI, use a separate checkout of
+`v0.1.1-legacy`; the current RL pin also remains on that release.
 
-```sh
-python3 Game.py 2 --assets-dir /path/to/local/images --seed 42
-```
-
-Python 3.10+, Tkinter and a display are required. Artwork is optional and
-remains external; missing images use labeled placeholders. No BGA artwork
-is bundled. See [GUI.md](docs/GUI.md) for controls, all-human mode, setup and
-known limitations. `v0.1.0-legacy` preserves the original extraction without
-the GUI; the C++ game/build files are unchanged in `v0.1.1-legacy`.
+Python 3.10+, Tkinter and a display are required for that old GUI. Artwork is
+external; missing images use labeled placeholders. See [GUI.md](docs/GUI.md).
 
 ## Development
 

@@ -50,7 +50,7 @@ class GuiContracts(unittest.TestCase):
                                  Path('/assets/cards') / (filename + '.png'))
 
 
-@unittest.skipUnless((ROOT / 'build/7Wonders').is_file(), 'Build the engine first')
+@unittest.skipUnless((ROOT / 'build/7Wonders').is_file() and json.loads((ROOT / 'engine-contract.json').read_text())['protocol_version'] == 2, 'Legacy v2 integration: use the retained legacy tag; current engine uses protocol 3')
 class GuiEngineContracts(unittest.TestCase):
     def create_session(self, **kwargs):
         session = GameSession(ROOT / 'build/7Wonders', **kwargs)
@@ -122,3 +122,15 @@ class GuiEngineContracts(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+@unittest.skipUnless((ROOT / 'build/7Wonders').is_file(), 'Build engine first')
+class GuiVersionBoundary(unittest.TestCase):
+    def test_legacy_gui_rejects_protocol_three(self):
+        if json.loads((ROOT / 'engine-contract.json').read_text())['protocol_version'] != 3:
+            self.skipTest('Protocol-3 boundary only')
+        session = GameSession(ROOT / 'build/7Wonders', seed=42)
+        self.addCleanup(session.close)
+        session.start()
+        with self.assertRaisesRegex(SessionError, 'requires protocol v2'):
+            wait_state(session)

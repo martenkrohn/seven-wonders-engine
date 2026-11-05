@@ -1,0 +1,325 @@
+{
+  "format_version": 1,
+  "package": "4b-II",
+  "checked_on": "2026-11-05",
+  "status": "accepted_development_protocol3",
+  "engine_baseline_commit": "da93178974fa8998cc7ad60a6af6103e8862c9c3",
+  "rl_commit": "a283d5897d01b8edd32021562271698f1d41a3ee",
+  "rl_pin": "f39c1d7ead271df437269b7f555a2c7a0d4b9ad1",
+  "engine_contract": {
+    "format_version": 1,
+    "release": "v0.2.0-dev",
+    "ruleset": "bga-second-edition-development",
+    "protocol_version": 3,
+    "players": 3,
+    "second_edition_implemented": false,
+    "upstream_repository": "https://github.com/dmag-ufsm/7Wonders",
+    "upstream_commit": "a0bc333a7a7f21f83156de8a2d522e7baa913f0a"
+  },
+  "active_contract": "decision-v1",
+  "historical_specification_contract": "decision-v1-draft",
+  "red_regressions": [
+    {
+      "case": "producer",
+      "exit_code": 1,
+      "failure": "New same-round producer financed another seat"
+    },
+    {
+      "case": "income",
+      "exit_code": 1,
+      "failure": "Same-round trading income financed another action"
+    },
+    {
+      "case": "count",
+      "exit_code": 1,
+      "failure": "Simultaneous neighbor brown not counted by Vineyard"
+    },
+    {
+      "case": "barrier",
+      "exit_code": 1,
+      "failure": "Final game completed before mandatory discard selection"
+    }
+  ],
+  "red_context": "Four independent legacy runtime cases compiled before changes against da93178, run in isolated temporary working directories.",
+  "user_rule_decisions": {
+    "RQ-1": false,
+    "RQ-2": false,
+    "source": "Explicit user decision from 2026-11-05; no further rule approval requested."
+  },
+  "acceptance_case_coverage": {
+    "D01-D04": "C++ discard barrier, current sales/remainders, buried source and duplicate checks; prior discard_safety retained.",
+    "D05-D13": "Physical-copy ownership, invalid/valid retry, replay/conflict, whole-round rollback and automatic no-options tests.",
+    "D14": "Mandatory choice: no skip option; forged skip rejected. User decision RQ-2.",
+    "D15-D16": "Synthetic cross-seat grants ordered 0 before 2 and refreshed after first removal; no base-game source produces multiple grants within one seat/action.",
+    "D17-D20": "New legacy Babylon right on sixth turn, skipped slots, last sixth/seventh discard choice and exactly-once military/final result.",
+    "D21-D25": "Frozen income/production/discount, independent choice buyers, minimal split payments, simultaneous Vineyard and Lighthouse self count.",
+    "D26": "No retroactive Bazar payout after later grey discard construction. User decision RQ-1.",
+    "D27": "Same-turn revision/decision transitions and independent headless consumer.",
+    "D28": "Engine identities/no fake actions provided; GUI/RL history/collector integration remains explicitly deferred to packages 7/8.",
+    "D29-D34": "Engine timeout, abort, fresh game identity per seed, accepted vs applied, matching/invalid bundles and old V2 files.",
+    "D35-D36": "Core and real-server terminal replay without new events/result rewrite; prior source-stage grant idempotency tests retained."
+  },
+  "full_games": [
+    {
+      "seed": 0,
+      "decisions": 57,
+      "discard_decisions": 0,
+      "turn_slots": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ],
+      "scores": [
+        49,
+        41,
+        44
+      ]
+    },
+    {
+      "seed": 7,
+      "decisions": 54,
+      "discard_decisions": 0,
+      "turn_slots": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        21
+      ],
+      "scores": [
+        42,
+        51,
+        28
+      ]
+    },
+    {
+      "seed": 8,
+      "decisions": 57,
+      "discard_decisions": 1,
+      "turn_slots": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ],
+      "scores": [
+        43,
+        50,
+        47
+      ]
+    },
+    {
+      "seed": 19,
+      "decisions": 54,
+      "discard_decisions": 0,
+      "turn_slots": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        21
+      ],
+      "scores": [
+        38,
+        41,
+        48
+      ]
+    },
+    {
+      "seed": 42,
+      "decisions": 54,
+      "discard_decisions": 0,
+      "turn_slots": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        21
+      ],
+      "scores": [
+        52,
+        43,
+        47
+      ]
+    }
+  ],
+  "full_game_invariants": [
+    "63 physical cards conserved across hands/cities/discard/buried, no duplicate live instance IDs",
+    "Only offered legal actions submitted; all actually applied",
+    "Only eligible seats receive seventh-card or discard decisions",
+    "No results file before finished; final file agrees with player totals",
+    "Repeated seed has same choices/scores, independent game IDs",
+    "Terminal request replay leaves revision/events/result and results-file modification time unchanged"
+  ],
+  "gui_test_boundary": {
+    "legacy_process_tests_skipped": 5,
+    "reason": "Active transport 3; old GUI remains protocol 2 and is intentionally not migrated. New real-process test verifies explicit GUI rejection. Legacy tag remains available."
+  },
+  "unchanged_scope": {
+    "card_declarations_byte_equal": true,
+    "wonder_stage_definitions": "src/wonder.cpp byte-unchanged; include/wonder.h only adds clone/destructor infrastructure",
+    "science_and_copy_candidate_functions_byte_equal": true,
+    "paths": [
+      "data",
+      "src/wonder.cpp",
+      "gui",
+      "Game.py"
+    ],
+    "rl_runtime_feature_export_training_files_unchanged": true,
+    "rl_pin_and_lock_unchanged": true
+  },
+  "artifacts_sha256": {
+    "main.cpp": "c4b5c1c6a0568c41688cc6f60d6d8e047802fcf40e759220a5693e3e335c6be7",
+    "include/decision.h": "25fa7886bea8e62bd90a5b8c9927f314e2070287627479adca156cc3eff71c11",
+    "src/decision.cpp": "bba3ee6f51448d0c3c9e0382f8b7a6e3b7b81bfa0881a3465b1528555cc676bf",
+    "include/card.h": "7cfbdd528b0f89c9e78185245ebb82d2e68caf7f28c4fd273d55a60ddf831417",
+    "include/player.h": "176a07d7c91b101365be2b547370111151d296979c45f3e74cd5982017f077ad",
+    "include/wonder.h": "2f3d169914e16663b0a14baefeeba07db1991a662bb00c093ebc806a5b95bb26",
+    "src/player.cpp": "d6528a883f9e10f71c1906e81c3c1a545254bb9cc7595e38b346c0526fbfca91",
+    "CMakeLists.txt": "6988d4be048e3d0e0bc81c4ffe3eb000d0500b39101ab2b3fcd94c3b5100cbef",
+    "engine-contract.json": "2bb2af44528a05cd6216ad6a921615bf0ed7e49d5614c1ada2721f23b7febe40",
+    "scripts/smoke_protocol.py": "07fddad902cd57904bc389466a7a7769765d1680c54a96086bba0b408d5353c7",
+    "tests/test_decision_resolution.cpp": "81f48a457272fddee01d4ed20216e2dac0c377c31d4dbdbafd601521e08a6933",
+    "tests/decision_helpers.h": "c7a04ce49a45cede5662562a91287d2c815a7b8d6d383ab85f57b3a10448fc1c",
+    "tests/test_decision_protocol.py": "02a63902a4ccfca47616db09ce86690fd1b5a536092262054ef6f0c40ee2484a",
+    "tests/test_final_status.cpp": "b3b4455508e8561e698b674cc51082820ec42186a7af9cc3fe5c12c374dceae9",
+    "tests/test_science_scoring.cpp": "750065597320e5c32bbcf284631ba128af23ba30d7e9f211f2f8ac64ea070755",
+    "tests/test_discard_safety.cpp": "6ce6f8d4b06c92dfbfc4267188b13f83f3e5a11a7ccc9cea3c6280773008b137",
+    "tests/test_joint_action_resources.cpp": "c9158b152f05771d7c0c1f424df7f1e3a80a34b8d025fd534c4c6a1be3d2a144",
+    "tests/test_gui_session.py": "4c000611d1d63fe776339ff8b557d1430de4585baac317a1c96f6df4947b3cfb",
+    "docs/PROTOCOL.md": "bc6b50a98f97562ef04e219a58db8490053acc466ea7643b2e355a509d3d899c",
+    "docs/SIMULTANEOUS_RESOLUTION.md": "8e1aeaa2150a101db6fc6605dbbe1ee5b25814f414bc39709be09d657432f305",
+    "docs/simulator/manifest.json": "98b55b106868c8898c77bdce1ddb9c96953386d841d486093918ea0628df3620",
+    "docs/simulator/upstream.patch": "56e225bc16c091c61091603b01c3a04b6ed33ec46d5ccfd805ca398784519f71"
+  },
+  "rl_lock_sha256": "ccdc338dba3b39de6aa9694f4504cf61dd4eea80db741d7dfd856097369009d6",
+  "limits": [
+    "Development rules only; old card/wonder values and activation stages retained, edition flag false.",
+    "Legacy Olympia once-per-age mode remains explicit; target first/sixth modes are not advertised.",
+    "Old GUI/RL clients are incompatible with transport 3; headless client is the current runnable path.",
+    "No remote authentication, saved-game/crash recovery, other player counts or checkpoint migration.",
+    "No GUI/RL runtime, exporter, feature or training changes; existing legacy export assumptions remain outside this adoption.",
+    "No push/release, parent submodule/lock update; only package 5-I is prepared next."
+  ],
+  "checks": [
+    {
+      "command": "cmake -S . -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build --clean-first --parallel 2",
+      "exit_code": 0
+    },
+    {
+      "command": "ctest --test-dir build --output-on-failure",
+      "exit_code": 0,
+      "passed": 9
+    },
+    {
+      "command": "ctest --test-dir build -R ^decision_resolution$ --output-on-failure",
+      "exit_code": 0,
+      "note": "Targeted rerun after adding the pending-grant abort regression; no runtime source change."
+    },
+    {
+      "command": "python3 -m unittest discover -s tests -p test_*.py -v",
+      "exit_code": 0,
+      "total": 26,
+      "passed": 21,
+      "skipped": 5
+    },
+    {
+      "command": "python3 scripts/audit_bga_targets.py --check",
+      "exit_code": 0,
+      "card_rows": 80,
+      "card_types": 77,
+      "wonder_sides": 14
+    },
+    {
+      "command": "python3 scripts/audit_simulator.py && python3 scripts/audit_simulator.py --check",
+      "exit_code": 0,
+      "scoped_files": 55
+    },
+    {
+      "command": "git diff --check -- :!docs/simulator/upstream.patch",
+      "exit_code": 0,
+      "note": "Generated upstream patch includes inherited context whitespace; integrity is covered by provenance audit."
+    }
+  ],
+  "historical_workspace_audit_note": "As in package 4b-I, --workspace .. binds frozen package-1 C++ source hashes and is not a comparison with changed current source. Original target/provenance data are unchanged; the independent current target audit is green.",
+  "targeted_atomic_failure": "A cloned BrokenStage successfully mutates the temporary wonder/player and then throws; original player/card/payment state and events are retained, accepted inputs cancel, no normal result is produced.",
+  "explicit_abort_after_commit": "Pending final discard grant is cancelled_abort while the completed ordinary wonder stage and its applied receipt remain intact."
+}

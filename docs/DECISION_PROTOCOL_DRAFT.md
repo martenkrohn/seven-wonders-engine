@@ -1,13 +1,15 @@
 # Entscheidungs- und Auflösungsvertrag – Entwurf aus Paket 4a
 
-Stand: 5. November 2026. Vertragskennung **`decision-v1-draft`**, vorgeschlagene
-Transportversion **3**. Dieser Vertrag ist spezifiziert, **nicht implementiert**.
-Das aktuelle Binary bleibt bei [Protokoll 2](PROTOCOL.md) und dem unveränderten
-[Entwicklungskontrakt](../engine-contract.json) aus Paket 3. Die folgenden
-Nachrichten sind Beispiele für die spätere Implementierung, keine Befehle für
-das heutige Binary. Ein Client darf Version 3 nicht als Version 2 behandeln.
-Paket 4b-I implementiert inzwischen die [interne sichere Ablageentnahme](DISCARD_SAFETY.md),
-jedoch keine der neuen Nachrichten oder den vollständigen Entscheidungsautomaten.
+Stand: 5. November 2026. Spezifikationsursprung aus Paket 4a:
+**`decision-v1-draft`**. Paket 4b-II implementiert inzwischen den Vertrag als
+**`decision-v1`**, Transportversion **3**; maßgeblich für den aktiven Transport
+ist [PROTOCOL.md](PROTOCOL.md). Der [Entwicklungskontrakt](../engine-contract.json)
+behält `second_edition_implemented=false`. Karten/Wunder folgen weiterhin den
+bisherigen Definitionen. Aktive Fähigkeiten (insbesondere Legacy-Olympia) und
+Nachweisgrenzen: [SIMULTANEOUS_RESOLUTION.md](SIMULTANEOUS_RESOLUTION.md).
+Die historischen Beispielkennungen bleiben als Entwurf gekennzeichnet und
+sind keine direkt zustellbaren Requests; die verbindlichen Feldnamen und
+Fachentscheidungen liegen der Umsetzung zugrunde.
 
 ## 1. Geltung, Quellen und entschiedene Fachfragen
 
@@ -381,18 +383,18 @@ Zusatzwahl darf er warten, ohne eine eigene Lernaktion zu erzeugen.
 
 `gui/session.py::poll/submit`, `SevenWondersEnv::_validate_status/_wait_status/
 _send_action_impl/_wait_next_impl` und `ObservationHistory::observe/acknowledge`
-erfüllen diesen Entwurf heute ausdrücklich nicht. Ihre Anpassung gehört in
+erfüllen den neuen Vertrag heute ausdrücklich nicht. Ihre Anpassung gehört in
 die jeweiligen späteren Pakete. Fähigkeiten werden erst beworben, wenn die
 zugehörigen Engine-Pfade und Clients abgenommen sind.
 
 ## 9. Getrennte Implementierungsaufträge
 
-**4b-I – sichere Ablageentnahme:** Zentrale physische Instanz, atomare Entnahme,
+**4b-I – sichere Ablageentnahme (abgeschlossen):** Zentrale physische Instanz, atomare Entnahme,
 kostenlose Gebäudeanwendung ohne Handentnahme und korrekter Grantverbrauch;
 Fehler-/Wiederholungsfälle direkt in C++ prüfen. Keine neue interaktive
 Protokollfreigabe und keine Runden-/Zahlungsneufassung in diesem Auftrag.
 
-**4b-II – Auflösung und Veröffentlichung:** Gemeinsamer Anfangszustand,
+**4b-II – Auflösung und Veröffentlichung (implementiert):** Gemeinsamer Anfangszustand,
 Zahlungspläne, Münzeffekte gemäß RQ-1/USER, Warteschlange, Restkarten,
 Babylon-/Ärenbarrieren, Nachrichtenledger und Protokollzustände. Erst mit
 passenden Clients den interaktiven Ablagepfad gemäß RQ-2/USER freigeben.
