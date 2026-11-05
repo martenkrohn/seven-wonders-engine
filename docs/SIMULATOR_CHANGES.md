@@ -342,6 +342,18 @@ jeweilige Stufenzahl. Teilstände, drei-/vierstufige Wunder und wiederholte
 Wertung geprüft; vor der Korrektur schlug spätere Vollendung fehl. 13 CTests
 grün, keine Karteneffekte mehr gesperrt; Wunderumstellung folgt separat.
 
+## ENG-018 – Einfache Wunderfamilien (Paket 6a)
+
+Gizah, Rhodos, Ephesos und Alexandria beider Seiten verwenden dieselbe
+Generatorquelle wie Karten. Neue Tabellen/Export enthalten die 14 Ziele;
+nur diese acht Seiten sind in diesem Schritt aktiviert. Ein gemeinsamer
+Stufenpfad prüft aktuelle Kosten ohne veraltete Restkosten, klont die
+Prüfökonomie und wendet Punkte/Münzen/Schilde einmalig an. Alexandria-
+Wahlproduktion bleibt einmalig und nicht handelbar. Alle Stufen werden
+gegen die eingefrorenen Ziele und über echte Angebote/Auflösung geprüft.
+Roter Gizah-Kostenfall, danach 15 CTests grün. Die alte Alexandria-B-
+Produktionsfixture erhält das jetzt erforderliche Erz statt alter Holzannahme.
+
 ## Abgrenzung
 
 Es findet keine pauschale Behauptung vollständiger Regelkorrektheit statt. Insbesondere werden die Wunder-Ausbauschritte nicht zur neuen Edition migriert. Die Kartentabellenmigration in ENG-015 bleibt von den noch offenen neuen Sondereffekten getrennt. Falls frühere Kartenänderungen nicht im exakten Unterschied zu diesem Upstream-Commit erscheinen, werden sie nicht ohne Nachweis als Änderungen dieser C++-Fassung behauptet. Für jede zukünftige Änderung ist ein neuer Eintrag mit Anlass, genauer Funktion, Wirkung, Test und Grenzen anzulegen und der exakte Nachweis neu zu erzeugen.

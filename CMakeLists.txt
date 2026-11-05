@@ -47,7 +47,7 @@ add_library(engine_core STATIC src/card.cpp src/decision.cpp src/player.cpp src/
 add_executable(7Wonders main.cpp)
 target_link_libraries(7Wonders engine_core)
 enable_testing()
-foreach(name card_tables card_effects decision_resolution choice_simple choice_once_per_turn final_status joint_action_resources science_scoring discard_safety)
+foreach(name card_tables card_effects wonder_tables decision_resolution choice_simple choice_once_per_turn final_status joint_action_resources science_scoring discard_safety)
     add_executable(test_${name} tests/test_${name}.cpp)
     target_link_libraries(test_${name} engine_core)
     add_test(NAME ${name} COMMAND test_${name})
@@ -62,6 +62,9 @@ file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/io" "${CMAKE_BINARY_DIR}/logs")
 # Optional standalone client: standard library only, no RL dependencies.
 find_package(Python3 3.10 COMPONENTS Interpreter QUIET)
 if(Python3_Interpreter_FOUND)
+    add_test(NAME compiled_wonder_data COMMAND "${CMAKE_COMMAND}" -E env
+        "SEVENWONDERS_WONDER_TEST=$<TARGET_FILE:test_wonder_tables>" "${Python3_EXECUTABLE}" -m unittest discover
+        -s "${CMAKE_CURRENT_SOURCE_DIR}/tests" -p test_bga_wonder_data.py -v)
     add_test(NAME generated_card_data COMMAND "${Python3_EXECUTABLE}"
         "${CMAKE_CURRENT_SOURCE_DIR}/scripts/generate_card_data.py" --check)
     add_test(NAME compiled_card_data COMMAND "${CMAKE_COMMAND}" -E env

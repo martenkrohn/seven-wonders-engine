@@ -17,6 +17,7 @@ class Player
 {
     friend class DecisionCore;
     friend struct RoundState;
+    friend class Wonder;
 private:
     unsigned int id;
     DMAG::Wonder *board;

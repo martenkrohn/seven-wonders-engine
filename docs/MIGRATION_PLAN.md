@@ -499,3 +499,9 @@ Ablagebau geprüft. Einzelne Commits und weitere Nachweise folgen unten.
 Wunder-Vollendung, danach 13 CTests grün. Die Wertung verwendet die tatsächliche
 Stufenzahl (einschließlich vierstufiger Wunder); sieben Punkte nur bei
 eigener Vollendung. Alle Karteneffekte jetzt implementiert.
+
+5-IIb: Commit `1032eca`. Paket 6a: Gizah, Rhodos, Ephesos und Alexandria
+beider Seiten generiert; rote Gizah-Holzkosten vor der Änderung nachgewiesen.
+Alle Stufen dieser acht Seiten gegen die eingefrorenen Ziele und im realen
+Entscheidungspfad geprüft. 15 CTests grün. Babylon/Olympia/Halikarnassos
+bleiben für die folgenden getrennten Schritte.

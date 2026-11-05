@@ -13,5 +13,20 @@
     "deferred_effect_ids": []
   },
   "upstream_repository": "https://github.com/dmag-ufsm/7Wonders",
-  "upstream_commit": "a0bc333a7a7f21f83156de8a2d522e7baa913f0a"
+  "upstream_commit": "a0bc333a7a7f21f83156de8a2d522e7baa913f0a",
+  "wonder_data": {
+    "format_version": 1,
+    "export": "data/generated/wonders-v1.json",
+    "migrated_ids": [
+      0,
+      3,
+      4,
+      5,
+      7,
+      10,
+      11,
+      12
+    ],
+    "effects_complete": false
+  }
 }

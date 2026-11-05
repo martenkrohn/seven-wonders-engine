@@ -754,7 +754,7 @@ int Player::CalculateAmountManufacturedGood(){
 // - called ONCE each turn; part of IncrementOnDemand().
 bool Player::ChooseExtraManuf(int resource){
     if (resource == RESOURCE::loom || resource == RESOURCE::glass || resource == RESOURCE::papyrus) {
-        if (this->board->GetId() == WONDER_ID::alexandria_b && this->board->GetStage() >= 2) {
+        if (this->board->EffectCount("choose_manuf_nontradable")>0) {
             if (this->used_wonder_choice_manuf == -1) {
                 this->used_wonder_choice_manuf = resource;
                 return true;
@@ -770,10 +770,7 @@ bool Player::ChooseExtraManuf(int resource){
 bool Player::ChooseExtraRaw(int resource){
     if (resource == RESOURCE::wood || resource == RESOURCE::ore ||
         resource == RESOURCE::clay || resource == RESOURCE::stone) {
-        int id = this->board->GetId();
-        int stage = this->board->GetStage();
-        bool has_effect = ((id == WONDER_ID::alexandria_a && stage >= 2) ||
-                           (id == WONDER_ID::alexandria_b && stage >= 1));
+        bool has_effect = board->EffectCount("choose_raw_nontradable")>0;
         if (has_effect && this->used_wonder_choice_raw == -1) {
             this->used_wonder_choice_raw = resource;
             return true;

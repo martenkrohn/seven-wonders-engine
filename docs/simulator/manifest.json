@@ -2,7 +2,7 @@
   "format_version": 1,
   "upstream": "https://github.com/dmag-ufsm/7Wonders",
   "baseline_commit": "a0bc333a7a7f21f83156de8a2d522e7baa913f0a",
-  "patch_sha256": "e82baba66861e0a3f61524780c437426d56c2f7ec023e61a27085841a3135ddc",
+  "patch_sha256": "059b3bde9f926f5d44d5b3a5fdf2d5bd6e21fab7ba9564f6a5eb475edab46475",
   "files": [
     {
       "path": "CMakeLists.txt",
@@ -12,7 +12,7 @@
         "sha256": "89798e4668c9abcc0dee848590b15e1fa9c788650ce727237bb4d0365b7ae4c4"
       },
       "current": {
-        "sha256": "3fa1a37cd94786cb6adbf72359aaa54a77d5f601d2afab481da141949f2e864a",
+        "sha256": "d3601d95f87aee243b0ab614fb8887a7347ee650009c5b2c66c2fd33fe158f07",
         "mode": "100644"
       }
     },
@@ -483,7 +483,7 @@
         "sha256": "46e13fa5ef2493e95db98e9dd357e1182d914b2505360b8918ca697811a51a82"
       },
       "current": {
-        "sha256": "9c4c2d44665ef232678d97851d1d7ad5379f2c1ed13c6dd9adc16fbc71fb4c26",
+        "sha256": "124715d5a7699408c8b8b1e02308a80c04d003f719cd215c6c9f0688de9fb4c3",
         "mode": "100644"
       }
     },
@@ -507,7 +507,25 @@
         "sha256": "e8cec6631184b30a2ee1d621f7cc5732ce3b0875278c37b73ede804b44991854"
       },
       "current": {
-        "sha256": "1f0b645b67694885d8384f47bad42485fadf05df2533fbf86eea8c1b4f4ea4b9",
+        "sha256": "c5f9bfed3f9051053b9e1ffecf4e2c24e4d169d15bda183223a16bf1e5af36d0",
+        "mode": "100644"
+      }
+    },
+    {
+      "path": "include/wonder_data.generated.h",
+      "status": "added",
+      "baseline": null,
+      "current": {
+        "sha256": "99ba2370db37a8cd11785efc8a43c3c78ae618d09e3e17d56b77788fa74bdead",
+        "mode": "100644"
+      }
+    },
+    {
+      "path": "include/wonder_data.h",
+      "status": "added",
+      "baseline": null,
+      "current": {
+        "sha256": "f8bb2e358d047a5ad42f75191c808d5c62e5d5312f979e8d73b4b964c35022ad",
         "mode": "100644"
       }
     },
@@ -564,7 +582,7 @@
         "sha256": "ea3bd2f5862ac2b952f3e9848b0333c6f56effa073618645ce9ef4d9074e2ce1"
       },
       "current": {
-        "sha256": "ae965fbcf84f6e0004894d10d2c414616f1f09aa3331adee744196bce0f4dd78",
+        "sha256": "baf0ce1d6dd9a8ec436acdf466d1df65f4146a21f116ab61a4b1f850659981ed",
         "mode": "100644"
       }
     },
@@ -576,7 +594,7 @@
         "sha256": "d0ffb71fecc6efef4f52347fa39c34d1eb2b5039945c6a600dd182cd4ba51193"
       },
       "current": {
-        "sha256": "e7565a10464a2a629220fefe05ea5e7f78c363149f9d7bda8e9ae9f5a2caafbb",
+        "sha256": "f966b458550cd0816b32ca9e1892010429b186bae743684f42ffe42a50cb9500",
         "mode": "100644"
       }
     },
@@ -621,7 +639,7 @@
       "status": "added",
       "baseline": null,
       "current": {
-        "sha256": "26f8fbbb2dc89f33820c7a24ed26fddf41c292d43d21dd79e83390035f7e2cad",
+        "sha256": "dcd5dfed7920ab7e0e76602e0141f0ce87d99c51c2599405f6430c99219fe0cf",
         "mode": "100644"
       }
     },
@@ -667,6 +685,15 @@
       "baseline": null,
       "current": {
         "sha256": "750065597320e5c32bbcf284631ba128af23ba30d7e9f211f2f8ac64ea070755",
+        "mode": "100644"
+      }
+    },
+    {
+      "path": "tests/test_wonder_tables.cpp",
+      "status": "added",
+      "baseline": null,
+      "current": {
+        "sha256": "5cf5f163a9ed4aa34cb3bcdc128cb81874bfb6d2ee029013e2d46002016c1c3a",
         "mode": "100644"
       }
     }

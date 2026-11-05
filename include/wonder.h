@@ -6,6 +6,7 @@
 #include <vector>
 #include <map>
 #include <memory>
+#include <wonder_data.h>
 
 namespace WONDER_ID{
     enum{
@@ -70,6 +71,8 @@ class Player; // Forward declaration to solve circular dependency issue.
 class Wonder
 {
 protected:
+    const WonderDefinition* definition = nullptr;
+    void Configure(int identity);
     int id;
     int production;
     std::string name;
@@ -107,6 +110,10 @@ public:
     int GetStage() const;
     int GetStageCount() const { return effects.size(); }
     bool IsComplete() const { return GetStageCount()>0 && stage==GetStageCount(); }
+    bool IsMigrated() const { return definition!=nullptr; }
+    const WonderDefinition* GetDefinition() const { return definition; }
+    int EffectCount(const std::string& kind) const;
+    std::map<int,int> GetNextCost() const;
     int GetWonderPoints() const;
     std::vector<int> GetEffects() const;
     virtual bool AddStage(Player* p);

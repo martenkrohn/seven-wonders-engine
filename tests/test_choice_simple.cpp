@@ -86,6 +86,7 @@ void Test_Wonder_Choice_Manuf_SingleUse() {
     player->AddResource(RESOURCE::clay, 10);
     player->AddResource(RESOURCE::wood, 10);
     
+    player->AddResource(RESOURCE::ore, 10);
     alex->AddStage(player); // Stage 1 - enables choose-raw
     alex->AddStage(player); // Stage 2 - enables choose-manuf
     

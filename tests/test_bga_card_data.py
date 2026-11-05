@@ -11,7 +11,8 @@ import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
-ARTIFACTS = ("include/card_data.generated.h", "data/generated/cards-v1.json")
+ARTIFACTS = ("include/card_data.generated.h", "data/generated/cards-v1.json",
+             "include/wonder_data.generated.h", "data/generated/wonders-v1.json")
 SOURCE = "data/bga-second-edition/targets.json"
 
 
