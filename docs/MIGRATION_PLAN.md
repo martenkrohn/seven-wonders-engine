@@ -5,7 +5,7 @@ weitere Migration. **Ein Auftrag bearbeitet jeweils nur ein Arbeitspaket.**
 Zum Abschluss werden Ergebnis, Tests, Commit und verbleibende Grenzen
 eingetragen. Anschließend endet der Auftrag; das nächste Paket startet mit
 frischem Kontext. Der [fertige nächste Agentenauftrag](NEXT_AGENT_TASK.md)
-begrenzt die nächste Sitzung auf Paket 5-I (Kartendatentabellen).
+begrenzt die nächste Sitzung auf Paket 5-IIa (ausschließlich Ludus).
 
 ## Ziel und feste Entscheidungen
 
@@ -22,8 +22,8 @@ begrenzt die nächste Sitzung auf Paket 5-I (Kartendatentabellen).
   begonnen. Paket 4a spezifiziert zusätzliche Entscheidungen und simultane
   Auflösung. Paket 4b-I sichert die interne Ablageentnahme; Paket 4b-II
   implementiert gemeinsame Auflösung, Pflichtentscheidungen und Transport 3.
-  Karten und Wunder verwenden weiter Legacy-Daten; neue Kosten, Fähigkeiten
-  und Grafik werden getrennt umgesetzt.
+  Paket 5-I übernimmt die erzeugten Kartentabellen. Ludus-/Decorators-Effekte,
+  Wunder und Grafik werden in den jeweiligen Folgeaufträgen umgesetzt.
 - Jeder Commit muss klar benennen, welchen Regelstand er abbildet. Eine
   begonnene Migration erhält einen Entwicklungs-Regelnamen und
   `second_edition_implemented=false`; erst die Abnahme erlaubt eine fertige
@@ -78,8 +78,8 @@ lokalen Ordner verwendbar.
 | 4a – Entscheidungsvertrag | Erledigt als Spezifikation, Abnahme unten | Ablagewahl und simultane Auflösung als Protokollzustände spezifizieren | Eingaben, sichtbare Optionen, Sitzreihenfolge, Timing, Abbruch und Terminalzustand beschrieben; die beiden ursprünglichen Regelfragen inzwischen durch Nutzer entschieden |
 | 4b-I – Sichere Ablageentnahme | Erledigt, Abnahme unten | Internen Ablagebau mit stabiler Instanz, atomarer Entnahme und korrektem Rechtverbrauch absichern | Keine Handentnahme über Ablageindex; zentrale Ablage genau einmal geändert; Fehler, Wiederholung und leere Auswahl geprüft; kein neuer interaktiver Transport |
 | 4b-II – Runden-/Zahlungsauflösung | Erledigt, Abnahme unten | Gemeinsamen Anfangszustand, Zahlungen, Folgeentscheidungen und Nachrichtenvertrag implementieren | Gleichzeitigkeit, Restkarten, siebte Karte, Abschlussbarrieren und Nachrichtenledger geprüft; RQ-1/RQ-2 gemäß ausdrücklicher Nutzervorgabe umgesetzt |
-| **5-I – Kartendatentabellen** | **Als Nächstes** | Geprüfte Kartendaten deterministisch in Engine-Tabellen übernehmen | Alle 80 Zeitalterzeilen, Kosten/Punkte/Ketten, Mengen und feste Effekte gegen Ziele geprüft; IDs erhalten; neue Sondereffekte getrennt und ausdrücklich offen |
-| 5-II – Neue Kartensondereffekte | Offen, eigener Folgeauftrag | Ludus und Decorators Guild einzeln umsetzen und abnehmen | Neue Zähl-/Wertungseffekte mit gezielten Gegenbeispielen geprüft; keine bloße Datenmigration als vollständige neue Edition ausgegeben |
+| 5-I – Kartendatentabellen | Erledigt, Abnahme unten | Geprüfte Kartendaten deterministisch in Engine-Tabellen übernehmen | Alle 80 Zeitalterzeilen, Kosten/Punkte/Ketten, Mengen und feste Effekte gegen Ziele geprüft; IDs erhalten; neue Sondereffekte getrennt und ausdrücklich offen |
+| **5-II – Neue Kartensondereffekte** | **Als Nächstes: nur Ludus (5-IIa); Decorators danach** | Ludus und Decorators Guild einzeln umsetzen und abnehmen | Neue Zähl-/Wertungseffekte mit gezielten Gegenbeispielen geprüft; keine bloße Datenmigration als vollständige neue Edition ausgegeben |
 | 6 – Neue Wunder | Offen | Die 14 Seiten familienweise umstellen | Jede Stufe: Kosten, Ertrag, Verfügbarkeit und richtige Anzahl geprüft; Sonderfähigkeiten mit gezielten Fällen abgenommen |
 | 7 – GUI der neuen Edition | Offen | Neue Entscheidungsansichten, Bilder und Layout einbinden | Alle neuen Fähigkeiten menschlich bedienbar; korrekte Bilder/Namen/Stufen; vollständige Partien und fehlende Bilder getestet |
 | 8 – RL-Anbindung | Offen | Neue Engine bewusst im RL-Projekt übernehmen | Exportdaten, Beobachtungen, Aktionen, Merkmale und Checkpoint-Verträge passen; Protokoll-/Kurztrainingsprüfungen bestehen |
@@ -429,3 +429,58 @@ auf Version 3 migriert; GUI verwirft das neue Binary, der alte GUI-Tag bleibt
 reproduzierbar. Keine GUI-/RL-Laufzeit-, Export-/Feature-/Trainingsänderung,
 kein Push/Release und kein Parent-Submodule-/Lock-Update. Paket 5-I ist
 vorbereitet, nicht begonnen; dieses Paket endet hier.
+
+
+## Abnahme Paket 5-I – Kartendatentabellen
+
+Implementierung: **`8b35b280635c248f8c4cdb985d20ad7d86a8c1a1`**.
+Weiter `v0.2.0-dev`, `bga-second-edition-development`, Protokoll 3,
+`decision-v1`, `second_edition_implemented=false`.
+
+Die eingefrorenen Ziele erzeugen reproduzierbar C++-Tabellen und den neutralen
+Export `data/generated/cards-v1.json`, Format 1 mit Quellenhash. Das Binary
+enthält die Tabellen; es benötigt keine Daten-JSON oder Pfade zum RL-Workspace.
+Alle 80 Zeitalterzeilen/77 Typen, 25 Ketten, Kosten, blaue Punkte, Mengen,
+feste Produktion/Münzen/Schilde, Rabatte und Wissenschaftssymbole sind
+übernommen. Planer und Gebäudeanwendung lesen dieselben Produktionswerte.
+Graue Altersvarianten bleiben getrennt; mehrdeutige Namenssuche verweigert eine
+stille Auswahl. Bestehende IDs und physische Kennungen bleiben erhalten;
+73 bleibt reserviert, 76/77/78 sind angehängt. Drei-Spieler-Decks haben pro
+Ära 21 Karten, darunter in III fünf verschiedene Gilden aus zehn.
+
+Fünf rote Vorher-Fälle zeigen Altar-Punkte, Aqueduct-Kosten, Pantheon-Kette,
+Town-Hall-Mengen und den alten Strategists-Pool. Die Regression prüft alle
+Zeilen im realen Entscheidungs-/Baupfad, sämtliche Ketten, exakte und
+unzureichende Kosten, feste und einmalige Wahlproduktion. Der unabhängige
+Vergleich sämtlicher kompilierter Felder mit den Zielen und 40 reale
+Deckziehungen sind grün. Generator-Schreibfreiheit, absichtlich veraltete
+Artefakte, doppelte bytegleiche Erzeugung und ein isolierter Generatorcheckout
+mit unverwandtem Arbeitsverzeichnis sind geprüft.
+
+Release-Build und **zwölf CTests** grün. Python: **31 Tests, davon 26 bestanden
+und fünf historische V2-GUI-Prozesstests ausdrücklich ausgelassen**. Fünf
+vollständige reale Protokoll-3-Partien (0/7/8/19/42), Wiederholung von Seed 7
+und Terminalwiederholung von Seed 8 prüfen Kartenerhaltung, angewandte legale
+Optionen und Ergebnisdateien. Seed 8 enthält weiterhin eine Ablagewahl.
+Ziel- und Herkunftsaudit für 58 Dateien sind grün. Der optionale historische
+Workspace-Audit ist mit Originalbytes sämtlicher damaliger `engine/*`-Eingaben
+aus `f39c1d7` ebenfalls grün; eingefrorene Prüfsummen bleiben unverändert.
+Zusätzlich besteht ein vollständiger frischer Release-Build im isolierten
+Engine-Klon ohne RL-Dateien/Bilder mit sämtlichen zwölf CTests. Das Binary
+meldet den sauberen Implementierungscommit; sein Dateipfad wird aus einem
+unabhängigen temporären Arbeitsordner benutzt.
+Weitere Abschlussnachweise: [card-data-validation.json](card-data-validation.json),
+[CARD_DATA.md](CARD_DATA.md).
+
+Grenzen: Ludus und Decorators behalten ihre vollständigen Zielmetadaten,
+ihre neuen Zähl-/Wertungseffekte liefern in 5-I jedoch ausdrücklich null.
+Decorators ist bereits im neuen Gildenpool, weshalb seine sieben bedingten
+Punkte noch fehlen können; Ludus hat im normalen Drei-Spieler-Deck keine
+Kopie. Castrum wendet seine festen drei Schilde an. Status und Vertrag nennen
+`tables_complete=true`, `effects_complete=false` und fehlende IDs `[76,78]`.
+Die Wissenschaftsoptimierung und alte Gildenkopie-Kandidatenwahl bleiben
+unverändert; feste Symbole kommen nun aus der Tabelle. Wunder, GUI/RL,
+Legacy-Exporter, Features und Training sind unverändert. Kein Push/Release,
+kein Parent-Pin-/Lock-Update; der Parent bleibt bei `a283d58`, sein Pin bei
+`f39c1d7`. Der vorbereitete Folgeauftrag bearbeitet ausschließlich Ludus
+(5-IIa); Decorators und jede weitere Phase bleiben getrennt. Hier endet 5-I.
