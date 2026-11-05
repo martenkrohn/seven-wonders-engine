@@ -198,5 +198,6 @@
     "No push/release, parent pin or lock update; development edition flag remains false.",
     "Existing legacy exporters are not adapted for the extracted development ApplyBuilding function; later adoption requires an explicit exporter contract.",
     "Only the 4b-II follow-up is prepared, not begun."
-  ]
+  ],
+  "implementation_commit": "85d82561a554fab3f8ca5fec05b2dfe098a9d055"
 }

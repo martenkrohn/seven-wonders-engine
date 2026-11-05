@@ -5,7 +5,7 @@ weitere Migration. **Ein Auftrag bearbeitet jeweils nur ein Arbeitspaket.**
 Zum Abschluss werden Ergebnis, Tests, Commit und verbleibende Grenzen
 eingetragen. Anschließend endet der Auftrag; das nächste Paket startet mit
 frischem Kontext. Der [fertige nächste Agentenauftrag](NEXT_AGENT_TASK.md)
-begrenzt die nächste Sitzung auf Paket 4b-I (sichere Ablageentnahme).
+begrenzt die nächste Sitzung auf Paket 4b-II (Runden-/Zahlungsauflösung).
 
 ## Ziel und feste Entscheidungen
 
@@ -20,7 +20,8 @@ begrenzt die nächste Sitzung auf Paket 4b-I (sichere Ablageentnahme).
   eingefroren und Paket 2 die Legacy-Exporte repariert. Paket 3 hat den
   Laufzeitumbau mit optimaler Wissenschaftswertung im Entwicklungs-Regelstand
   begonnen. Paket 4a spezifiziert zusätzliche Entscheidungen und simultane
-  Auflösung; dieser Entwurf ändert noch keine Laufzeitlogik.
+  Auflösung. Paket 4b-I sichert die interne Ablageentnahme; die vollständige
+  Entscheidungs-/Zahlungsauflösung bleibt für 4b-II.
   Karten und Wunder verwenden weiter Legacy-Daten; neue Kosten, Fähigkeiten
   und Grafik werden getrennt umgesetzt.
 - Jeder Commit muss klar benennen, welchen Regelstand er abbildet. Eine
@@ -41,7 +42,8 @@ Git-Arbeitsstände prüfen. Die RL-Arbeit liegt auf
 | `docs/GUI.md`, `docs/GUI_AUDIT.md` | Gegenwärtiger GUI-Stand und konkrete offene Punkte |
 | `docs/KNOWN_ISSUES.md`, `docs/PROTOCOL.md` | Bestehende Regelgrenzen und Transportvertrag |
 | `docs/SCIENCE_SCORING.md`, `docs/science-validation.json` | Korrigierte Wissenschaftswertung, Testnachweis und getrennte Kopier-/Python-Vorschaugrenzen aus Paket 3 |
-| `docs/DECISION_PROTOCOL_DRAFT.md`, `docs/decision-protocol-examples.json`, `docs/decision-protocol-validation.json` | Nicht implementierter Entscheidungsvertrag aus Paket 4a; Quellen, Nachrichten, Abnahmefälle und zwei gezielte offene BGA-Fragen |
+| `docs/DECISION_PROTOCOL_DRAFT.md`, `docs/decision-protocol-examples.json`, `docs/decision-protocol-validation.json` | Entscheidungsvertrag aus Paket 4a; Quellen, Nachrichten und Abnahmefälle. RQ-1/RQ-2 sind inzwischen durch Nutzervorgabe entschieden; vollständiger Automat noch nicht implementiert. |
+| `docs/DISCARD_SAFETY.md`, `docs/discard-safety-validation.json` | Interne Ablagesicherheit, drei rote Fehlerfälle, Transaktions-/Instanznachweis und verbleibende V2-Grenzen aus 4b-I |
 | `data/bga-second-edition/README.md`, `targets.json`, `provenance.json` | Eigenständiger geprüfter Zielvertrag, Schema, Zuordnungen und Eingabe-Prüfsummen aus Paket 1 |
 | `../docs/reference/edition-comparison/comparison.json` | Bereits abgeglichene 80 Karten-/Zeitalterzeilen und 14 Wunderseiten; Felder `new`, `bga_id`, `new_sprite` |
 | `../docs/reference/edition-comparison/COMPARISON.md` | Lesbare vollständige Gegenüberstellung |
@@ -72,9 +74,9 @@ lokalen Ordner verwendbar.
 | 1 – Zielvertrag und Zuordnung | Erledigt, Abnahme unten | Vorhandene BGA-Ziele versioniert festhalten und IDs/Schema zuordnen | 80 Kartenzeilen und 14 Seiten vollständig; Prüfsummen/Quelle dokumentiert; alle Zielkarten und Ketten eindeutig zugeordnet; kein Laufzeitumbau |
 | 2 – Exporter reproduzierbar machen | Erledigt, Abnahme unten | Im RL-Projekt die alten Exportfehler beheben | Wunder-ID 0, Produktionsmengen und Mehrfach-Zeitalter korrekt; deterministischer Export mit geprüftem JSON-Diff und Regressionen |
 | 3 – Wissenschaftswertung | Erledigt, Abnahme unten | Gierige Jokervergabe durch optimale Endwertung ersetzen | Dokumentierte Gegenbeispiele und Kombinationen mit mehreren Jokern/Quellen bestehen; keine Kartendaten-/GUI-Änderung |
-| 4a – Entscheidungsvertrag | Erledigt als Spezifikation, Abnahme unten | Ablagewahl und simultane Auflösung als Protokollzustände spezifizieren | Eingaben, sichtbare Optionen, Sitzreihenfolge, Timing, Abbruch und Terminalzustand beschrieben; zwei konkrete Regelfragen als Freigabebedingungen gekennzeichnet; keine Laufzeitimplementierung |
-| **4b-I – Sichere Ablageentnahme** | **Als Nächstes** | Internen Ablagebau mit stabiler Instanz, atomarer Entnahme und korrektem Rechtverbrauch absichern | Keine Handentnahme über Ablageindex; zentrale Ablage genau einmal geändert; Fehler, Wiederholung und leere Auswahl geprüft; kein neuer interaktiver Transport |
-| 4b-II – Runden-/Zahlungsauflösung | Offen, eigener Folgeauftrag | Gemeinsamen Anfangszustand, Zahlungen, Folgeentscheidungen und Nachrichtenvertrag implementieren | Relevante Gleichzeitigkeit, Restkarten, siebte Karte und Abschlussbarrieren getestet; RQ-1 vor betroffener Münzfreigabe und RQ-2 vor interaktiver Ablagefreigabe geklärt |
+| 4a – Entscheidungsvertrag | Erledigt als Spezifikation, Abnahme unten | Ablagewahl und simultane Auflösung als Protokollzustände spezifizieren | Eingaben, sichtbare Optionen, Sitzreihenfolge, Timing, Abbruch und Terminalzustand beschrieben; die beiden ursprünglichen Regelfragen inzwischen durch Nutzer entschieden |
+| 4b-I – Sichere Ablageentnahme | Erledigt, Abnahme unten | Internen Ablagebau mit stabiler Instanz, atomarer Entnahme und korrektem Rechtverbrauch absichern | Keine Handentnahme über Ablageindex; zentrale Ablage genau einmal geändert; Fehler, Wiederholung und leere Auswahl geprüft; kein neuer interaktiver Transport |
+| **4b-II – Runden-/Zahlungsauflösung** | **Als Nächstes** | Gemeinsamen Anfangszustand, Zahlungen, Folgeentscheidungen und Nachrichtenvertrag implementieren | Gleichzeitigkeit, Restkarten, siebte Karte, Abschlussbarrieren und Nachrichtenledger geprüft; RQ-1/RQ-2 gemäß ausdrücklicher Nutzervorgabe umgesetzt |
 | 5 – Neue Karten | Offen | Kosten, Punkte, Ketten, Deckmengen und neue Karteneffekte migrieren | Alle 80 Zeitalterzeilen gegen Ziel geprüft; Ludus und Decorators Guild funktionieren; Drei-Spieler-Decks stimmen |
 | 6 – Neue Wunder | Offen | Die 14 Seiten familienweise umstellen | Jede Stufe: Kosten, Ertrag, Verfügbarkeit und richtige Anzahl geprüft; Sonderfähigkeiten mit gezielten Fällen abgenommen |
 | 7 – GUI der neuen Edition | Offen | Neue Entscheidungsansichten, Bilder und Layout einbinden | Alle neuen Fähigkeiten menschlich bedienbar; korrekte Bilder/Namen/Stufen; vollständige Partien und fehlende Bilder getestet |
@@ -299,3 +301,64 @@ Export-/Feature-/Trainingseingriff. Keine Veröffentlichung und kein Release;
 RL-Pin und `engine.lock.json` bleiben bei `f39c1d7`. Der nächste Auftrag ist
 ausschließlich **4b-I – sichere Ablageentnahme**; er ist vorbereitet und hier
 nicht begonnen. Runden-/Zahlungsauflösung bleibt ein eigener Folgeauftrag.
+
+Nachtrag aus 4b-I: Die oben historisch offenen RQ-1/RQ-2 hat der Nutzer am
+5. November 2026 ausdrücklich mit **nein/nein** entschieden. Der aktuelle
+Entwurf und die Akzeptanzfälle sind entsprechend aktualisiert; die ursprünglichen
+Abnahmeprüfsummen bleiben als historischer Nachweis erhalten. Es ist keine
+erneute Regelbestätigung erforderlich.
+
+## Abnahme Paket 4b-I – 5. November 2026
+
+Implementierungscommit: `85d82561a554fab3f8ca5fec05b2dfe098a9d055`
+(`Secure development discard construction with atomic physical-card removal`).
+Der anschließende Dokumentationscommit hält diese Abnahme und ausschließlich
+Paket 4b-II als nächsten Auftrag fest.
+
+Ergebnis: Physische Kartenkopien besitzen innerhalb einer Partie stabile
+Kennungen. Die zentrale Ablage wird per Referenz und Instanz angesprochen;
+Gebäudeanwendung und Entnahme aus Hand/Ablage sind getrennt. Ablagebau bereitet
+Spieler und Restablage vor und übernimmt Karte, Stadteintrag, Effekte und
+Rechtverbrauch gemeinsam über nicht werfende Operationen. Ungültige Eingaben
+ändern das offene Recht nicht; null legale Optionen schließen es automatisch
+ohne Ersatz. Bereits verbrauchte/abgelaufene Quellstufen erteilen kein neues
+Recht. Bestehende Halikarnassos-Aktivierungsstufen bleiben unverändert.
+V2-Namensvorwahlen gehören jetzt dem jeweiligen Sitz; mehrdeutige Namen bauen
+nichts. Details: [DISCARD_SAFETY.md](DISCARD_SAFETY.md).
+
+Regelentscheidungen des Nutzers: **RQ-1 nein**, spätere Ablagekonstruktionen
+ändern reguläre Münzauszahlungen nicht rückwirkend. **RQ-2 nein**, bei legalen
+Optionen kein freiwilliger Verzicht. Diese verbindlichen Projektentscheidungen
+sind im Entwurf und D14/D26 hinterlegt; kein zusätzlicher BGA-Servernachweis
+wird behauptet. Die sichtbare Durchsetzung der Wahlpflicht folgt erst in 4b-II.
+
+Prüfungen: drei rote C++-Bestands-/Rechtregressionen vor der Korrektur.
+`discard_safety` prüft unter anderem zwei physische Kopien, Altersduplikate,
+Handisolation, fehlendes/falsches/verbrauchtes Recht, Wiederholung, echte
+Halikarnassos-Quellstufen, Leerfall, Sitzbindung im vollständigen V2-Dateipfad
+und die Erhaltung aller 63 Deckkennungen beim Austeilen/Weiterreichen.
+**63 erzwungene Allokationsfehler** vor der Übernahme hinterlassen jeweils
+unveränderte Originalzustände und einen erfolgreichen gültigen Wiederholungsversuch.
+Release-Build, alle **sieben CTests**, **19 Python-/Sessiontests**, eigenständiger
+BGA-Zielaudit sowie Herkunftsaudit für **51** Dateien grün. 34 Nachrichten-
+beispiele und 36 Akzeptanzfälle erneut auf Konsistenz geprüft; keine offenen
+RQ-1/RQ-2-Fälle mehr. Artefakte und Umfang:
+[discard-safety-validation.json](discard-safety-validation.json).
+
+Der optionale historische Workspace-Zielaudit meldet nach dem erlaubten Umbau
+die geänderte `engine/include/card.h`-Prüfsumme. Derselbe Audit besteht in einem
+temporären Workspace mit den echten eingefrorenen `f39c1d7`-Quelldateien und
+den unveränderten Originalreferenzen. Historische Herkunftswerte wurden nicht
+umgeschrieben. Karten-Deklarationen und Gebäudeeffekt-Switch sind bytegleich;
+Wunder-/Wissenschafts-/Gildenkopierlogik und Zieldaten unverändert.
+
+Grenzen: V2 besitzt weiterhin nur eine alte Namensvorwahl und kann die sichtbare
+Pflichtauswahl noch nicht erzwingen. Unerfüllte Vorwahlen bauen nichts; ihr
+Recht verfällt am Zugfenster. Noch kein vollständiger Grant-/Request-Automat,
+keine simultane reguläre Auflösung, Restkarten-/Babylon-/Ärenbarriere oder
+Protokoll-3-/GUI-/RL-Integration. Keine Karten-/Wunderwerte, Exporte, Features
+oder Trainingsdateien geändert. Die spätere Übernahme der Entwicklungs-Engine
+benötigt einen bewussten Exportweg für den ausgelagerten Gebäudeeffektcode.
+Aktiver Vertrag weiter `v0.2.0-dev`, `second_edition_implemented=false`,
+Transportversion **2**. Kein Push/Release und kein RL-Pin-/Lock-Update.
+Paket 4b-II ist vorbereitet, nicht begonnen; dieses Paket endet hier.
