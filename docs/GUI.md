@@ -1,80 +1,55 @@
-# Alte grafische Oberfläche verwenden
-
-**Aktueller Entwicklungsbaum ab Paket 4b-II:** Die Engine verwendet Protokoll 3.
-Diese alte Oberfläche benötigt Protokoll 2 und lehnt das neue Binary ausdrücklich
-ab. Für den alten GUI-Stand den reproduzierbaren Legacy-Tag verwenden; die
-GUI-Migration folgt in Paket 7. Der aktuelle Testclient steht unter
-[scripts/smoke_protocol.py](../scripts/smoke_protocol.py), sein Vertrag unter
-[PROTOCOL.md](PROTOCOL.md). Der folgende Bedienungstext beschreibt die alte GUI.
-
-Die ursprüngliche Tk-Oberfläche ist als optionales Frontend wieder eingebunden.
-Sie verwendet weiterhin den bisherigen Regelstand und benötigt kein RL-Paket.
-`gui/legacy_view.py` stammt aus dem ursprünglichen `Game.py`; Start, Dateiaustausch
-und Prozessverwaltung liegen jetzt getrennt in `Game.py` und `gui/session.py`.
-
-## Starten
-
-Im Engine-Repository:
+# BGA-GUI mit angebotenen Entscheidungen
 
 ```sh
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel 2
-python3 Game.py 2 --assets-dir /home/marten/dev/7Wonders/images --seed 42
+python3 -m pip install -e '.[gui]'
+python3 Game.py 2
 ```
 
-Python 3.10+, Tkinter und ein erreichbares Grafikdisplay sind erforderlich.
-Unter Ubuntu/WSL stellt das Systempaket `python3-tk` Tkinter bereit. Mit
-`python3 Game.py --help` lassen sich die Optionen auch ohne Display ansehen.
+Tk muss installiert sein (unter Ubuntu `python3-tk`). `0` Bots bedeutet drei
+lokale Menschen, `2` einen Menschen als Spieler 3, `3` eine beobachtete Botpartie.
+`--seed`, `--engine`, `--timeout` und `--assets-dir` sind optional.
 
-Der Bildpfad bezeichnet den vorhandenen Ordner mit `cards/`, `wonders/` und
-`resources/`. Die Bilder bleiben lokal. Ohne `--assets-dir` wird `engine/images/`
-verwendet; fehlende Bilder werden durch beschriftete Platzhalter ersetzt.
-Bei einem Build aus dem RL-Projekt kann dessen Binary verwendet werden:
+Die Oberfläche verwendet die tatsächlichen angebotenen Optionen und bindet
+physische Karteninstanz, Entscheidung und Revision. Normale Aktionen, siebte
+Karte und Pflicht-Ablagewahl verwenden dieselbe Auswahlansicht. Freibaumodi
+und Bauketten haben eigene beschriftete Schaltflächen; Zahlungen sind sichtbar.
+Bei mehreren Menschen wird die nächste Hand erst nach expliziter Übergabe
+angezeigt. Öffentliche Städte, Ressourcen, alle Punktekategorien und die
+abschließende Wertung bleiben sichtbar. Die Ereignisschleife wartet nicht
+blockierend auf den Spielprozess; Schließen räumt den Prozess und seine
+isolierten Austauschdateien auf.
+
+Grafiken bleiben extern. Im gemeinsamen Workspace wird die vorhandene BGA-
+Referenz automatisch gefunden; andernfalls beispielsweise:
 
 ```sh
-python3 engine/Game.py 2 --engine build/7Wonders --assets-dir images --seed 42
+python3 Game.py 2 --assets-dir /pfad/bga-sevenwonders
 ```
 
-## Bedienung
+Benötigt werden `img/cards_v2.jpg` und `img/boards_v2.jpg` (tatsächlich WebP).
+Die Checksummen des eingefrorenen Manifests verhindern, dass alte Bilder als
+neue Kartenwerte ausgegeben werden. Die Zuschnitte verwenden die expliziten
+Sprite-Rechtecke einschließlich Wunder-ID 0 und grauer Altersvarianten.
+Kartennamen und Regelwerte werden immer zusätzlich dargestellt. Fehlende oder
+unpassende Grafiken erhalten vollständige Textdarstellung. GUI-Daten und
+Engine müssen denselben Zielquellenhash melden.
 
-- `0`: drei menschliche Plätze am selben Bildschirm.
-- `1` oder `2`: entsprechend viele einfache Bots auf den ersten Plätzen.
-- `3`: den einfachen Bots zuschauen.
-- Pro menschlichem Platz eine Handkarte anklicken und die gewünschte Aktion
-  wählen. Anschließend **Play selected actions** oder Enter drücken.
-- Bots bauen die erste laut Engine baubare Karte und werfen sonst ab. Das sind
-  einfache Begleiter, keine trainierten RL-Agenten.
-- Übersprungene siebte Karten werden automatisch quittiert. Babylon B erhält
-  seine reguläre Auswahl, wenn die alte zweite Stufe gebaut ist.
-- Am Ende bleibt die vollständig ausgewertete Punktetafel sichtbar. Das
-  Schließen des Fensters beendet auch einen noch laufenden Engine-Prozess.
+Die Standardbibliotheksbibliothek `sevenwonders_engine.DecisionClient` ist der
+geteilte Prozessclient für GUI und RL; die GUI-Sitzung enthält keine eigenen
+Regel-/Wunder-ID-Heuristiken. Frühere V2-Module bleiben ausschließlich für den
+historischen Tag und dessen Tests erhalten. `Game.py` startet die neue GUI.
 
-Alle Hände sind sichtbar. Die Oberfläche dient lokalen Test-/Hotseat-Partien;
-sie verbirgt keine Gegnerinformationen. Der Ablagebau von Halikarnassos bleibt
-wegen der bestehenden Engine-/Entscheidungsprobleme unvollständig. Alte Bilder
-können bei den bereits dokumentierten vier Kartenabweichungen andere Kosten
-zeigen als die Engine. Maßgeblich für verfügbare Aktionen ist deren Status.
-Nachbarzahlungen werden von der Engine bestimmt; eine eigene Auswahl
-zwischen mehreren Zahlungsvarianten ist in dieser Oberfläche nicht vorhanden.
-
-## Prüfen
-
-Ohne Display und ohne zusätzliche Python-Pakete:
+Prüfung:
 
 ```sh
-python3 -m unittest discover -s tests -p 'test_gui*.py' -v
-ctest --test-dir build --output-on-failure
-python3 scripts/audit_simulator.py --check
+xvfb-run -a python3 -m unittest discover -s tests -p 'test_gui*.py' -v
 ```
 
-Mit Display, einschließlich tatsächlicher Tk-Klicks und Schlussanzeige:
-
-```sh
-python3 scripts/smoke_gui.py --assets-dir /home/marten/dev/7Wonders/images
-python3 scripts/smoke_gui.py --assets-dir /home/marten/dev/7Wonders/images --bots 0 --mixed-actions
-python3 scripts/smoke_gui.py --bots 3
-```
-
-Grenzen und Prüfergebnisse: [GUI-Audit](GUI_AUDIT.md). Weitere Arbeit wird nach
-dem [Migrationsplan](MIGRATION_PLAN.md) jeweils in einem abgegrenzten Schritt
-fortgesetzt; die Wiedereinbindung stellt keine Editionsmigration dar.
+Paket 7: zwölf aktive Prüfungen bestanden, fünf historische V2-Prozesstests
+abgegrenzt. Vier echte Klickpartien mit Seeds 8/19/3/9 decken Bilder/Fallback,
+Halikarnassos und alle neuen Olympia-Freibaumodi ab. Weitere Sessiontests
+spielen mit 0/2/3 Bots und prüfen Isolation, falsche Auswahl, Abbruch und
+Prozessende. Der Hotseat-Test prüft die verdeckte nächste Hand. Alle 80 Karten-
+und 14 Wunderzuschnitte sind gegen die externen eingefrorenen Bilder geprüft.

@@ -1,0 +1,31 @@
+{
+  "package": "7",
+  "checked_on": "2026-11-05",
+  "session_commit": "0603e86",
+  "gui_tests": {
+    "total": 17,
+    "passed": 12,
+    "historical_v2_skipped": 5
+  },
+  "real_tk_games": {
+    "seeds": [
+      8,
+      19,
+      3,
+      9
+    ],
+    "images_and_text_fallback": true,
+    "all_three_olympia_free_modes_clicked": true,
+    "mandatory_discard_clicked": true,
+    "hotseat_next_hand_hidden": true,
+    "finished_scores_displayed": true
+  },
+  "sprite_coverage": {
+    "cards": 80,
+    "wonders": 14,
+    "verified_against_frozen_checksums": true,
+    "webp_decoded_from_jpg_filename": true
+  },
+  "test_environment": "Own Xvfb :91 with local libraries; no modification of existing display or system installation",
+  "legacy_modules": "Historical adapter remains separate; Game.py launches decision GUI"
+}

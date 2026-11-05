@@ -9,3 +9,7 @@
 /.idea/
 /.vscode/
 /images/
+
+/.venv/
+/*.egg-info/
+/dist/

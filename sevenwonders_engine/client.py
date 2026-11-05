@@ -77,6 +77,8 @@ class DecisionClient:
             time.sleep(.002)
 
     def request(self, actor, option_id):
+        if type(actor) is not int or actor not in range(3):
+            raise ValueError("Invalid actor")
         if self.pending or self.state is None:
             raise ValueError("No settled offer is ready")
         for decision in self.state["decisions"]:

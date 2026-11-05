@@ -9,5 +9,8 @@ description = "Protocol 3 process client for the standalone Seven Wonders engine
 requires-python = ">=3.10"
 license = {file = "LICENSE"}
 
+[project.optional-dependencies]
+gui = ["Pillow>=10"]
+
 [tool.setuptools]
 packages = ["sevenwonders_engine"]

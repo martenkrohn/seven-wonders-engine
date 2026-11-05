@@ -81,7 +81,7 @@ lokalen Ordner verwendbar.
 | 5-I – Kartendatentabellen | Erledigt, Abnahme unten | Geprüfte Kartendaten deterministisch in Engine-Tabellen übernehmen | Alle 80 Zeitalterzeilen, Kosten/Punkte/Ketten, Mengen und feste Effekte gegen Ziele geprüft; IDs erhalten; neue Sondereffekte getrennt und ausdrücklich offen |
 | **5-II – Neue Kartensondereffekte** | Erledigt: Ludus und Decorators, Abnahme unten | Ludus und Decorators Guild einzeln umsetzen und abnehmen | Neue Zähl-/Wertungseffekte mit gezielten Gegenbeispielen geprüft; keine bloße Datenmigration als vollständige neue Edition ausgegeben |
 | 6 – Neue Wunder | Erledigt, familienweise Abnahme unten | Die 14 Seiten familienweise umstellen | Jede Stufe: Kosten, Ertrag, Verfügbarkeit und richtige Anzahl geprüft; Sonderfähigkeiten mit gezielten Fällen abgenommen |
-| 7 – GUI der neuen Edition | Offen | Neue Entscheidungsansichten, Bilder und Layout einbinden | Alle neuen Fähigkeiten menschlich bedienbar; korrekte Bilder/Namen/Stufen; vollständige Partien und fehlende Bilder getestet |
+| 7 – GUI der neuen Edition | Erledigt, Sitzungs-/Tk-Abnahme unten | Neue Entscheidungsansichten, Bilder und Layout einbinden | Alle neuen Fähigkeiten menschlich bedienbar; korrekte Bilder/Namen/Stufen; vollständige Partien und fehlende Bilder getestet |
 | 8 – RL-Anbindung | Offen | Neue Engine bewusst im RL-Projekt übernehmen | Exportdaten, Beobachtungen, Aktionen, Merkmale und Checkpoint-Verträge passen; Protokoll-/Kurztrainingsprüfungen bestehen |
 | 9 – Gemeinsame Abnahme | Offen | Befunde schließen und neue Version veröffentlichen | Referenzvergleich, Regelfälle, GUI-Partien, automatisierte Spiele und CI grün; Release, Regelnamen und RL-Pin stimmen |
 
@@ -531,3 +531,10 @@ Vier neue Sessiontests prüfen sechs vollständige Partien mit 0/2/3 Bots,
 Pflicht-Ablagewahlen, ungültige Auswahl vor Dateischreiben, Isolation, Prozess-
 ende und Abbruch ohne Resultat. Alte V2-GUI bleibt explizit historisch.
 Grafik und echte Tk-Bedienung folgen als nächster Schritt 7b.
+
+7a: Commit `0603e86`. 7b Grafik/Bedienung: BGA-WebP trotz JPG-Endung,
+geprüfte Bildhashes und alle 80/14 Zuschnitte, Namens-/Werteoverlay und
+Textfallback. Vier echte Tk-Klickpartien mit Seeds 8/19/3/9 decken alle
+Olympia-Freibaumodi und Pflicht-Ablagewahl ab. Hotseat-Handübergabe verdeckt
+fremde Hände. 17 GUI-Prüfungen: 12 aktiv bestanden, fünf historische V2-
+Prozessprüfungen abgegrenzt. Paket 7 abgeschlossen; Paket 8 folgt.
