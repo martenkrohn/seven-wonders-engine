@@ -1,0 +1,93 @@
+{
+  "checked_on": "2026-11-05",
+  "package": 1,
+  "status": "accepted",
+  "implementation_commit": "b916ea45d109149a96f4aa6837bdb1f442a3ef1e",
+  "legacy_baseline_commit": "f39c1d7ead271df437269b7f555a2c7a0d4b9ad1",
+  "runtime_ruleset": "legacy-dmag-with-downstream-fixes",
+  "target_ruleset": "bga-second-edition-development",
+  "second_edition_implemented": false,
+  "inventory": {
+    "card_rows": 80,
+    "card_types": 77,
+    "wonder_sides": 14,
+    "chain_edges": 25,
+    "deck_sizes": {
+      "3": [
+        21,
+        21,
+        21
+      ],
+      "4": [
+        28,
+        28,
+        28
+      ],
+      "5": [
+        35,
+        35,
+        35
+      ],
+      "6": [
+        42,
+        42,
+        42
+      ],
+      "7": [
+        49,
+        49,
+        49
+      ]
+    },
+    "second_edition_implemented": false
+  },
+  "artifacts_sha256": {
+    "data/bga-second-edition/targets.json": "c654f36c96fdd325dc6e26cbe8ed9808ff9ea884a94d8e1eaa49284ac4a864b1",
+    "data/bga-second-edition/provenance.json": "3175d7903d5d9d24aa80f89626490b6775d371fd9356702e210dacdd57745e96",
+    "scripts/audit_bga_targets.py": "31a2a4510b9820f820751850b6da266574f4353226fbdff6776a868cb70982d7"
+  },
+  "checks": [
+    {
+      "command": "python3 scripts/audit_bga_targets.py --check --workspace ..",
+      "exit_code": 0,
+      "scope": "All normalized card/wonder targets and mappings equal the reviewed comparison; original input hashes verified."
+    },
+    {
+      "command": "python3 -m unittest discover -s tests -p 'test_*.py' -v",
+      "exit_code": 0,
+      "passed": 19,
+      "scope": "11 new target regressions and 8 existing GUI/session contracts; no Tk display test needed for this package."
+    },
+    {
+      "command": "cmake -S . -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build --parallel 2",
+      "exit_code": 0
+    },
+    {
+      "command": "ctest --test-dir build --output-on-failure",
+      "exit_code": 0,
+      "passed": 5
+    },
+    {
+      "command": "python3 scripts/audit_simulator.py --check",
+      "exit_code": 0,
+      "cpp_build_test_files": 49
+    },
+    {
+      "command": "git archive HEAD into temporary engine checkout; audit and 11 test_bga regressions from unrelated runtime directory",
+      "exit_code": 0,
+      "scope": "Committed files only, without RL checkout, network or artwork."
+    },
+    {
+      "command": "git diff --name-only f39c1d7 HEAD -- main.cpp include src CMakeLists.txt engine-contract.json Game.py gui docs/simulator",
+      "exit_code": 0,
+      "changed_files": []
+    }
+  ],
+  "limitations": [
+    "Runtime, protocol, GUI, RL databases/features and training remain legacy and unchanged.",
+    "Static definitions do not validate BGA server timing or implementation.",
+    "Only 3 engine players are supported; 4-7 player quantities are reference data.",
+    "Engine commits are local. Parent submodule pin and engine.lock.json are unchanged.",
+    "Package 2 is prepared but not started."
+  ]
+}

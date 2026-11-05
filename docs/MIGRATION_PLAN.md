@@ -5,7 +5,7 @@ weitere Migration. **Ein Auftrag bearbeitet jeweils nur ein Arbeitspaket.**
 Zum Abschluss werden Ergebnis, Tests, Commit und verbleibende Grenzen
 eingetragen. Anschließend endet der Auftrag; das nächste Paket startet mit
 frischem Kontext. Der [fertige nächste Agentenauftrag](NEXT_AGENT_TASK.md)
-begrenzt die nächste Sitzung auf Paket 1.
+begrenzt die nächste Sitzung auf Paket 2.
 
 ## Ziel und feste Entscheidungen
 
@@ -16,8 +16,9 @@ begrenzt die nächste Sitzung auf Paket 1.
   RL, Feature-Engineering, Python-Datenexporte und Training bleiben separat.
 - Die alte Implementierung bleibt über Tags reproduzierbar. Ein paralleler
   umschaltbarer Betrieb beider Editionen ist derzeit nicht erforderlich.
-- Das aktuelle Paket 0 stellt ausschließlich die alte GUI wieder her.
-  Neue Kosten, Fähigkeiten und Grafik werden getrennt umgesetzt.
+- Paket 0 hat ausschließlich die alte GUI wiederhergestellt. Paket 1 hat
+  die BGA-Ziele und IDs eingefroren. Die laufenden Regeln bleiben Legacy;
+  neue Kosten, Fähigkeiten und Grafik werden getrennt umgesetzt.
 - Jeder Commit muss klar benennen, welchen Regelstand er abbildet. Eine
   begonnene Migration erhält einen Entwicklungs-Regelnamen und
   `second_edition_implemented=false`; erst die Abnahme erlaubt eine fertige
@@ -35,6 +36,7 @@ Git-Arbeitsstände prüfen. Die RL-Arbeit liegt auf
 | --- | --- |
 | `docs/GUI.md`, `docs/GUI_AUDIT.md` | Gegenwärtiger GUI-Stand und konkrete offene Punkte |
 | `docs/KNOWN_ISSUES.md`, `docs/PROTOCOL.md` | Bestehende Regelgrenzen und Transportvertrag |
+| `data/bga-second-edition/README.md`, `targets.json`, `provenance.json` | Eigenständiger geprüfter Zielvertrag, Schema, Zuordnungen und Eingabe-Prüfsummen aus Paket 1 |
 | `../docs/reference/edition-comparison/comparison.json` | Bereits abgeglichene 80 Karten-/Zeitalterzeilen und 14 Wunderseiten; Felder `new`, `bga_id`, `new_sprite` |
 | `../docs/reference/edition-comparison/COMPARISON.md` | Lesbare vollständige Gegenüberstellung |
 | `../references/bga-sevenwonders/README.md` | Inventar und Erklärung der lokalen BGA-Referenz |
@@ -50,18 +52,19 @@ Die lokale Sammlung ist keine Kopie des BGA-Server-Regelcodes. Falls ein
 Spezialfall aus den Definitionen nicht eindeutig folgt, wird genau dieser
 Fall als offene Regelfrage mit Quelle dokumentiert.
 
-Rohreferenzen und Bilder sind lokal vorhanden, aber absichtlich nicht im
-Engine-Repository versioniert. Ein separater Engine-Klon enthält sie deshalb
-nicht. Die geprüften Zieldaten müssen in Paket 1 eigenständig nutzbar gemacht
-werden. Bilddateien bleiben über einen externen lokalen Ordner verwendbar.
+Die geprüften Zieldaten sowie die drei statischen BGA-JSON-Eingaben sind seit
+Paket 1 eigenständig im Engine-Repository versioniert. Der vollständige alte
+Vergleich bleibt im RL-Projekt. Bilder und BGA-Clientquellen bleiben extern;
+der Zielaudit benötigt sie nicht. Bilddateien bleiben über einen externen
+lokalen Ordner verwendbar.
 
 ## Reihenfolge und Abschlusskriterien
 
 | Paket | Status | Begrenzter Auftrag | Fertig, wenn … |
 | --- | --- | --- | --- |
 | 0 – Legacy-GUI | Erledigt, technische Abnahme siehe GUI-Audit | Alte Oberfläche wieder anbinden und kompatibel machen | Alte Partien mit Endwertung, Session-Isolation und Tests funktionieren; Regeln unverändert |
-| **1 – Zielvertrag und Zuordnung** | **Als Nächstes** | Vorhandene BGA-Ziele versioniert festhalten und IDs/Schema zuordnen | 80 Kartenzeilen und 14 Seiten vollständig; Prüfsummen/Quelle dokumentiert; alle Zielkarten und Ketten eindeutig zugeordnet; kein Laufzeitumbau |
-| 2 – Exporter reproduzierbar machen | Offen | Im RL-Projekt die alten Exportfehler beheben | Wunder-ID 0, Produktionsmengen und Mehrfach-Zeitalter korrekt; deterministischer Export mit geprüftem JSON-Diff und Regressionen |
+| 1 – Zielvertrag und Zuordnung | Erledigt, Abnahme unten | Vorhandene BGA-Ziele versioniert festhalten und IDs/Schema zuordnen | 80 Kartenzeilen und 14 Seiten vollständig; Prüfsummen/Quelle dokumentiert; alle Zielkarten und Ketten eindeutig zugeordnet; kein Laufzeitumbau |
+| **2 – Exporter reproduzierbar machen** | **Als Nächstes** | Im RL-Projekt die alten Exportfehler beheben | Wunder-ID 0, Produktionsmengen und Mehrfach-Zeitalter korrekt; deterministischer Export mit geprüftem JSON-Diff und Regressionen |
 | 3 – Wissenschaftswertung | Offen | Gierige Jokervergabe durch optimale Endwertung ersetzen | Dokumentierte Gegenbeispiele und Kombinationen mit mehreren Jokern/Quellen bestehen; keine Kartendaten-/GUI-Änderung |
 | 4a – Entscheidungsvertrag | Offen | Ablagewahl und simultane Auflösung als Protokollzustände spezifizieren | Eingaben, sichtbare Optionen, Sitzreihenfolge, Timing, Abbruch und Terminalzustand sind für GUI und RL eindeutig beschrieben; Implementierung folgt separat |
 | 4b – Sichere Auflösung | Offen | Vertrag aus 4a in der Engine implementieren | Ablagekarten genau einmal entnommen, keine Handentnahme mit Ablageindex, Berechtigung korrekt verbraucht, relevante Gleichzeitigkeit getestet |
@@ -143,3 +146,31 @@ Submodule-Pin und `engine.lock.json` im RL-Projekt aktualisieren.
 Als technischer Startpunkt ist die GUI-Abnahme in
 [gui-validation.json](gui-validation.json) festgehalten. Die bisherigen
 Regelgrenzen sind dadurch nicht als gelöst markiert.
+
+## Abnahme Paket 1 – 5. November 2026
+
+Ergebnis: [eigenständiger Zielvertrag](../data/bga-second-edition/README.md)
+mit 80 Kartenzeilen, 77 Kartentypen, 14 Wunderseiten, 25 Kettenverbindungen,
+vollständigem [Mapping](../data/bga-second-edition/MAPPING.md), gehashten
+BGA-Eingaben und den vier übernommenen Kostenkorrekturen. Strategists-ID 73
+bleibt reserviert; neue Karten erhalten 76–78. Der Vertrag legt die spätere
+gemeinsame Erzeugung von C++-Tabellen und Python-Export fest.
+
+Implementierungscommit: `b916ea45d109149a96f4aa6837bdb1f442a3ef1e`
+(`Freeze BGA migration targets while retaining legacy runtime rules`).
+Der anschließende Dokumentationscommit hält diese Abnahme und Paket 2 fest.
+
+Prüfungen: Zielaudit einschließlich Original-Workspace-Abgleich; elf neue
+Datensatz-/Fehlermutationsregressionen und acht bestehende GUI-/Sessiontests
+(19 Python-Tests); Release-Build und alle fünf CTests; Herkunftsaudit für
+49 C++-/Build-/Testdateien unverändert gültig. Ein Archiv des tatsächlichen
+Implementierungscommits besteht Zielaudit und elf neue Tests ohne RL-Projekt,
+Bilder oder Quellpfade relativ zum Arbeitsverzeichnis. Maschinenlesbarer
+Nachweis mit Artefaktprüfsummen: [bga-target-validation.json](bga-target-validation.json).
+
+Grenzen: keine Laufzeit-, C++-, GUI-, Exporter- oder Trainingsänderung.
+Statische BGA-Daten belegen kein vollständiges Serververhalten.
+`engine-contract.json` bleibt Legacy; das inaktive Ziel trägt einen eigenen
+Entwicklungsnamen und `second_edition_implemented=false`. Submodule-Pin und
+`engine.lock.json` im RL-Projekt werden hier nicht aktualisiert. Das nächste
+vorbereitete Paket 2 repariert ausschließlich die alten Exportwege.
