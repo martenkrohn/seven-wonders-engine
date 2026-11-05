@@ -1,5 +1,8 @@
+// Downstream modifications for Seven Wonders RL; documented 2026-10-19.
+// Derived from DMAG/UFSM 7Wonders. See NOTICE and docs/ORIGIN.md (GPLv3).
 #ifndef PLAYER_H
 #define PLAYER_H
+#include <array>
 
 #include <card.h>
 #include <wonder.h>
@@ -30,8 +33,6 @@ private:
     bool discard_free;         // Checks if the player can build an extra card from the discard pile.
     bool can_build_wonder;     // Checks if the player can build the next stage of a Wonder each round.
 
-    bool raw_extra;            // The player has an additional raw material. (Caravansery and Alexandria A)
-    bool manuf_extra;          // The player has an additional manufactured good. (Forum and Alexandria B)
 
     // Possible values:
     // -> -1 (not used)
@@ -44,6 +45,9 @@ private:
     int used_clay_pit;
     int used_forum;
     int used_caravansery;
+
+    int used_wonder_choice_raw;
+    int used_wonder_choice_manuf;
 
     // Key needs to be int because the underlying type in enums is int
     std::map<int, int> resources{
@@ -101,6 +105,7 @@ public:
     int CalculateScientificScore();
     int CalculateWonderScore();
     int CalculateScore();
+    std::array<int, 7> CalculateScores();
 
     // Amount resources related
     int CalculateAmountCivilianCards();

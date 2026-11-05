@@ -1,3 +1,5 @@
+// Downstream modifications for Seven Wonders RL; documented 2026-10-19.
+// Derived from DMAG/UFSM 7Wonders. See NOTICE and docs/ORIGIN.md (GPLv3).
 #include <player.h>
 #include <algorithm>
 #include <iostream>
@@ -29,8 +31,9 @@ Player::Player()
     this->used_forum = -1;
     this->used_caravansery = -1;
 
-    this->raw_extra = false;
-    this->manuf_extra = false;
+    this->used_wonder_choice_raw = -1;
+    this->used_wonder_choice_manuf = -1;
+
 
     this->player_east = NULL;
     this->player_west = NULL;
@@ -196,9 +199,9 @@ bool Player::BuildStructure(DMAG::Card c, std::vector<DMAG::Card> cards, bool fr
             } else if (card == CARD_ID::marketplace) {
                 this->manuf_cheap = true;
             } else if (card == CARD_ID::forum) {
-                this->manuf_extra = true;
+                // handled via AvailableCard + used_forum in IncrementOnDemand
             } else if (card == CARD_ID::caravansery) {
-                this->raw_extra = true;
+                // handled via AvailableCard + used_caravansery in IncrementOnDemand
             } else if (card == CARD_ID::vineyard) {
                 int brown_cards = player_east->AmountOfType(CARD_TYPE::materials)
                                 + player_west->AmountOfType(CARD_TYPE::materials)
@@ -417,6 +420,9 @@ void Player::ResetUsed() {
     this->used_clay_pit     = -1;
     this->used_forum        = -1;
     this->used_caravansery  = -1;
+
+    this->used_wonder_choice_raw = -1;
+    this->used_wonder_choice_manuf = -1;
 }
 
 
@@ -471,7 +477,7 @@ int Player::IncrementOnDemand(int resource, int needed, bool is_neighbor){
             cont++;
         } if (this->AvailableCard(CARD_ID::timber_yard, resource)) {
             cont++;
-        } if (this->AvailableCard(CARD_ID::caravansery, resource)) {
+        } if (!is_neighbor && this->AvailableCard(CARD_ID::caravansery, resource)) {
             cont++;
         }
     } else if (resource == RESOURCE::clay) {
@@ -481,7 +487,7 @@ int Player::IncrementOnDemand(int resource, int needed, bool is_neighbor){
             cont++;
         } if (this->AvailableCard(CARD_ID::clay_pit, resource)) {
             cont++;
-        } if (this->AvailableCard(CARD_ID::caravansery, resource)) {
+        } if (!is_neighbor && this->AvailableCard(CARD_ID::caravansery, resource)) {
             cont++;
         }
     } else if (resource == RESOURCE::stone) {
@@ -491,7 +497,7 @@ int Player::IncrementOnDemand(int resource, int needed, bool is_neighbor){
             cont++;
         } if (this->AvailableCard(CARD_ID::mine, resource)) {
             cont++;
-        } if (this->AvailableCard(CARD_ID::caravansery, resource)) {
+        } if (!is_neighbor && this->AvailableCard(CARD_ID::caravansery, resource)) {
             cont++;
         }
     } else if (resource == RESOURCE::ore) {
@@ -514,7 +520,6 @@ int Player::IncrementOnDemand(int resource, int needed, bool is_neighbor){
 
     if (resource <= 3 && !is_neighbor) { // resource <= 3 is a raw
         if (this->ChooseExtraRaw(resource)) cont++;
-        if (this->raw_extra) cont++;
     }
 
     curr_resource += cont;
@@ -905,6 +910,10 @@ int Player::CalculateWonderScore(){
 
 // Calculates the player's TOTAL score using the methods defined above.
 int Player::CalculateScore(){
+    return CalculateScores()[6];
+}
+
+std::array<int, 7> Player::CalculateScores(){
     int civil_score = this->CalculateCivilianScore();
     int commercial_score = this->CalculateCommercialScore();
     int guild_score = this->CalculateGuildScore();
@@ -917,7 +926,8 @@ int Player::CalculateScore(){
 
     this->victory_points = total_score;
 
-    return this->victory_points;
+    return {civil_score, commercial_score, guild_score, military_score,
+            science_score, wonder_score, total_score};
 }
 
 //////////////////////////////////
@@ -995,8 +1005,10 @@ int Player::CalculateAmountManufacturedGood(){
 bool Player::ChooseExtraManuf(int resource){
     if (resource == RESOURCE::loom || resource == RESOURCE::glass || resource == RESOURCE::papyrus) {
         if (this->board->GetId() == WONDER_ID::alexandria_b && this->board->GetStage() >= 2) {
-            //this->resources[resource]++;
-            return true;
+            if (this->used_wonder_choice_manuf == -1) {
+                this->used_wonder_choice_manuf = resource;
+                return true;
+            }
         }
     }
     return false;
@@ -1010,9 +1022,10 @@ bool Player::ChooseExtraRaw(int resource){
         resource == RESOURCE::clay || resource == RESOURCE::stone) {
         int id = this->board->GetId();
         int stage = this->board->GetStage();
-        if ((id == WONDER_ID::alexandria_a && stage >= 2) ||
-            (id == WONDER_ID::alexandria_b && stage >= 1)) {
-            //this->resources[resource]++;
+        bool has_effect = ((id == WONDER_ID::alexandria_a && stage >= 2) ||
+                           (id == WONDER_ID::alexandria_b && stage >= 1));
+        if (has_effect && this->used_wonder_choice_raw == -1) {
+            this->used_wonder_choice_raw = resource;
             return true;
         }
     }

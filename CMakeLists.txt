@@ -1,3 +1,4 @@
+# Downstream standalone build; see NOTICE and docs/SIMULATOR_CHANGES.md.
 cmake_minimum_required(VERSION 3.5)
 
 project(7Wonders LANGUAGES CXX)
@@ -8,7 +9,7 @@ set(JSON_BuildTests OFF CACHE INTERNAL "")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
-include_directories(include)
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
 
 set(SOURCES
     main.cpp
@@ -29,4 +30,56 @@ set(HEADERS
 
 add_executable(7Wonders ${SOURCES} ${HEADERS})
 
-file(MAKE_DIRECTORY ./build/io ./io ./logs)
+# Test executable for choice-once-per-turn verification (simple, no card loading)
+add_executable(test_choice_simple
+    tests/test_choice_simple.cpp
+    src/player.cpp
+    src/wonder.cpp
+    src/card.cpp
+    src/filer.cpp
+)
+
+# Test executable for choice-once-per-turn verification (full integration)
+add_executable(test_choice_once_per_turn
+    tests/test_choice_once_per_turn.cpp
+    src/card.cpp
+    src/player.cpp
+    src/wonder.cpp
+    src/filer.cpp
+)
+
+file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/io" "${CMAKE_CURRENT_BINARY_DIR}/logs")
+
+# Register the existing regression executables for local checks and CI.
+enable_testing()
+add_test(NAME choice_simple COMMAND test_choice_simple)
+add_test(NAME choice_once_per_turn COMMAND test_choice_once_per_turn)
+
+add_executable(test_final_status tests/test_final_status.cpp
+    src/card.cpp src/player.cpp src/wonder.cpp src/filer.cpp)
+file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/final_status_runtime")
+add_test(NAME final_status COMMAND test_final_status)
+set_tests_properties(final_status PROPERTIES
+    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/final_status_runtime" TIMEOUT 10)
+
+add_executable(test_joint_action_resources tests/test_joint_action_resources.cpp
+    src/card.cpp src/player.cpp src/wonder.cpp src/filer.cpp)
+file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/joint_action_resources_runtime")
+add_test(NAME joint_action_resources COMMAND test_joint_action_resources)
+set_tests_properties(joint_action_resources PROPERTIES
+    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/joint_action_resources_runtime" TIMEOUT 10)
+
+# The regression programs use assert(), including when the engine is built Release.
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(test_choice_simple PRIVATE -UNDEBUG)
+    target_compile_options(test_choice_once_per_turn PRIVATE -UNDEBUG)
+endif()
+
+# Optional standalone client: standard library only, no RL dependencies.
+find_package(Python3 3.10 COMPONENTS Interpreter QUIET)
+if(Python3_Interpreter_FOUND)
+    add_test(NAME protocol_smoke COMMAND "${Python3_EXECUTABLE}"
+        "${CMAKE_CURRENT_SOURCE_DIR}/scripts/smoke_protocol.py"
+        --engine "$<TARGET_FILE:7Wonders>")
+    set_tests_properties(protocol_smoke PROPERTIES TIMEOUT 60)
+endif()

@@ -1,0 +1,23 @@
+Seven Wonders Engine — source origin and licensing
+
+Derived from DMAG/UFSM's 7Wonders simulator:
+https://github.com/dmag-ufsm/7Wonders
+Upstream baseline: a0bc333a7a7f21f83156de8a2d522e7baa913f0a (2021-10-07).
+
+Downstream modifications maintained by Marten Krohn include selectable-resource
+corrections, Gizah B's fourth-stage transition, seeded RNG, protocol v2,
+atomic status publication, final scoring status, resource-allocation reset,
+status calculation optimizations, regression tests and standalone packaging.
+See docs/ORIGIN.md and docs/SIMULATOR_CHANGES.md for scope and exact evidence.
+The initial standalone extraction is dated 2026-11-05; it changes packaging,
+not game data or rules. The original engine is not claimed as newly authored.
+
+The original GNU GPL version 3 LICENSE is retained. Distribution is under
+GPL-3.0-only. The upstream README's MIT sentence conflicts with its explicit
+LICENSE; this fork follows the supplied GPLv3 license. Vendored
+include/nlohmann/ headers retain Niels Lohmann and contributors' MIT notices.
+
+No rights in board-game names, trademarks, publisher artwork or BGA assets
+are claimed. This is an unofficial project with no publisher/BGA affiliation.
+The current checkout excludes upstream GUI artwork and RL experiment data;
+unmodified upstream history remains accessible through the fork.

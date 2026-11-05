@@ -1,47 +1,59 @@
-# 7 Wonders
+# Seven Wonders Engine
 
-Open source implementation of the game 7 Wonders focused on performance for the use and training of bots for the game. This is capable of running hundreds of games per minute, using simple JSON files as input and output.
+A standalone C++17 simulator for three-player **7 Wonders**, forked from
+[DMAG/UFSM's 7Wonders](https://github.com/dmag-ufsm/7Wonders). It exposes a
+JSON file protocol for bots and other clients. No RL framework is required.
 
-## Building
+**Current release: `v0.1.0-legacy`.** This preserves the simulator previously
+used by [Seven Wonders RL](https://github.com/martenkrohn/seven-wonders-rl),
+including its existing corrections and limitations. The second-edition/BGA
+migration is planned; it is **not implemented** in this release. The versioned
+[engine contract](engine-contract.json) identifies the ruleset and protocol.
 
-First, clone the repository. Create a build subdir on the project root, then run cmake on the project build subdir, and you'll end up with a `7Wonders` binary file.
+## Build and check
 
-	git clone https://github.com/dmag-ufsm/Game.git
-	cd Game
-	mkdir build && cd build
-	cmake .. && make
+Linux/Ubuntu (including WSL), CMake and a C++17 compiler are supported.
+Python 3.10+ is optional and enables the standalone protocol smoke test.
 
-## Running
+```sh
+git clone https://github.com/martenkrohn/seven-wonders-engine.git
+cd seven-wonders-engine
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --parallel 2
+ctest --test-dir build --output-on-failure
+python3 scripts/audit_simulator.py --check
+python3 scripts/smoke_protocol.py --engine build/7Wonders
+```
 
-The game must be run from the binary file in the build folder:
+The smoke client plays a complete match in a temporary directory using only
+Python's standard library. To connect your own client, create `io/` and `logs/`
+in its working directory, then start the executable there:
 
-	./7Wonders
+```sh
+/absolute/path/to/build/7Wonders --seed 42 --poll-us 1000 --quiet
+```
 
-As an option, the GUI can be used to assist when there are real players in the game. From the project root, run
+See the [protocol](docs/PROTOCOL.md) for the handshake, action schema, final
+status and isolation requirements. Independent matches need separate working
+directories. Identical seeds are reproducible within the same toolchain;
+cross-platform shuffle equivalence is not guaranteed.
 
-	python3 Game.py <num_bots>
+## Development
 
-where `num_bots` is the number of bots that will play the game. This was built with a focus on 3-player matches, and will take care of executing the binary file contained in the build folder and making it visually and easier for the user to read and write in the JSON files.
-	
-## How it works
+Keep engine changes and C++ regressions here. The RL repository consumes an
+exact engine commit as a Git submodule. Follow [DEVELOPMENT.md](docs/DEVELOPMENT.md)
+for releases and the planned BGA migration. Known rule gaps are recorded in
+[KNOWN_ISSUES.md](docs/KNOWN_ISSUES.md).
 
+The inherited implementation and downstream changes are documented in
+[ORIGIN.md](docs/ORIGIN.md) and [SIMULATOR_CHANGES.md](docs/SIMULATOR_CHANGES.md),
+including a checked patch against upstream. No RL code, training results or
+downloaded BGA artwork is included in the current source tree. Historical
+upstream commits remain in the fork's history.
 
+## License and attribution
 
-### Using a bot
-
-
-
-## Environment
-
-The code was developed and tested using the following environment:
-
-- Linux OS
-- gcc 8.3.0
-- cmake 3.13.4
-- Python 3.7.3 (only for GUI)
-
-## License
-
-Source code is released under the MIT License. See  `LICENSE`  for details.
-
-Image assets used in the GUI were obtained from the game's [official website](https://rprod.com/index.php?page=download-2).
+GPL-3.0-only; the original [LICENSE](LICENSE) is retained. See [NOTICE](NOTICE)
+for upstream attribution and the historical upstream README/license discrepancy.
+Vendored nlohmann/json headers retain their original MIT notices. This is an
+unofficial project, with no publisher or Board Game Arena affiliation.

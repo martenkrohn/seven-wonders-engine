@@ -1,0 +1,19 @@
+# Known rule and interface limitations
+
+The legacy release is the existing simulator with selected downstream fixes,
+not a fully verified implementation of either printed edition.
+
+- Card declarations still match the pinned 2021 upstream. Known discrepancies
+  include Aqueduct, Town Hall, Arsenal and University; second-edition card
+  costs and wonder stages have not been migrated.
+- Science jokers are allocated greedily and can undervalue the final score.
+- Halikarnassos' discard selection through `extra` is incomplete and needs
+  validation and correct discard-pile removal. The smoke client leaves it empty.
+- Resolution remains sequential. Resetting selectable-production state between
+  seats fixes one reproduced conflict, not every simultaneity/payment issue.
+- Three players are hard-coded. There is no general two-to-seven-player API,
+  payment-choice action space, or mid-game state restoration.
+
+The RL repository contains the detailed evidence in
+`docs/reference/EDITION_AUDIT.md` and the complete edition comparison. A
+successful smoke game establishes protocol usability, not rule completeness.

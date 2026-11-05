@@ -1,3 +1,5 @@
+// Downstream modifications for Seven Wonders RL; documented 2026-10-19.
+// Derived from DMAG/UFSM 7Wonders. See NOTICE and docs/ORIGIN.md (GPLv3).
 #include <wonder.h>
 #include <player.h>
 #include <iostream>
@@ -165,7 +167,7 @@ bool Gizah_b::AddStage(Player *p){
         } break;
 
     // Building stage 4
-    case 4:
+    case 3:
         if (p->ProduceResource(RESOURCE::stone, this->cost[RESOURCE::stone]-p_resources[RESOURCE::stone]) &&
             p->ProduceResource(RESOURCE::papyrus, this->cost[RESOURCE::papyrus]-p_resources[RESOURCE::papyrus])) {
             this->stage++;
@@ -194,7 +196,7 @@ bool Gizah_b::CanAddStage(Player *p){
         if (p->ProduceResource(RESOURCE::clay, this->cost[RESOURCE::clay]-p_resources[RESOURCE::clay])) {
             stage_built = true;
         } break;
-    case 4:
+    case 3:
         if (p->ProduceResource(RESOURCE::stone, this->cost[RESOURCE::stone]-p_resources[RESOURCE::stone]) &&
             p->ProduceResource(RESOURCE::papyrus, this->cost[RESOURCE::papyrus]-p_resources[RESOURCE::papyrus])) {
             stage_built = true;
