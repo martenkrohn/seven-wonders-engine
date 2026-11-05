@@ -524,3 +524,10 @@ Sonderwissen erteilt. Roter Nacht-Stufe-eins-Kostenfall, danach alle 15 CTests
 grün. Schlussrunden-Pflichtwahl, Replay, leere Optionen und bisherige atomare
 Entnahmefälle bleiben grün. Alle 14 Seiten und ihre Stufen sind jetzt exakt
 gegen Targets geprüft. Paket 6 vollständig, Paket 7 folgt.
+
+6d: Commit `63934ef`. Paket 7a: neuer gemeinsamer Standardbibliotheksclient
+und entscheidungsbasierte GUI; keine Aktionsableitung aus Wunder-IDs.
+Vier neue Sessiontests prüfen sechs vollständige Partien mit 0/2/3 Bots,
+Pflicht-Ablagewahlen, ungültige Auswahl vor Dateischreiben, Isolation, Prozess-
+ende und Abbruch ohne Resultat. Alte V2-GUI bleibt explizit historisch.
+Grafik und echte Tk-Bedienung folgen als nächster Schritt 7b.
