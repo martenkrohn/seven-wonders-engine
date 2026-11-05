@@ -193,144 +193,18 @@ bool Alexandria_b::CanAddStage(Player* p) { return Wonder::CanAddStage(p); }
 
 // HALIKARNASSOS A
 
-Halikarnassos_a::Halikarnassos_a(){
-    this->id = WONDER_ID::halikarnassos_a;
-    this->name = "Halikarnassos A";
-    this->production = RESOURCE::loom;
-    this->effects = {EFFECT::vp, EFFECT::discard_build_for_free, EFFECT::vp};
-    this->cost[RESOURCE::clay] = 2;
-}
+Halikarnassos_a::Halikarnassos_a() { Configure(WONDER_ID::halikarnassos_a); }
 
-bool Halikarnassos_a::AddStage(Player* p){
-    std::map<int, int> p_resources = p->GetResources();
-    bool stage_built = false;
+bool Halikarnassos_a::AddStage(Player* p) { return Wonder::AddStage(p); }
 
-    switch (this->stage) {
-    // Building stage 1
-    case 0:
-        if (p->ProduceResource(RESOURCE::clay, this->cost[RESOURCE::clay]-p_resources[RESOURCE::clay])) {
-            this->stage++;
-            this->wonder_points += 3;
-            this->cost[RESOURCE::ore] = 3;
-            stage_built = true;
-        } break;
-
-    // Building stage 2
-    case 1:
-        if (p->ProduceResource(RESOURCE::ore, this->cost[RESOURCE::ore]-p_resources[RESOURCE::ore])) {
-            this->stage++;
-            this->cost[RESOURCE::loom] = 2;
-            p->DiscardFree(true);
-            stage_built = true;
-        } break;
-
-    // Building stage 3
-    case 2:
-        if (p->ProduceResource(RESOURCE::loom, this->cost[RESOURCE::loom]-p_resources[RESOURCE::loom])) {
-            this->stage++;
-            this->wonder_points += 7;
-            stage_built = true;
-        } break;
-    }
-
-    return stage_built;
-}
-
-bool Halikarnassos_a::CanAddStage(Player* p){
-    std::map<int, int> p_resources = p->GetResources();
-    bool stage_built = false;
-
-    switch (this->stage) {
-    case 0:
-        if (p->ProduceResource(RESOURCE::clay, this->cost[RESOURCE::clay]-p_resources[RESOURCE::clay])) {
-            stage_built = true;
-        } break;
-    case 1:
-        if (p->ProduceResource(RESOURCE::ore, this->cost[RESOURCE::ore]-p_resources[RESOURCE::ore])) {
-            stage_built = true;
-        } break;
-    case 2:
-        if (p->ProduceResource(RESOURCE::loom, this->cost[RESOURCE::loom]-p_resources[RESOURCE::loom])) {
-            stage_built = true;
-        } break;
-    }
-
-    return stage_built;
-}
+bool Halikarnassos_a::CanAddStage(Player* p) { return Wonder::CanAddStage(p); }
 
 // HALIKARNASSOS B
 
-Halikarnassos_b::Halikarnassos_b(){
-    this->id = WONDER_ID::halikarnassos_b;
-    this->name = "Halikarnassos B";
-    this->production = RESOURCE::loom;
-    this->effects = {EFFECT::add_vp_discard, EFFECT::add_vp_discard, EFFECT::discard_build_for_free};
-    this->cost[RESOURCE::ore] = 2;
-}
+Halikarnassos_b::Halikarnassos_b() { Configure(WONDER_ID::halikarnassos_b); }
 
-bool Halikarnassos_b::AddStage(Player* p){
-    std::map<int, int> p_resources = p->GetResources();
-    bool stage_built = false;
+bool Halikarnassos_b::AddStage(Player* p) { return Wonder::AddStage(p); }
 
-    switch (this->stage) {
-    // Building stage 1
-    case 0:
-        if (p->ProduceResource(RESOURCE::ore, this->cost[RESOURCE::ore]-p_resources[RESOURCE::ore])) {
-            this->stage++;
-            this->wonder_points += 2;
-            this->cost[RESOURCE::clay] = 3;
-            p->DiscardFree(true);
-            stage_built = true;
-        } break;
-
-    // Building stage 2
-    case 1:
-        if (p->ProduceResource(RESOURCE::clay, this->cost[RESOURCE::clay]-p_resources[RESOURCE::clay])) {
-            this->stage++;
-            this->wonder_points += 1;
-            this->cost[RESOURCE::glass] = 1;
-            this->cost[RESOURCE::loom] = 1;
-            this->cost[RESOURCE::papyrus] = 1;
-            p->DiscardFree(true);
-            stage_built = true;
-        } break;
-
-    // Building stage 3
-    case 2:
-        if (p->ProduceResource(RESOURCE::glass, this->cost[RESOURCE::glass]-p_resources[RESOURCE::glass]) &&
-            p->ProduceResource(RESOURCE::loom, this->cost[RESOURCE::loom]-p_resources[RESOURCE::loom]) &&
-            p->ProduceResource(RESOURCE::papyrus, this->cost[RESOURCE::papyrus]-p_resources[RESOURCE::papyrus])) {
-            this->stage++;
-            p->DiscardFree(true);
-            stage_built = true;
-        } break;
-    }
-
-    return stage_built;
-}
-
-bool Halikarnassos_b::CanAddStage(Player* p){
-    std::map<int, int> p_resources = p->GetResources();
-    bool stage_built = false;
-
-    switch (this->stage) {
-    case 0:
-        if (p->ProduceResource(RESOURCE::ore, this->cost[RESOURCE::ore]-p_resources[RESOURCE::ore])) {
-            stage_built = true;
-        } break;
-    case 1:
-        if (p->ProduceResource(RESOURCE::clay, this->cost[RESOURCE::clay]-p_resources[RESOURCE::clay])) {
-            stage_built = true;
-        } break;
-    case 2:
-        if (p->ProduceResource(RESOURCE::glass, this->cost[RESOURCE::glass]-p_resources[RESOURCE::glass]) &&
-            p->ProduceResource(RESOURCE::loom, this->cost[RESOURCE::loom]-p_resources[RESOURCE::loom]) &&
-            p->ProduceResource(RESOURCE::papyrus, this->cost[RESOURCE::papyrus]-p_resources[RESOURCE::papyrus])) {
-            stage_built = true;
-        } break;
-    }
-
-    return stage_built;
-}
+bool Halikarnassos_b::CanAddStage(Player* p) { return Wonder::CanAddStage(p); }
 
 }

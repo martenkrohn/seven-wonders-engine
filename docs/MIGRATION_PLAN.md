@@ -80,7 +80,7 @@ lokalen Ordner verwendbar.
 | 4b-II – Runden-/Zahlungsauflösung | Erledigt, Abnahme unten | Gemeinsamen Anfangszustand, Zahlungen, Folgeentscheidungen und Nachrichtenvertrag implementieren | Gleichzeitigkeit, Restkarten, siebte Karte, Abschlussbarrieren und Nachrichtenledger geprüft; RQ-1/RQ-2 gemäß ausdrücklicher Nutzervorgabe umgesetzt |
 | 5-I – Kartendatentabellen | Erledigt, Abnahme unten | Geprüfte Kartendaten deterministisch in Engine-Tabellen übernehmen | Alle 80 Zeitalterzeilen, Kosten/Punkte/Ketten, Mengen und feste Effekte gegen Ziele geprüft; IDs erhalten; neue Sondereffekte getrennt und ausdrücklich offen |
 | **5-II – Neue Kartensondereffekte** | Erledigt: Ludus und Decorators, Abnahme unten | Ludus und Decorators Guild einzeln umsetzen und abnehmen | Neue Zähl-/Wertungseffekte mit gezielten Gegenbeispielen geprüft; keine bloße Datenmigration als vollständige neue Edition ausgegeben |
-| 6 – Neue Wunder | Offen | Die 14 Seiten familienweise umstellen | Jede Stufe: Kosten, Ertrag, Verfügbarkeit und richtige Anzahl geprüft; Sonderfähigkeiten mit gezielten Fällen abgenommen |
+| 6 – Neue Wunder | Erledigt, familienweise Abnahme unten | Die 14 Seiten familienweise umstellen | Jede Stufe: Kosten, Ertrag, Verfügbarkeit und richtige Anzahl geprüft; Sonderfähigkeiten mit gezielten Fällen abgenommen |
 | 7 – GUI der neuen Edition | Offen | Neue Entscheidungsansichten, Bilder und Layout einbinden | Alle neuen Fähigkeiten menschlich bedienbar; korrekte Bilder/Namen/Stufen; vollständige Partien und fehlende Bilder getestet |
 | 8 – RL-Anbindung | Offen | Neue Engine bewusst im RL-Projekt übernehmen | Exportdaten, Beobachtungen, Aktionen, Merkmale und Checkpoint-Verträge passen; Protokoll-/Kurztrainingsprüfungen bestehen |
 | 9 – Gemeinsame Abnahme | Offen | Befunde schließen und neue Version veröffentlichen | Referenzvergleich, Regelfälle, GUI-Partien, automatisierte Spiele und CI grün; Release, Regelnamen und RL-Pin stimmen |
@@ -517,3 +517,10 @@ Beständen und neuem Stufengrenztest grün.
 Ketten und Freibaumodi bleiben getrennt. Keine alte Einmal-pro-Ära-Regel,
 kein neuer Rohstoffrabatt und keine Gildenkopie. Roter neuer Freibaumodus,
 danach alle 15 CTests grün; 36 Nacht-Stufen-/Ären-/Rundenkombinationen geprüft.
+
+6c: Commit `d910add`. 6d Halikarnassos: alle neuen Kosten/Stufen übernommen;
+Ablagerechte werden aus dem tatsächlichen Stufeneffekt statt Wunder-ID-
+Sonderwissen erteilt. Roter Nacht-Stufe-eins-Kostenfall, danach alle 15 CTests
+grün. Schlussrunden-Pflichtwahl, Replay, leere Optionen und bisherige atomare
+Entnahmefälle bleiben grün. Alle 14 Seiten und ihre Stufen sind jetzt exakt
+gegen Targets geprüft. Paket 6 vollständig, Paket 7 folgt.

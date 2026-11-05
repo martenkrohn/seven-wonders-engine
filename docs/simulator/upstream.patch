@@ -1312,10 +1312,10 @@ index 1b4b3aaf79754b900cf62605d34244f8ddda11a4..3369f43d53a55e6aa2035d08d082c052
  }
 diff --git a/src/decision.cpp b/src/decision.cpp
 new file mode 100644
-index 0000000000000000000000000000000000000000..e9e8b48ce47e7b271a2eb441f39e94b20db4ac6f
+index 0000000000000000000000000000000000000000..96fe5310d5cad9a3cdd17c1f36e56ca3edf4b203
 --- /dev/null
 +++ b/src/decision.cpp
-@@ -0,0 +1,589 @@
+@@ -0,0 +1,590 @@
 +// Downstream simultaneous settlement and decision transport; see ENG-014.
 +#include <decision.h>
 +#include <algorithm>
@@ -1799,7 +1799,8 @@ index 0000000000000000000000000000000000000000..e9e8b48ce47e7b271a2eb441f39e94b2
 +            {"ruleset","bga-second-edition-development"},{"second_edition_implemented",false},
 +            {"card_data",{{"format_version",CARD_DATA_FORMAT_VERSION},{"source_sha256",CardDataHash()},
 +              {"tables_complete",true},{"effects_complete",IncompleteCardEffects().empty()},{"deferred_effect_ids",IncompleteCardEffects()}}},
-+            {"capabilities",{"card_tables_v1","regular_options_v1","discard_choice_v1","simultaneous_settlement_v1","legacy_wonder_abilities_v1"}}}},
++            {"wonder_data",{{"format_version",1},{"source_sha256",CardDataHash()},{"effects_complete",true}}},
++            {"capabilities",{"card_tables_v1","regular_options_v1","discard_choice_v1","simultaneous_settlement_v1","wonder_abilities_v1"}}}},
 +          {"game",{{"turn",turn},{"age",Age()},{"round_in_age",turn==21?json(nullptr):json(Round())},
 +            {"round_kind",turn==21?json(nullptr):json(Round()==7?"seventh":"regular")},{"phase",phase},
 +            {"resolution_id",Resolution()},{"snapshot_id",Base()},{"scores_final",phase=="finished"},{"engine_seed",seed}}},
@@ -1941,7 +1942,7 @@ index dd219de7df0af977f508326df94c0f86f49c69d5..f9c9874a27ddd2e53b48de9c8a3d6c3c
  }
  
 diff --git a/src/player.cpp b/src/player.cpp
-index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..dd286f7fcfd617783b0d8b007c7e28c71f658db0 100644
+index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..a069befb8ebd10cbac478315548a3d785f4f2488 100644
 --- a/src/player.cpp
 +++ b/src/player.cpp
 @@ -1,12 +1,17 @@
@@ -2590,7 +2591,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..dd286f7fcfd617783b0d8b007c7e28c7
              return true;
          }
      }
-@@ -1036,9 +791,22 @@ void Player::FreeCardOnce(bool flag) {
+@@ -1036,9 +791,23 @@ void Player::FreeCardOnce(bool flag) {
      this->free_card_once = flag;
  }
  
@@ -2605,9 +2606,10 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..dd286f7fcfd617783b0d8b007c7e28c7
 +    }
 +    if (!board) return;
 +    const int stage = board->GetStage();
-+    const int id = board->GetId();
-+    const bool source = (id == WONDER_ID::halikarnassos_a && stage == 2)
-+                     || (id == WONDER_ID::halikarnassos_b && stage >= 1 && stage <= 3);
++    const auto* definition=board->GetDefinition();
++    const bool source=definition && stage>0 && stage<=board->GetStageCount()
++        && std::any_of(definition->stages[stage-1].effects.begin(),definition->stages[stage-1].effects.end(),
++            [](const WonderEffect& e){return e.type=="discard_build_for_free";});
 +    if (source && stage > discard_grant_stage) {
 +        discard_grant_stage = stage;
 +        discard_free = true;
@@ -2615,7 +2617,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..dd286f7fcfd617783b0d8b007c7e28c7
  }
  
  // The player can buy resources for 1 coin instead of 2 from neighbors.
-@@ -1047,21 +815,41 @@ void Player::CanBuyRawCheap(){
+@@ -1047,21 +816,41 @@ void Player::CanBuyRawCheap(){
      this->wonder_raw_cheap = true;
  }
  
@@ -2671,7 +2673,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..dd286f7fcfd617783b0d8b007c7e28c7
  }
  
  // Builds a card from the hand for free, once per Age, if the player has the requirements.
-@@ -1077,6 +865,7 @@ bool Player::BuildHandFree(DMAG::Card c){
+@@ -1077,6 +866,7 @@ bool Player::BuildHandFree(DMAG::Card c){
  // - called at the END of the game, before scoring.
  // UNTESTED!
  bool Player::CopyGuild(){
@@ -2679,7 +2681,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..dd286f7fcfd617783b0d8b007c7e28c7
      Player* east = this->GetEastNeighbor();
      Player* west = this->GetWestNeighbor();
  
-@@ -1195,8 +984,12 @@ DMAG::Player* Player::GetWestNeighbor() {
+@@ -1195,8 +985,12 @@ DMAG::Player* Player::GetWestNeighbor() {
      return this->player_west;
  }
  
@@ -2694,7 +2696,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..dd286f7fcfd617783b0d8b007c7e28c7
  }
  
  void Player::SetNeighbors(DMAG::Player* east, DMAG::Player* west){
-@@ -1205,6 +998,10 @@ void Player::SetNeighbors(DMAG::Player* east, DMAG::Player* west){
+@@ -1205,6 +999,10 @@ void Player::SetNeighbors(DMAG::Player* east, DMAG::Player* west){
  }
  
  void Player::SetWonder(DMAG::Wonder *_board){
@@ -2706,7 +2708,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..dd286f7fcfd617783b0d8b007c7e28c7
      // Wonders provide specific initial resources
      this->resources[this->board->GetProduction()] += 1;
 diff --git a/src/wonder.cpp b/src/wonder.cpp
-index 8f39d8c67df22d512b816c37952fd830a0e93da3..62ba5a634835db6a83d418fea4b5d2c82a950163 100644
+index 8f39d8c67df22d512b816c37952fd830a0e93da3..b8ed0f65ee314fc3bd0b4c1e19f8aeca69393a44 100644
 --- a/src/wonder.cpp
 +++ b/src/wonder.cpp
 @@ -1,6 +1,11 @@
@@ -2781,7 +2783,7 @@ index 8f39d8c67df22d512b816c37952fd830a0e93da3..62ba5a634835db6a83d418fea4b5d2c8
  }
  
  /*
-@@ -52,832 +96,100 @@ bool Wonder::CanAddStage(Player* p) {
+@@ -52,973 +96,115 @@ bool Wonder::CanAddStage(Player* p) {
  
  // GIZAH A
  
@@ -2793,7 +2795,8 @@ index 8f39d8c67df22d512b816c37952fd830a0e93da3..62ba5a634835db6a83d418fea4b5d2c8
 -    this->cost[RESOURCE::stone] = 2; // Required resources to build stage 1;
 -                                     // will change on AddStage().
 -}
--
++Gizah_a::Gizah_a() { Configure(WONDER_ID::gizah_a); }
+ 
 -bool Gizah_a::AddStage(Player *p){
 -    std::map<int, int> p_resources = p->GetResources();
 -    bool stage_built = false;
@@ -2825,8 +2828,7 @@ index 8f39d8c67df22d512b816c37952fd830a0e93da3..62ba5a634835db6a83d418fea4b5d2c8
 -            stage_built = true;
 -        } break;
 -    }
-+Gizah_a::Gizah_a() { Configure(WONDER_ID::gizah_a); }
- 
+-
 -    return stage_built;
 -}
 +bool Gizah_a::AddStage(Player* p) { return Wonder::AddStage(p); }
@@ -2870,8 +2872,7 @@ index 8f39d8c67df22d512b816c37952fd830a0e93da3..62ba5a634835db6a83d418fea4b5d2c8
 -bool Gizah_b::AddStage(Player *p){
 -    std::map<int, int> p_resources = p->GetResources();
 -    bool stage_built = false;
-+Gizah_b::Gizah_b() { Configure(WONDER_ID::gizah_b); }
- 
+-
 -    switch (this->stage) {
 -    // Building stage 1
 -    case 0:
@@ -2881,8 +2882,7 @@ index 8f39d8c67df22d512b816c37952fd830a0e93da3..62ba5a634835db6a83d418fea4b5d2c8
 -            this->cost[RESOURCE::stone] = 3;
 -            stage_built = true;
 -        } break;
-+bool Gizah_b::AddStage(Player* p) { return Wonder::AddStage(p); }
- 
+-
 -    // Building stage 2
 -    case 1:
 -        if (p->ProduceResource(RESOURCE::stone, this->cost[RESOURCE::stone]-p_resources[RESOURCE::stone])) {
@@ -2891,8 +2891,7 @@ index 8f39d8c67df22d512b816c37952fd830a0e93da3..62ba5a634835db6a83d418fea4b5d2c8
 -            this->cost[RESOURCE::clay] = 3;
 -            stage_built = true;
 -        } break;
-+bool Gizah_b::CanAddStage(Player* p) { return Wonder::CanAddStage(p); }
- 
+-
 -    // Building stage 3
 -    case 2:
 -        if (p->ProduceResource(RESOURCE::clay, this->cost[RESOURCE::clay]-p_resources[RESOURCE::clay])) {
@@ -2902,8 +2901,7 @@ index 8f39d8c67df22d512b816c37952fd830a0e93da3..62ba5a634835db6a83d418fea4b5d2c8
 -            this->cost[RESOURCE::papyrus] = 1;
 -            stage_built = true;
 -        } break;
-+// BABYLON A
- 
+-
 -    // Building stage 4
 -    case 4:
 -        if (p->ProduceResource(RESOURCE::stone, this->cost[RESOURCE::stone]-p_resources[RESOURCE::stone]) &&
@@ -2913,17 +2911,15 @@ index 8f39d8c67df22d512b816c37952fd830a0e93da3..62ba5a634835db6a83d418fea4b5d2c8
 -            stage_built = true;
 -        } break;
 -    }
-+Babylon_a::Babylon_a() { Configure(WONDER_ID::babylon_a); }
- 
+-
 -    return stage_built;
 -}
-+bool Babylon_a::AddStage(Player* p) { return Wonder::AddStage(p); }
++Gizah_b::Gizah_b() { Configure(WONDER_ID::gizah_b); }
  
 -bool Gizah_b::CanAddStage(Player *p){
 -    std::map<int, int> p_resources = p->GetResources();
 -    bool stage_built = false;
-+bool Babylon_a::CanAddStage(Player* p) { return Wonder::CanAddStage(p); }
- 
+-
 -    switch (this->stage) {
 -    case 0:
 -        if (p->ProduceResource(RESOURCE::wood, this->cost[RESOURCE::wood]-p_resources[RESOURCE::wood])) {
@@ -2943,14 +2939,13 @@ index 8f39d8c67df22d512b816c37952fd830a0e93da3..62ba5a634835db6a83d418fea4b5d2c8
 -            stage_built = true;
 -        } break;
 -    }
-+// BABYLON B
++bool Gizah_b::AddStage(Player* p) { return Wonder::AddStage(p); }
  
 -    return stage_built;
 -}
-+Babylon_b::Babylon_b() { Configure(WONDER_ID::babylon_b); }
++bool Gizah_b::CanAddStage(Player* p) { return Wonder::CanAddStage(p); }
  
--// BABYLON A
-+bool Babylon_b::AddStage(Player* p) { return Wonder::AddStage(p); }
+ // BABYLON A
  
 -Babylon_a::Babylon_a(){
 -    this->id = WONDER_ID::babylon_a;
@@ -2959,13 +2954,12 @@ index 8f39d8c67df22d512b816c37952fd830a0e93da3..62ba5a634835db6a83d418fea4b5d2c8
 -    this->effects = {EFFECT::vp, EFFECT::add_science, EFFECT::vp};
 -    this->cost[RESOURCE::clay] = 2;
 -}
-+bool Babylon_b::CanAddStage(Player* p) { return Wonder::CanAddStage(p); }
++Babylon_a::Babylon_a() { Configure(WONDER_ID::babylon_a); }
  
 -bool Babylon_a::AddStage(Player* p){
 -    std::map<int, int> p_resources = p->GetResources();
 -    bool stage_built = false;
-+// OLYMPIA A
- 
+-
 -    switch (this->stage) {
 -    // Building stage 1
 -    case 0:
@@ -2975,8 +2969,7 @@ index 8f39d8c67df22d512b816c37952fd830a0e93da3..62ba5a634835db6a83d418fea4b5d2c8
 -            this->cost[RESOURCE::wood] = 3;
 -            stage_built = true;
 -        } break;
-+Olympia_a::Olympia_a() { Configure(WONDER_ID::olympia_a); }
- 
+-
 -    // Building stage 2
 -    case 1:
 -        if (p->ProduceResource(RESOURCE::wood, this->cost[RESOURCE::wood]-p_resources[RESOURCE::wood])) {
@@ -2984,8 +2977,7 @@ index 8f39d8c67df22d512b816c37952fd830a0e93da3..62ba5a634835db6a83d418fea4b5d2c8
 -            this->cost[RESOURCE::clay] = 4;
 -            stage_built = true;
 -        } break;
-+bool Olympia_a::AddStage(Player* p) { return Wonder::AddStage(p); }
- 
+-
 -    // Building stage 3
 -    case 2:
 -        if (p->ProduceResource(RESOURCE::clay, this->cost[RESOURCE::clay]-p_resources[RESOURCE::clay])) {
@@ -2994,17 +2986,15 @@ index 8f39d8c67df22d512b816c37952fd830a0e93da3..62ba5a634835db6a83d418fea4b5d2c8
 -            stage_built = true;
 -        } break;
 -    }
-+bool Olympia_a::CanAddStage(Player* p) { return Wonder::CanAddStage(p); }
++bool Babylon_a::AddStage(Player* p) { return Wonder::AddStage(p); }
  
 -    return stage_built;
 -}
-+// OLYMPIA B
- 
+-
 -bool Babylon_a::CanAddStage(Player* p){
 -    std::map<int, int> p_resources = p->GetResources();
 -    bool stage_built = false;
-+Olympia_b::Olympia_b() { Configure(WONDER_ID::olympia_b); }
- 
+-
 -    switch (this->stage) {
 -    case 0:
 -        if (p->ProduceResource(RESOURCE::clay, this->cost[RESOURCE::clay]-p_resources[RESOURCE::clay])) {
@@ -3019,14 +3009,12 @@ index 8f39d8c67df22d512b816c37952fd830a0e93da3..62ba5a634835db6a83d418fea4b5d2c8
 -            stage_built = true;
 -        } break;
 -    }
-+bool Olympia_b::AddStage(Player* p) { return Wonder::AddStage(p); }
- 
+-
 -    return stage_built;
 -}
-+bool Olympia_b::CanAddStage(Player* p) { return Wonder::CanAddStage(p); }
++bool Babylon_a::CanAddStage(Player* p) { return Wonder::CanAddStage(p); }
  
--// BABYLON B
-+// RHODOS A
+ // BABYLON B
  
 -Babylon_b::Babylon_b(){
 -    this->id = WONDER_ID::babylon_b;
@@ -3036,13 +3024,11 @@ index 8f39d8c67df22d512b816c37952fd830a0e93da3..62ba5a634835db6a83d418fea4b5d2c8
 -    this->cost[RESOURCE::clay] = 1;
 -    this->cost[RESOURCE::loom] = 1;
 -}
-+Rhodos_a::Rhodos_a() { Configure(WONDER_ID::rhodos_a); }
- 
+-
 -bool Babylon_b::AddStage(Player* p){
 -    std::map<int, int> p_resources = p->GetResources();
 -    bool stage_built = false;
-+bool Rhodos_a::AddStage(Player* p) { return Wonder::AddStage(p); }
- 
+-
 -    switch (this->stage) {
 -    // Building stage 1
 -    case 0:
@@ -3054,8 +3040,7 @@ index 8f39d8c67df22d512b816c37952fd830a0e93da3..62ba5a634835db6a83d418fea4b5d2c8
 -            this->cost[RESOURCE::wood] = 2;
 -            stage_built = true;
 -        } break;
-+bool Rhodos_a::CanAddStage(Player* p) { return Wonder::CanAddStage(p); }
- 
+-
 -    // Building stage 2
 -    case 1:
 -        if (p->ProduceResource(RESOURCE::glass, this->cost[RESOURCE::glass]-p_resources[RESOURCE::glass]) &&
@@ -3066,8 +3051,7 @@ index 8f39d8c67df22d512b816c37952fd830a0e93da3..62ba5a634835db6a83d418fea4b5d2c8
 -            p->CanPlaySeventh(); // The Player can play the seventh card of an Age.
 -            stage_built = true;
 -        } break;
-+// RHODOS B
- 
+-
 -    // Building stage 3
 -    case 2:
 -        if (p->ProduceResource(RESOURCE::clay, this->cost[RESOURCE::clay]-p_resources[RESOURCE::clay]) &&
@@ -3076,17 +3060,15 @@ index 8f39d8c67df22d512b816c37952fd830a0e93da3..62ba5a634835db6a83d418fea4b5d2c8
 -            stage_built = true;
 -        } break;
 -    }
-+Rhodos_b::Rhodos_b() { Configure(WONDER_ID::rhodos_b); }
- 
+-
 -    return stage_built;
 -}
-+bool Rhodos_b::AddStage(Player* p) { return Wonder::AddStage(p); }
++Babylon_b::Babylon_b() { Configure(WONDER_ID::babylon_b); }
  
 -bool Babylon_b::CanAddStage(Player* p){
 -    std::map<int, int> p_resources = p->GetResources();
 -    bool stage_built = false;
-+bool Rhodos_b::CanAddStage(Player* p) { return Wonder::CanAddStage(p); }
- 
+-
 -    switch (this->stage) {
 -    case 0:
 -        if (p->ProduceResource(RESOURCE::clay, this->cost[RESOURCE::clay]-p_resources[RESOURCE::clay]) &&
@@ -3104,14 +3086,13 @@ index 8f39d8c67df22d512b816c37952fd830a0e93da3..62ba5a634835db6a83d418fea4b5d2c8
 -            stage_built = true;
 -        } break;
 -    }
-+// EPHESOS A
++bool Babylon_b::AddStage(Player* p) { return Wonder::AddStage(p); }
  
 -    return stage_built;
 -}
-+Ephesos_a::Ephesos_a() { Configure(WONDER_ID::ephesos_a); }
++bool Babylon_b::CanAddStage(Player* p) { return Wonder::CanAddStage(p); }
  
--// OLYMPIA A
-+bool Ephesos_a::AddStage(Player* p) { return Wonder::AddStage(p); }
+ // OLYMPIA A
  
 -Olympia_a::Olympia_a(){
 -    this->id = WONDER_ID::olympia_a;
@@ -3120,13 +3101,12 @@ index 8f39d8c67df22d512b816c37952fd830a0e93da3..62ba5a634835db6a83d418fea4b5d2c8
 -    this->effects = {EFFECT::vp, EFFECT::hand_build_for_free, EFFECT::vp};
 -    this->cost[RESOURCE::wood] = 2;
 -}
-+bool Ephesos_a::CanAddStage(Player* p) { return Wonder::CanAddStage(p); }
++Olympia_a::Olympia_a() { Configure(WONDER_ID::olympia_a); }
  
 -bool Olympia_a::AddStage(Player* p){
 -    std::map<int, int> p_resources = p->GetResources();
 -    bool stage_built = false;
-+// EPHESOS B
- 
+-
 -    switch (this->stage) {
 -    // Building stage 1
 -    case 0:
@@ -3136,8 +3116,7 @@ index 8f39d8c67df22d512b816c37952fd830a0e93da3..62ba5a634835db6a83d418fea4b5d2c8
 -            this->cost[RESOURCE::stone] = 2;
 -            stage_built = true;
 -        } break;
-+Ephesos_b::Ephesos_b() { Configure(WONDER_ID::ephesos_b); }
- 
+-
 -    // Building stage 2
 -    case 1:
 -        if (p->ProduceResource(RESOURCE::stone, this->cost[RESOURCE::stone]-p_resources[RESOURCE::stone])) {
@@ -3145,8 +3124,7 @@ index 8f39d8c67df22d512b816c37952fd830a0e93da3..62ba5a634835db6a83d418fea4b5d2c8
 -            this->cost[RESOURCE::ore] = 2;
 -            stage_built = true;
 -        } break;
-+bool Ephesos_b::AddStage(Player* p) { return Wonder::AddStage(p); }
- 
+-
 -    // Building stage 3
 -    case 2:
 -        if (p->ProduceResource(RESOURCE::ore, this->cost[RESOURCE::ore]-p_resources[RESOURCE::ore])) {
@@ -3155,17 +3133,15 @@ index 8f39d8c67df22d512b816c37952fd830a0e93da3..62ba5a634835db6a83d418fea4b5d2c8
 -            stage_built = true;
 -        } break;
 -    }
-+bool Ephesos_b::CanAddStage(Player* p) { return Wonder::CanAddStage(p); }
++bool Olympia_a::AddStage(Player* p) { return Wonder::AddStage(p); }
  
 -    return stage_built;
 -}
-+// ALEXANDRIA A
- 
+-
 -bool Olympia_a::CanAddStage(Player* p){
 -    std::map<int, int> p_resources = p->GetResources();
 -    bool stage_built = false;
-+Alexandria_a::Alexandria_a() { Configure(WONDER_ID::alexandria_a); }
- 
+-
 -    switch (this->stage) {
 -    case 0:
 -        if (p->ProduceResource(RESOURCE::wood, this->cost[RESOURCE::wood]-p_resources[RESOURCE::wood])) {
@@ -3180,14 +3156,12 @@ index 8f39d8c67df22d512b816c37952fd830a0e93da3..62ba5a634835db6a83d418fea4b5d2c8
 -            stage_built = true;
 -        } break;
 -    }
-+bool Alexandria_a::AddStage(Player* p) { return Wonder::AddStage(p); }
- 
+-
 -    return stage_built;
 -}
-+bool Alexandria_a::CanAddStage(Player* p) { return Wonder::CanAddStage(p); }
++bool Olympia_a::CanAddStage(Player* p) { return Wonder::CanAddStage(p); }
  
--// OLYMPIA B
-+// ALEXANDRIA B
+ // OLYMPIA B
  
 -Olympia_b::Olympia_b(){
 -    this->id = WONDER_ID::olympia_b;
@@ -3196,13 +3170,12 @@ index 8f39d8c67df22d512b816c37952fd830a0e93da3..62ba5a634835db6a83d418fea4b5d2c8
 -    this->effects = {EFFECT::buy_raw_cheap, EFFECT::vp, EFFECT::copy_guild};
 -    this->cost[RESOURCE::wood] = 2;
 -}
-+Alexandria_b::Alexandria_b() { Configure(WONDER_ID::alexandria_b); }
++Olympia_b::Olympia_b() { Configure(WONDER_ID::olympia_b); }
  
 -bool Olympia_b::AddStage(Player* p){
 -    std::map<int, int> p_resources = p->GetResources();
 -    bool stage_built = false;
-+bool Alexandria_b::AddStage(Player* p) { return Wonder::AddStage(p); }
- 
+-
 -    switch (this->stage) {
 -    // Building stage 1
 -    case 0:
@@ -3231,7 +3204,8 @@ index 8f39d8c67df22d512b816c37952fd830a0e93da3..62ba5a634835db6a83d418fea4b5d2c8
 -            stage_built = true;
 -        } break;
 -    }
--
++bool Olympia_b::AddStage(Player* p) { return Wonder::AddStage(p); }
+ 
 -    return stage_built;
 -}
 -
@@ -3257,9 +3231,10 @@ index 8f39d8c67df22d512b816c37952fd830a0e93da3..62ba5a634835db6a83d418fea4b5d2c8
 -
 -    return stage_built;
 -}
--
--// RHODOS A
--
++bool Olympia_b::CanAddStage(Player* p) { return Wonder::CanAddStage(p); }
+ 
+ // RHODOS A
+ 
 -Rhodos_a::Rhodos_a(){
 -    this->id = WONDER_ID::rhodos_a;
 -    this->name = "Rhodos A";
@@ -3267,7 +3242,8 @@ index 8f39d8c67df22d512b816c37952fd830a0e93da3..62ba5a634835db6a83d418fea4b5d2c8
 -    this->effects = {EFFECT::vp, EFFECT::add_shields, EFFECT::vp};
 -    this->cost[RESOURCE::wood] = 2;
 -}
--
++Rhodos_a::Rhodos_a() { Configure(WONDER_ID::rhodos_a); }
+ 
 -bool Rhodos_a::AddStage(Player* p){
 -    std::map<int, int> p_resources = p->GetResources();
 -    bool stage_built = false;
@@ -3299,7 +3275,8 @@ index 8f39d8c67df22d512b816c37952fd830a0e93da3..62ba5a634835db6a83d418fea4b5d2c8
 -            stage_built = true;
 -        } break;
 -    }
--
++bool Rhodos_a::AddStage(Player* p) { return Wonder::AddStage(p); }
+ 
 -    return stage_built;
 -}
 -
@@ -3324,9 +3301,10 @@ index 8f39d8c67df22d512b816c37952fd830a0e93da3..62ba5a634835db6a83d418fea4b5d2c8
 -
 -    return stage_built;
 -}
--
--// RHODOS B
--
++bool Rhodos_a::CanAddStage(Player* p) { return Wonder::CanAddStage(p); }
+ 
+ // RHODOS B
+ 
 -Rhodos_b::Rhodos_b(){
 -    this->id = WONDER_ID::rhodos_b;
 -    this->name = "Rhodos B";
@@ -3361,10 +3339,12 @@ index 8f39d8c67df22d512b816c37952fd830a0e93da3..62ba5a634835db6a83d418fea4b5d2c8
 -            stage_built = true;
 -        } break;
 -    }
--
++Rhodos_b::Rhodos_b() { Configure(WONDER_ID::rhodos_b); }
+ 
 -    return stage_built;
 -}
--
++bool Rhodos_b::AddStage(Player* p) { return Wonder::AddStage(p); }
+ 
 -bool Rhodos_b::CanAddStage(Player* p){
 -    std::map<int, int> p_resources = p->GetResources();
 -    bool stage_built = false;
@@ -3382,9 +3362,10 @@ index 8f39d8c67df22d512b816c37952fd830a0e93da3..62ba5a634835db6a83d418fea4b5d2c8
 -
 -    return stage_built;
 -}
--
--// EPHESOS A
--
++bool Rhodos_b::CanAddStage(Player* p) { return Wonder::CanAddStage(p); }
+ 
+ // EPHESOS A
+ 
 -Ephesos_a::Ephesos_a(){
 -    this->id = WONDER_ID::ephesos_a;
 -    this->name = "Ephesos A";
@@ -3392,7 +3373,8 @@ index 8f39d8c67df22d512b816c37952fd830a0e93da3..62ba5a634835db6a83d418fea4b5d2c8
 -    this->effects = {EFFECT::vp, EFFECT::add_coins, EFFECT::vp};
 -    this->cost[RESOURCE::stone] = 2;
 -}
--
++Ephesos_a::Ephesos_a() { Configure(WONDER_ID::ephesos_a); }
+ 
 -bool Ephesos_a::AddStage(Player* p){
 -    std::map<int, int> p_resources = p->GetResources();
 -    bool stage_built = false;
@@ -3424,7 +3406,8 @@ index 8f39d8c67df22d512b816c37952fd830a0e93da3..62ba5a634835db6a83d418fea4b5d2c8
 -            stage_built = true;
 -        } break;
 -    }
--
++bool Ephesos_a::AddStage(Player* p) { return Wonder::AddStage(p); }
+ 
 -    return stage_built;
 -}
 -
@@ -3449,9 +3432,10 @@ index 8f39d8c67df22d512b816c37952fd830a0e93da3..62ba5a634835db6a83d418fea4b5d2c8
 -
 -    return stage_built;
 -}
--
--// EPHESOS B
--
++bool Ephesos_a::CanAddStage(Player* p) { return Wonder::CanAddStage(p); }
+ 
+ // EPHESOS B
+ 
 -Ephesos_b::Ephesos_b(){
 -    this->id = WONDER_ID::ephesos_b;
 -    this->name = "Ephesos B";
@@ -3459,7 +3443,8 @@ index 8f39d8c67df22d512b816c37952fd830a0e93da3..62ba5a634835db6a83d418fea4b5d2c8
 -    this->effects = {EFFECT::add_vp_coin, EFFECT::add_vp_coin, EFFECT::add_vp_coin};
 -    this->cost[RESOURCE::stone] = 2;
 -}
--
++Ephesos_b::Ephesos_b() { Configure(WONDER_ID::ephesos_b); }
+ 
 -bool Ephesos_b::AddStage(Player* p){
 -    std::map<int, int> p_resources = p->GetResources();
 -    bool stage_built = false;
@@ -3498,7 +3483,8 @@ index 8f39d8c67df22d512b816c37952fd830a0e93da3..62ba5a634835db6a83d418fea4b5d2c8
 -            stage_built = true;
 -        } break;
 -    }
--
++bool Ephesos_b::AddStage(Player* p) { return Wonder::AddStage(p); }
+ 
 -    return stage_built;
 -}
 -
@@ -3525,9 +3511,10 @@ index 8f39d8c67df22d512b816c37952fd830a0e93da3..62ba5a634835db6a83d418fea4b5d2c8
 -
 -    return stage_built;
 -}
--
--// ALEXANDRIA A
--
++bool Ephesos_b::CanAddStage(Player* p) { return Wonder::CanAddStage(p); }
+ 
+ // ALEXANDRIA A
+ 
 -Alexandria_a::Alexandria_a(){
 -    this->id = WONDER_ID::alexandria_a;
 -    this->name = "Alexandria A";
@@ -3566,10 +3553,12 @@ index 8f39d8c67df22d512b816c37952fd830a0e93da3..62ba5a634835db6a83d418fea4b5d2c8
 -            stage_built = true;
 -        } break;
 -    }
--
++Alexandria_a::Alexandria_a() { Configure(WONDER_ID::alexandria_a); }
+ 
 -    return stage_built;
 -}
--
++bool Alexandria_a::AddStage(Player* p) { return Wonder::AddStage(p); }
+ 
 -bool Alexandria_a::CanAddStage(Player* p){
 -    std::map<int, int> p_resources = p->GetResources();
 -    bool stage_built = false;
@@ -3591,9 +3580,10 @@ index 8f39d8c67df22d512b816c37952fd830a0e93da3..62ba5a634835db6a83d418fea4b5d2c8
 -
 -    return stage_built;
 -}
--
--// ALEXANDRIA B
--
++bool Alexandria_a::CanAddStage(Player* p) { return Wonder::CanAddStage(p); }
+ 
+ // ALEXANDRIA B
+ 
 -Alexandria_b::Alexandria_b(){
 -    this->id = WONDER_ID::alexandria_b;
 -    this->name = "Alexandria B";
@@ -3631,10 +3621,12 @@ index 8f39d8c67df22d512b816c37952fd830a0e93da3..62ba5a634835db6a83d418fea4b5d2c8
 -            stage_built = true;
 -        } break;
 -    }
--
++Alexandria_b::Alexandria_b() { Configure(WONDER_ID::alexandria_b); }
+ 
 -    return stage_built;
 -}
--
++bool Alexandria_b::AddStage(Player* p) { return Wonder::AddStage(p); }
+ 
 -bool Alexandria_b::CanAddStage(Player* p){
 -    std::map<int, int> p_resources = p->GetResources();
 -    bool stage_built = false;
@@ -3660,6 +3652,153 @@ index 8f39d8c67df22d512b816c37952fd830a0e93da3..62ba5a634835db6a83d418fea4b5d2c8
  
  // HALIKARNASSOS A
  
+-Halikarnassos_a::Halikarnassos_a(){
+-    this->id = WONDER_ID::halikarnassos_a;
+-    this->name = "Halikarnassos A";
+-    this->production = RESOURCE::loom;
+-    this->effects = {EFFECT::vp, EFFECT::discard_build_for_free, EFFECT::vp};
+-    this->cost[RESOURCE::clay] = 2;
+-}
++Halikarnassos_a::Halikarnassos_a() { Configure(WONDER_ID::halikarnassos_a); }
+ 
+-bool Halikarnassos_a::AddStage(Player* p){
+-    std::map<int, int> p_resources = p->GetResources();
+-    bool stage_built = false;
+-
+-    switch (this->stage) {
+-    // Building stage 1
+-    case 0:
+-        if (p->ProduceResource(RESOURCE::clay, this->cost[RESOURCE::clay]-p_resources[RESOURCE::clay])) {
+-            this->stage++;
+-            this->wonder_points += 3;
+-            this->cost[RESOURCE::ore] = 3;
+-            stage_built = true;
+-        } break;
+-
+-    // Building stage 2
+-    case 1:
+-        if (p->ProduceResource(RESOURCE::ore, this->cost[RESOURCE::ore]-p_resources[RESOURCE::ore])) {
+-            this->stage++;
+-            this->cost[RESOURCE::loom] = 2;
+-            p->DiscardFree(true);
+-            stage_built = true;
+-        } break;
+-
+-    // Building stage 3
+-    case 2:
+-        if (p->ProduceResource(RESOURCE::loom, this->cost[RESOURCE::loom]-p_resources[RESOURCE::loom])) {
+-            this->stage++;
+-            this->wonder_points += 7;
+-            stage_built = true;
+-        } break;
+-    }
+-
+-    return stage_built;
+-}
++bool Halikarnassos_a::AddStage(Player* p) { return Wonder::AddStage(p); }
+ 
+-bool Halikarnassos_a::CanAddStage(Player* p){
+-    std::map<int, int> p_resources = p->GetResources();
+-    bool stage_built = false;
+-
+-    switch (this->stage) {
+-    case 0:
+-        if (p->ProduceResource(RESOURCE::clay, this->cost[RESOURCE::clay]-p_resources[RESOURCE::clay])) {
+-            stage_built = true;
+-        } break;
+-    case 1:
+-        if (p->ProduceResource(RESOURCE::ore, this->cost[RESOURCE::ore]-p_resources[RESOURCE::ore])) {
+-            stage_built = true;
+-        } break;
+-    case 2:
+-        if (p->ProduceResource(RESOURCE::loom, this->cost[RESOURCE::loom]-p_resources[RESOURCE::loom])) {
+-            stage_built = true;
+-        } break;
+-    }
+-
+-    return stage_built;
+-}
++bool Halikarnassos_a::CanAddStage(Player* p) { return Wonder::CanAddStage(p); }
+ 
+ // HALIKARNASSOS B
+ 
+-Halikarnassos_b::Halikarnassos_b(){
+-    this->id = WONDER_ID::halikarnassos_b;
+-    this->name = "Halikarnassos B";
+-    this->production = RESOURCE::loom;
+-    this->effects = {EFFECT::add_vp_discard, EFFECT::add_vp_discard, EFFECT::discard_build_for_free};
+-    this->cost[RESOURCE::ore] = 2;
+-}
++Halikarnassos_b::Halikarnassos_b() { Configure(WONDER_ID::halikarnassos_b); }
+ 
+-bool Halikarnassos_b::AddStage(Player* p){
+-    std::map<int, int> p_resources = p->GetResources();
+-    bool stage_built = false;
+-
+-    switch (this->stage) {
+-    // Building stage 1
+-    case 0:
+-        if (p->ProduceResource(RESOURCE::ore, this->cost[RESOURCE::ore]-p_resources[RESOURCE::ore])) {
+-            this->stage++;
+-            this->wonder_points += 2;
+-            this->cost[RESOURCE::clay] = 3;
+-            p->DiscardFree(true);
+-            stage_built = true;
+-        } break;
+-
+-    // Building stage 2
+-    case 1:
+-        if (p->ProduceResource(RESOURCE::clay, this->cost[RESOURCE::clay]-p_resources[RESOURCE::clay])) {
+-            this->stage++;
+-            this->wonder_points += 1;
+-            this->cost[RESOURCE::glass] = 1;
+-            this->cost[RESOURCE::loom] = 1;
+-            this->cost[RESOURCE::papyrus] = 1;
+-            p->DiscardFree(true);
+-            stage_built = true;
+-        } break;
+-
+-    // Building stage 3
+-    case 2:
+-        if (p->ProduceResource(RESOURCE::glass, this->cost[RESOURCE::glass]-p_resources[RESOURCE::glass]) &&
+-            p->ProduceResource(RESOURCE::loom, this->cost[RESOURCE::loom]-p_resources[RESOURCE::loom]) &&
+-            p->ProduceResource(RESOURCE::papyrus, this->cost[RESOURCE::papyrus]-p_resources[RESOURCE::papyrus])) {
+-            this->stage++;
+-            p->DiscardFree(true);
+-            stage_built = true;
+-        } break;
+-    }
+-
+-    return stage_built;
+-}
++bool Halikarnassos_b::AddStage(Player* p) { return Wonder::AddStage(p); }
+ 
+-bool Halikarnassos_b::CanAddStage(Player* p){
+-    std::map<int, int> p_resources = p->GetResources();
+-    bool stage_built = false;
+-
+-    switch (this->stage) {
+-    case 0:
+-        if (p->ProduceResource(RESOURCE::ore, this->cost[RESOURCE::ore]-p_resources[RESOURCE::ore])) {
+-            stage_built = true;
+-        } break;
+-    case 1:
+-        if (p->ProduceResource(RESOURCE::clay, this->cost[RESOURCE::clay]-p_resources[RESOURCE::clay])) {
+-            stage_built = true;
+-        } break;
+-    case 2:
+-        if (p->ProduceResource(RESOURCE::glass, this->cost[RESOURCE::glass]-p_resources[RESOURCE::glass]) &&
+-            p->ProduceResource(RESOURCE::loom, this->cost[RESOURCE::loom]-p_resources[RESOURCE::loom]) &&
+-            p->ProduceResource(RESOURCE::papyrus, this->cost[RESOURCE::papyrus]-p_resources[RESOURCE::papyrus])) {
+-            stage_built = true;
+-        } break;
+-    }
+-
+-    return stage_built;
+-}
++bool Halikarnassos_b::CanAddStage(Player* p) { return Wonder::CanAddStage(p); }
+ 
+ }
 diff --git a/tests/decision_helpers.h b/tests/decision_helpers.h
 new file mode 100644
 index 0000000000000000000000000000000000000000..a7da49075ec6c3f2f8087e28a23e485daa518867
@@ -4637,7 +4776,7 @@ index 0000000000000000000000000000000000000000..9110edc2b6691ff08a391c787ef145e8
 +}
 diff --git a/tests/test_decision_resolution.cpp b/tests/test_decision_resolution.cpp
 new file mode 100644
-index 0000000000000000000000000000000000000000..589daa81c88e0e79d3ee1dc9c0ec5de9c6d10f2b
+index 0000000000000000000000000000000000000000..28832718f1f744a494a19328494240abdc5fe0fa
 --- /dev/null
 +++ b/tests/test_decision_resolution.cpp
 @@ -0,0 +1,289 @@
@@ -4772,7 +4911,7 @@ index 0000000000000000000000000000000000000000..589daa81c88e0e79d3ee1dc9c0ec5de9
 +void discard_barrier_and_replay() {
 +    DecisionFixture f;
 +    DMAG::Halikarnassos_b hali;
-+    f.players[0].SetWonder(&hali);f.players[0].AddResource(RESOURCE::ore,2);
++    f.players[0].SetWonder(&hali);f.players[0].AddResource(RESOURCE::clay,2);
 +    f.pile={test_card(CARD_ID::lumber_yard,CARD_TYPE::materials)};
 +    auto e=f.Engine(19);
 +    const auto original=e->Status();
@@ -4829,7 +4968,7 @@ index 0000000000000000000000000000000000000000..589daa81c88e0e79d3ee1dc9c0ec5de9
 +    // Synthetic same-family fixture: queue by seat, refresh after each choice.
 +    DecisionFixture queue; DMAG::Halikarnassos_b h0,h2;
 +    queue.players[0].SetWonder(&h0);queue.players[2].SetWonder(&h2);
-+    queue.players[0].AddResource(RESOURCE::ore,2);queue.players[2].AddResource(RESOURCE::ore,2);
++    queue.players[0].AddResource(RESOURCE::clay,2);queue.players[2].AddResource(RESOURCE::clay,2);
 +    queue.pile={test_card(CARD_ID::lumber_yard,CARD_TYPE::materials),test_card(CARD_ID::ore_vein,CARD_TYPE::materials)};
 +    auto q=queue.Engine(19);
 +    finish_cohort(*q,{choose(*q,2,"build_wonder"),choose(*q,0,"build_wonder"),choose(*q,1,"discard")});
@@ -4844,7 +4983,7 @@ index 0000000000000000000000000000000000000000..589daa81c88e0e79d3ee1dc9c0ec5de9
 +
 +void no_options_late_coins_and_last_seventh() {
 +    DecisionFixture empty;DMAG::Halikarnassos_b h;
-+    empty.players[0].SetWonder(&h);empty.players[0].AddResource(RESOURCE::ore,2);
++    empty.players[0].SetWonder(&h);empty.players[0].AddResource(RESOURCE::clay,2);
 +    for(int type:{CARD_ID::altar,CARD_ID::theater}) {
 +        auto c=test_card(type);empty.players[0].ReceiveCards({c});
 +        expect(empty.players[0].BuildStructure(c,{c},true),"All-duplicate source setup failed");
@@ -4856,7 +4995,7 @@ index 0000000000000000000000000000000000000000..589daa81c88e0e79d3ee1dc9c0ec5de9
 +    expect(e->Status()["receipts"].back()["status"]=="skipped_no_options","Automatic no-options receipt missing");
 +
 +    DecisionFixture late;DMAG::Halikarnassos_b source;
-+    late.players[0].SetWonder(&source);late.players[0].AddResource(RESOURCE::ore,2);
++    late.players[0].SetWonder(&source);late.players[0].AddResource(RESOURCE::clay,2);
 +    late.players[1].ReceiveCards({test_card(CARD_ID::bazar,CARD_TYPE::commercial,2),test_card(CARD_ID::altar)});
 +    late.players[2].ReceiveCards({test_card(CARD_ID::press,CARD_TYPE::manufactured),test_card(CARD_ID::altar)});
 +    auto l=late.Engine();
@@ -4867,7 +5006,7 @@ index 0000000000000000000000000000000000000000..589daa81c88e0e79d3ee1dc9c0ec5de9
 +    expect(l->Status()["players"]["1"]["resources"]["coins"]==3,"Later discard construction retroactively paid Bazar");
 +
 +    DecisionFixture last;DMAG::Halikarnassos_b final_source;
-+    last.players[0].SetWonder(&final_source);last.players[0].CanPlaySeventh();last.players[0].AddResource(RESOURCE::ore,2);
++    last.players[0].SetWonder(&final_source);last.players[0].CanPlaySeventh();last.players[0].AddResource(RESOURCE::clay,2);
 +    last.players[0].ReceiveCards({test_card(CARD_ID::altar)});
 +    last.players[1].ReceiveCards({});last.players[2].ReceiveCards({});
 +    last.pile={test_card(CARD_ID::lumber_yard,CARD_TYPE::materials)};
@@ -4897,7 +5036,7 @@ index 0000000000000000000000000000000000000000..589daa81c88e0e79d3ee1dc9c0ec5de9
 +    expect(e->Submit(first)["status"]=="cancelled","Accepted input survived timeout as applied");
 +
 +    DecisionFixture pending;DMAG::Halikarnassos_b grant_source;
-+    pending.players[0].SetWonder(&grant_source);pending.players[0].AddResource(RESOURCE::ore,2);
++    pending.players[0].SetWonder(&grant_source);pending.players[0].AddResource(RESOURCE::clay,2);
 +    pending.pile={test_card(CARD_ID::lumber_yard,CARD_TYPE::materials)};
 +    auto cancelled=pending.Engine(19);
 +    auto built=choose(*cancelled,0,"build_wonder");
@@ -4912,7 +5051,7 @@ index 0000000000000000000000000000000000000000..589daa81c88e0e79d3ee1dc9c0ec5de9
 +           "Abort lost the preceding consistent regular commit");
 +    expect(cancelled->Submit(built)["status"]=="applied","Abort overwrote prior successfully applied action");
 +
-+    DecisionFixture broken;BrokenStage stage;broken.players[0].SetWonder(&stage);broken.players[0].AddResource(RESOURCE::ore,2);
++    DecisionFixture broken;BrokenStage stage;broken.players[0].SetWonder(&stage);broken.players[0].AddResource(RESOURCE::clay,2);
 +    auto b=broken.Engine();auto before=b->Status()["players"];
 +    finish_cohort(*b,{choose(*b,1,"discard"),choose(*b,2,"discard")});
 +    b->Submit(choose(*b,0,"build_wonder"));
@@ -5619,10 +5758,10 @@ index 0000000000000000000000000000000000000000..8d1ef94ffebeae52e8b3294b65a65535
 +}
 diff --git a/tests/test_wonder_tables.cpp b/tests/test_wonder_tables.cpp
 new file mode 100644
-index 0000000000000000000000000000000000000000..82b5f817eae969ef11c3734b076adc491696814b
+index 0000000000000000000000000000000000000000..2f71fd9b02afd6c5603626fd68ed44e9f1c8f88c
 --- /dev/null
 +++ b/tests/test_wonder_tables.cpp
-@@ -0,0 +1,96 @@
+@@ -0,0 +1,106 @@
 +#include "decision_helpers.h"
 +#include <iostream>
 +using namespace DMAG;
@@ -5718,4 +5857,14 @@ index 0000000000000000000000000000000000000000..82b5f817eae969ef11c3734b076adc49
 +        expect(offered(*engine,0,"build_structure",CARD_ID::library)==((stage>=1 && round==1)||(stage>=2 && round==6)),"Olympia B first/last round eligibility");
 +    }
 +}
-+int main(int argc,char** argv){try{if(argc>1 && std::string(argv[1])=="--dump")std::cout<<dump().dump()<<'\n';else if(argc>1 && std::string(argv[1])=="babylon")babylon();else if(argc>1 && std::string(argv[1])=="olympia")olympia();else{runtime();babylon();olympia();}return 0;}catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}}
++void hali() {
++    DecisionFixture f;Halikarnassos_b board;f.players[0].SetWonder(&board);
++    auto r=f.players[0].GetResources();for(auto& e:r)e.second=0;r[RESOURCE::clay]=2;f.players[0].SetResources(r);
++    auto e=f.Engine(19);
++    finish_cohort(*e,{choose(*e,0,"build_wonder"),choose(*e,1,"discard"),choose(*e,2,"discard")});
++    expect(e->Status()["game"]["phase"]=="discard_choice" && !e->Terminal(),"Halikarnassos failed final discard barrier");
++    auto request=choose(*e,0,"build_discard_free");applied(*e,request);
++    auto state=e->Status();expect(e->Terminal() && state["game"]["phase"]=="finished","Halikarnassos did not finish after selection");
++    applied(*e,request);expect(e->Status()==state,"Halikarnassos replay repeated effect");
++}
++int main(int argc,char** argv){try{if(argc>1 && std::string(argv[1])=="--dump")std::cout<<dump().dump()<<'\n';else if(argc>1 && std::string(argv[1])=="babylon")babylon();else if(argc>1 && std::string(argv[1])=="olympia")olympia();else if(argc>1 && std::string(argv[1])=="hali")hali();else{runtime();babylon();olympia();hali();}return 0;}catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}}

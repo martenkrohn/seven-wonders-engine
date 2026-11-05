@@ -93,4 +93,14 @@ void olympia() {
         expect(offered(*engine,0,"build_structure",CARD_ID::library)==((stage>=1 && round==1)||(stage>=2 && round==6)),"Olympia B first/last round eligibility");
     }
 }
-int main(int argc,char** argv){try{if(argc>1 && std::string(argv[1])=="--dump")std::cout<<dump().dump()<<'\n';else if(argc>1 && std::string(argv[1])=="babylon")babylon();else if(argc>1 && std::string(argv[1])=="olympia")olympia();else{runtime();babylon();olympia();}return 0;}catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}}
+void hali() {
+    DecisionFixture f;Halikarnassos_b board;f.players[0].SetWonder(&board);
+    auto r=f.players[0].GetResources();for(auto& e:r)e.second=0;r[RESOURCE::clay]=2;f.players[0].SetResources(r);
+    auto e=f.Engine(19);
+    finish_cohort(*e,{choose(*e,0,"build_wonder"),choose(*e,1,"discard"),choose(*e,2,"discard")});
+    expect(e->Status()["game"]["phase"]=="discard_choice" && !e->Terminal(),"Halikarnassos failed final discard barrier");
+    auto request=choose(*e,0,"build_discard_free");applied(*e,request);
+    auto state=e->Status();expect(e->Terminal() && state["game"]["phase"]=="finished","Halikarnassos did not finish after selection");
+    applied(*e,request);expect(e->Status()==state,"Halikarnassos replay repeated effect");
+}
+int main(int argc,char** argv){try{if(argc>1 && std::string(argv[1])=="--dump")std::cout<<dump().dump()<<'\n';else if(argc>1 && std::string(argv[1])=="babylon")babylon();else if(argc>1 && std::string(argv[1])=="olympia")olympia();else if(argc>1 && std::string(argv[1])=="hali")hali();else{runtime();babylon();olympia();hali();}return 0;}catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}}

@@ -800,9 +800,10 @@ void Player::DiscardFree(bool flag) {
     }
     if (!board) return;
     const int stage = board->GetStage();
-    const int id = board->GetId();
-    const bool source = (id == WONDER_ID::halikarnassos_a && stage == 2)
-                     || (id == WONDER_ID::halikarnassos_b && stage >= 1 && stage <= 3);
+    const auto* definition=board->GetDefinition();
+    const bool source=definition && stage>0 && stage<=board->GetStageCount()
+        && std::any_of(definition->stages[stage-1].effects.begin(),definition->stages[stage-1].effects.end(),
+            [](const WonderEffect& e){return e.type=="discard_build_for_free";});
     if (source && stage > discard_grant_stage) {
         discard_grant_stage = stage;
         discard_free = true;

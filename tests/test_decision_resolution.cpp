@@ -129,7 +129,7 @@ void free_modes_and_frozen_discount() {
 void discard_barrier_and_replay() {
     DecisionFixture f;
     DMAG::Halikarnassos_b hali;
-    f.players[0].SetWonder(&hali);f.players[0].AddResource(RESOURCE::ore,2);
+    f.players[0].SetWonder(&hali);f.players[0].AddResource(RESOURCE::clay,2);
     f.pile={test_card(CARD_ID::lumber_yard,CARD_TYPE::materials)};
     auto e=f.Engine(19);
     const auto original=e->Status();
@@ -186,7 +186,7 @@ void fresh_seventh_and_queue() {
     // Synthetic same-family fixture: queue by seat, refresh after each choice.
     DecisionFixture queue; DMAG::Halikarnassos_b h0,h2;
     queue.players[0].SetWonder(&h0);queue.players[2].SetWonder(&h2);
-    queue.players[0].AddResource(RESOURCE::ore,2);queue.players[2].AddResource(RESOURCE::ore,2);
+    queue.players[0].AddResource(RESOURCE::clay,2);queue.players[2].AddResource(RESOURCE::clay,2);
     queue.pile={test_card(CARD_ID::lumber_yard,CARD_TYPE::materials),test_card(CARD_ID::ore_vein,CARD_TYPE::materials)};
     auto q=queue.Engine(19);
     finish_cohort(*q,{choose(*q,2,"build_wonder"),choose(*q,0,"build_wonder"),choose(*q,1,"discard")});
@@ -201,7 +201,7 @@ void fresh_seventh_and_queue() {
 
 void no_options_late_coins_and_last_seventh() {
     DecisionFixture empty;DMAG::Halikarnassos_b h;
-    empty.players[0].SetWonder(&h);empty.players[0].AddResource(RESOURCE::ore,2);
+    empty.players[0].SetWonder(&h);empty.players[0].AddResource(RESOURCE::clay,2);
     for(int type:{CARD_ID::altar,CARD_ID::theater}) {
         auto c=test_card(type);empty.players[0].ReceiveCards({c});
         expect(empty.players[0].BuildStructure(c,{c},true),"All-duplicate source setup failed");
@@ -213,7 +213,7 @@ void no_options_late_coins_and_last_seventh() {
     expect(e->Status()["receipts"].back()["status"]=="skipped_no_options","Automatic no-options receipt missing");
 
     DecisionFixture late;DMAG::Halikarnassos_b source;
-    late.players[0].SetWonder(&source);late.players[0].AddResource(RESOURCE::ore,2);
+    late.players[0].SetWonder(&source);late.players[0].AddResource(RESOURCE::clay,2);
     late.players[1].ReceiveCards({test_card(CARD_ID::bazar,CARD_TYPE::commercial,2),test_card(CARD_ID::altar)});
     late.players[2].ReceiveCards({test_card(CARD_ID::press,CARD_TYPE::manufactured),test_card(CARD_ID::altar)});
     auto l=late.Engine();
@@ -224,7 +224,7 @@ void no_options_late_coins_and_last_seventh() {
     expect(l->Status()["players"]["1"]["resources"]["coins"]==3,"Later discard construction retroactively paid Bazar");
 
     DecisionFixture last;DMAG::Halikarnassos_b final_source;
-    last.players[0].SetWonder(&final_source);last.players[0].CanPlaySeventh();last.players[0].AddResource(RESOURCE::ore,2);
+    last.players[0].SetWonder(&final_source);last.players[0].CanPlaySeventh();last.players[0].AddResource(RESOURCE::clay,2);
     last.players[0].ReceiveCards({test_card(CARD_ID::altar)});
     last.players[1].ReceiveCards({});last.players[2].ReceiveCards({});
     last.pile={test_card(CARD_ID::lumber_yard,CARD_TYPE::materials)};
@@ -254,7 +254,7 @@ void timeout_abort_rollback() {
     expect(e->Submit(first)["status"]=="cancelled","Accepted input survived timeout as applied");
 
     DecisionFixture pending;DMAG::Halikarnassos_b grant_source;
-    pending.players[0].SetWonder(&grant_source);pending.players[0].AddResource(RESOURCE::ore,2);
+    pending.players[0].SetWonder(&grant_source);pending.players[0].AddResource(RESOURCE::clay,2);
     pending.pile={test_card(CARD_ID::lumber_yard,CARD_TYPE::materials)};
     auto cancelled=pending.Engine(19);
     auto built=choose(*cancelled,0,"build_wonder");
@@ -269,7 +269,7 @@ void timeout_abort_rollback() {
            "Abort lost the preceding consistent regular commit");
     expect(cancelled->Submit(built)["status"]=="applied","Abort overwrote prior successfully applied action");
 
-    DecisionFixture broken;BrokenStage stage;broken.players[0].SetWonder(&stage);broken.players[0].AddResource(RESOURCE::ore,2);
+    DecisionFixture broken;BrokenStage stage;broken.players[0].SetWonder(&stage);broken.players[0].AddResource(RESOURCE::clay,2);
     auto b=broken.Engine();auto before=b->Status()["players"];
     finish_cohort(*b,{choose(*b,1,"discard"),choose(*b,2,"discard")});
     b->Submit(choose(*b,0,"build_wonder"));

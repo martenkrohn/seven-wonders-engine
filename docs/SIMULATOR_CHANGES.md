@@ -373,6 +373,16 @@ Wunder deaktiviert. Historische Kopiertests prüfen jetzt die entfernte
 Fähigkeit; optimale eigene/Babylon-Joker und Schlusskategorien bleiben geprüft.
 Roter neuer Modus vor Implementierung; anschließend 15 CTests grün.
 
+## ENG-021 – Halikarnassos und vollständige Wundertabellen (Paket 6d)
+
+Beide Seiten verwenden die neuen Stufenkosten und Erträge. Das Ablagerecht
+folgt dem aktuellen erzeugten Stufeneffekt, nicht einem separat gepflegten
+ID-/Stufen-Switch. Sichere Entnahme, Pflichtwahl, Quellenverbrauch und
+Schlussbarrieren bleiben erhalten. Roter erster Nacht-Stufenkostenfall,
+anschließend alle 15 CTests grün; sämtliche 14 Seiten werden unabhängig gegen
+die eingefrorenen Ziele geprüft. Laufzeit meldet vollständige Wunderfähigkeiten
+und tatsächliche Stufenzahl/Vollendung. Noch keine GUI-/RL-Abnahme behauptet.
+
 ## Abgrenzung
 
 Es findet keine pauschale Behauptung vollständiger Regelkorrektheit statt. Insbesondere werden die Wunder-Ausbauschritte nicht zur neuen Edition migriert. Die Kartentabellenmigration in ENG-015 bleibt von den noch offenen neuen Sondereffekten getrennt. Falls frühere Kartenänderungen nicht im exakten Unterschied zu diesem Upstream-Commit erscheinen, werden sie nicht ohne Nachweis als Änderungen dieser C++-Fassung behauptet. Für jede zukünftige Änderung ist ein neuer Eintrag mit Anlass, genauer Funktion, Wirkung, Test und Grenzen anzulegen und der exakte Nachweis neu zu erzeugen.

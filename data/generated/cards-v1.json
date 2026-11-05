@@ -9,7 +9,7 @@
   },
   "runtime_scope": {
     "players": 3,
-    "wonders": "legacy",
+    "wonders": "bga-second-edition",
     "card_tables": true,
     "deferred_effects": {}
   },
