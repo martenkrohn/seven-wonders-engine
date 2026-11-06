@@ -1,4 +1,4 @@
-# BGA-GUI mit angebotenen Entscheidungen
+# GUI für 7 Wonders Second Edition (2020)
 
 Die gesamte aktive Oberfläche verwendet Englisch, einschließlich Kartendetails,
 Wundernamen und Tag-/Nachtseiten, Sonderaktionen und Fehlermeldungen.
@@ -68,11 +68,11 @@ passt ihre Größe bei kleineren Fenstern an. Sieben vollständige Handkarten
 passen auch bei Mindestgröße in eine Reihe. Die Stufenmarker berücksichtigen
 alle 14 Wunderseiten mit zwei, drei oder vier Stufen.
 
-Grafiken bleiben extern. Im gemeinsamen Workspace wird die vorhandene BGA-
-Referenz automatisch gefunden; andernfalls beispielsweise:
+Die benötigten Grafiken werden unter `images/` mitgeliefert und automatisch
+geladen. Ein alternativer Bilderordner kann explizit gewählt werden:
 
 ```sh
-python3 Game.py 2 --assets-dir /pfad/bga-sevenwonders
+python3 Game.py 2 --assets-dir /pfad/zu/anderen-bildern
 ```
 
 Benötigt werden `img/cards_v2.jpg` und `img/boards_v2.jpg` (tatsächlich WebP).

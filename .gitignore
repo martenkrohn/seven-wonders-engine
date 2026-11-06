@@ -8,7 +8,6 @@
 /compile_commands.json
 /.idea/
 /.vscode/
-/images/
 
 /.venv/
 /*.egg-info/

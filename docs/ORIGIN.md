@@ -33,7 +33,7 @@ The pinned upstream source contains a GPLv3 `LICENSE`, and that exact license te
 
 The upstream README has a conflicting MIT sentence. This project follows the explicit GPLv3 license supplied in the source snapshot; it does not claim that the upstream authors issued a separate MIT grant for this snapshot. The discrepancy is recorded rather than silently copied into this project's README.
 
-The embedded MIT notices in `include/nlohmann/` remain intact. Game names and trademarks are not relicensed. Card/wonder data are derived from engine definitions using the included extraction scripts; fixtures are recorded simulator states. GUI artwork, rulebooks and unrelated scraped datasets are excluded.
+The embedded MIT notices in `include/nlohmann/` remain intact. Game names and trademarks are not relicensed. Card/wonder data are derived from engine definitions using the included extraction scripts; fixtures are recorded simulator states. Rulebooks and unrelated scraped datasets are excluded. The GUI artwork is now included under `images/`, with its original rights and source attribution; see `images/README.md`.
 
 Relevant primary sources: [upstream LICENSE](https://github.com/dmag-ufsm/7Wonders/blob/a0bc333a7a7f21f83156de8a2d522e7baa913f0a/LICENSE), [GPLv3 terms](https://www.gnu.org/licenses/gpl-3.0.html), [nlohmann/json license](https://github.com/nlohmann/json/blob/v3.7.0/LICENSE.MIT).
 

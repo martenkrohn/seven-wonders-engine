@@ -19,10 +19,15 @@ include/nlohmann/ headers retain Niels Lohmann and contributors' MIT notices.
 
 No rights in board-game names, trademarks, publisher artwork or BGA assets
 are claimed. This is an unofficial project with no publisher/BGA affiliation.
-The current checkout excludes upstream GUI artwork and RL experiment data;
-unmodified upstream history remains accessible through the fork.
+The current checkout includes the second-edition card, wonder and resource
+artwork in images/, plus a GUI screenshot in docs/images/. These images retain
+their original rights; the GPL license for the simulator code does not
+relicense them. See images/README.md and the recorded asset-source manifest.
+RL experiment data remains separate. Unmodified upstream history remains
+accessible through the fork.
 
 2026-11-05: The optional original Tk GUI is restored in gui/legacy_view.py,
 with a downstream launcher, protocol coordinator and compatibility corrections.
 It derives from the original Game.py at the baseline above. Artwork remains
-external. The C++ rules and build files are unchanged by this restoration.
+external in that historical restoration. The C++ rules and build files were
+unchanged by that restoration.

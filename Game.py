@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Launch the BGA decision interface against the standalone engine."""
+"""Play 7 Wonders Second Edition (2020) with the standalone engine."""
 import argparse
 import json
 import math
@@ -15,8 +15,8 @@ def main():
     parser.add_argument("num_bots", type=int, nargs="?", default=0, choices=range(4),
                         help="0: three human seats; 2: one human with two simple bots; 3: observe")
     parser.add_argument("--engine", type=Path, default=ROOT / "build/7Wonders")
-    parser.add_argument("--assets-dir", type=Path, default=(ROOT.parent / "references/bga-sevenwonders" if (ROOT.parent / "references/bga-sevenwonders").is_dir() else ROOT / "images"),
-                        help="Local BGA reference directory containing img/cards_v2.jpg and img/boards_v2.jpg")
+    parser.add_argument("--assets-dir", type=Path, default=ROOT / "images",
+                        help="Artwork directory (default: the images bundled with this repository)")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--timeout", type=float, default=10)
     args = parser.parse_args()

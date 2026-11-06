@@ -24,7 +24,7 @@ class DecisionApp:
         self.option_buttons, self.card_widgets, self.reveal_button = [], {}, None
         self.detail_window = None
         self.focus_seat = None
-        root.title("7 Wonders – BGA edition")
+        root.title("7 Wonders – Second Edition (2020)")
         root.geometry("1320x940")
         root.minsize(1120, 800)
         root.configure(bg="white")

@@ -10,7 +10,7 @@ sys.path.insert(0,str(ROOT))
 from gui.bga_assets import BgaAssets
 from gui.decision_session import DecisionSession
 from gui.decision_view import DecisionApp
-ASSETS=Path(os.environ.get('SEVENWONDERS_ASSETS',ROOT.parent/'references/bga-sevenwonders'))
+ASSETS=Path(os.environ.get('SEVENWONDERS_ASSETS',ROOT/'images'))
 
 class ArtworkTests(unittest.TestCase):
     def test_missing_artwork_has_current_text_values(self):

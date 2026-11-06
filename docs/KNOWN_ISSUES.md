@@ -17,8 +17,8 @@ GUI and RL consume offered decisions. See [release acceptance](RELEASE_BGA.md).
 - Local file transport assumes a trusted coordinator. It receives all hands;
   the GUI hides handover hands and RL policies receive only own/public features.
   There is no remote authentication or persistent restoration of a live game.
-- Images are external and optional. Tk needs a display; missing or unverified
-  artwork uses current text values. No downloaded artwork is distributed.
+- Card, wonder and resource images are included in images/. Tk needs a display;
+  missing or unverified custom artwork uses current text values.
 - Same-seed replay is checked within one toolchain. Cross-platform shuffle
   equivalence and learned playing strength are not claimed.
 - Legacy protocol-2 tags, data and model contracts remain historical. Legacy

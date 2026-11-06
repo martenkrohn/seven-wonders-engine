@@ -40,7 +40,8 @@
     "both_effect_edges_pixel_checked_for_all_cards": true,
     "stage_counts_match_all_wonder_definitions": true,
     "stage_positions_checked_against_local_reference_geometry": true,
-    "external_artwork_not_bundled": true
+    "artwork_bundled_in_images": true,
+    "midgame_screenshot": "docs/images/gui-midgame.png"
   },
   "local_preview_directory": "python/runs/gui-redesign-20261106/ (consumer workspace, ignored)",
   "test_environment": "Python workspace venv, Tk 8.6, local Xvfb with isolated virtual display; no system installation changes",
