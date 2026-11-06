@@ -5,7 +5,7 @@ weitere Migration. **Aktuelle Nutzerfreigabe: alle verbleibenden Pakete bis eins
 Zum Abschluss werden Ergebnis, Tests, Commit und verbleibende Grenzen
 eingetragen. Die Pakete werden gemäß der erweiterten Nutzerfreigabe vom 5. November 2026
 nacheinander umgesetzt und einzeln geprüft/committed. Der [fertige nächste Agentenauftrag](NEXT_AGENT_TASK.md)
-begrenzt die nächste Sitzung auf Paket 5-IIa (ausschließlich Ludus).
+dokumentiert den aktuellen Gesamtabnahmestand.
 
 ## Ziel und feste Entscheidungen
 
@@ -82,8 +82,8 @@ lokalen Ordner verwendbar.
 | **5-II – Neue Kartensondereffekte** | Erledigt: Ludus und Decorators, Abnahme unten | Ludus und Decorators Guild einzeln umsetzen und abnehmen | Neue Zähl-/Wertungseffekte mit gezielten Gegenbeispielen geprüft; keine bloße Datenmigration als vollständige neue Edition ausgegeben |
 | 6 – Neue Wunder | Erledigt, familienweise Abnahme unten | Die 14 Seiten familienweise umstellen | Jede Stufe: Kosten, Ertrag, Verfügbarkeit und richtige Anzahl geprüft; Sonderfähigkeiten mit gezielten Fällen abgenommen |
 | 7 – GUI der neuen Edition | Erledigt, Sitzungs-/Tk-Abnahme unten | Neue Entscheidungsansichten, Bilder und Layout einbinden | Alle neuen Fähigkeiten menschlich bedienbar; korrekte Bilder/Namen/Stufen; vollständige Partien und fehlende Bilder getestet |
-| 8 – RL-Anbindung | Offen | Neue Engine bewusst im RL-Projekt übernehmen | Exportdaten, Beobachtungen, Aktionen, Merkmale und Checkpoint-Verträge passen; Protokoll-/Kurztrainingsprüfungen bestehen |
-| 9 – Gemeinsame Abnahme | Offen | Befunde schließen und neue Version veröffentlichen | Referenzvergleich, Regelfälle, GUI-Partien, automatisierte Spiele und CI grün; Release, Regelnamen und RL-Pin stimmen |
+| 8 – RL-Anbindung | Erledigt, RL-Commit `a91ade5` | Neue Engine bewusst im RL-Projekt übernehmen | Exportdaten, Beobachtungen, Aktionen, Merkmale und Checkpoint-Verträge passen; Protokoll-/Kurztrainingsprüfungen bestehen |
+| 9 – Gemeinsame Abnahme | Lokal vorbereitet; Veröffentlichung wartet auf Freigabe | Befunde schließen und neue Version veröffentlichen | Referenzvergleich, Regelfälle, GUI-Partien, automatisierte Spiele und CI grün; Release, Regelnamen und RL-Pin stimmen |
 
 Paket 6 wird selbst in kleine Aufträge geteilt: zuerst einfache Kosten-/Punkte-
 Wunder, danach Babylon, Olympia und Halikarnassos einzeln. Ein einzelner Agent
@@ -538,3 +538,29 @@ Textfallback. Vier echte Tk-Klickpartien mit Seeds 8/19/3/9 decken alle
 Olympia-Freibaumodi und Pflicht-Ablagewahl ab. Hotseat-Handübergabe verdeckt
 fremde Hände. 17 GUI-Prüfungen: 12 aktiv bestanden, fünf historische V2-
 Prozessprüfungen abgegrenzt. Paket 7 abgeschlossen; Paket 8 folgt.
+
+
+Paket 8: RL-Commit `a91ade5`. Neutraldaten bytegleich übernommen, eigener
+öffentlicher Entscheidungs-/Featurevertrag und neuer maskierter PPO. Echte
+eigene Entscheidungen einschließlich Pflichtablage, keine Fake-Schritte;
+optimale Science-Zugewinne einschließlich vorhandener Joker. Alte Modelle
+werden ausdrücklich zurückgewiesen. Vollständige Python-Suite: 238 bestanden,
+ein Test ohne Node.js übersprungen (in Paket 9 im V8-Isolat bestanden). Acht neue BGA-Prüfungen grün; Wheel außerhalb
+des Repositorys geladen. Entwicklungskurzlauf: 96 angewandte Schritte, fünf
+Partien und drei Evaluationen. Historische Tests benutzen den echten behaltenen
+Legacy-Commit. Consumer-Pin lokal vorbereitet; Remote-Veröffentlichung wurde
+von der automatischen Freigabeprüfung bis zur ausdrücklichen Ziel-Freigabe
+abgelehnt. Alle unabhängigen Arbeiten von Paket 9 werden zuerst erledigt.
+
+
+Paket 9: Unabhängiger roter Handelsrichtungsfall, danach links/rechts für alle
+drei Sitze korrigiert und zwölf Kombinationen inklusive direktem Kauf grün.
+15 CTests, acht BGA-RL-Prüfungen und zwölf aktive GUI-Prüfungen grün; fünf
+V2-GUI-Prozessprüfungen bleiben historisch. Neue stabile Metadaten kommen aus
+dem Engine-Vertrag; die eingefrorenen Quellen bleiben bytegleich. 60 vollständige
+Headless-Partien: 3277 Entscheidungen, 13 Pflichtablagewahlen, Seed-/Terminal-
+Replay grün. Neue Tk-Seeds 8/19/6/9 decken nach korrigierter Ökonomie sämtliche
+Olympia-Modi und Halikarnassos ab. Abschlussnachweise: RELEASE_BGA.md und
+Consumer-Datei docs/reference/bga-release-validation.json (mit genauem Pin).
+Die Remote-Veröffentlichung benötigt nach automatischer Ablehnung die ausdrückliche
+Freigabe der konkreten Ziele; zunächst wird der gesamte Stand lokal vorbereitet.

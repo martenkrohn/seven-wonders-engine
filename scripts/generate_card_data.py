@@ -15,9 +15,10 @@ CPP = ROOT / "include/card_data.generated.h"
 EXPORT = ROOT / "data/generated/cards-v1.json"
 WONDER_CPP = ROOT / "include/wonder_data.generated.h"
 WONDER_EXPORT = ROOT / "data/generated/wonders-v1.json"
+CONTRACT_CPP = ROOT / "include/engine_contract.generated.h"
 RESOURCES = ("wood", "ore", "clay", "stone", "loom", "glass", "papyrus", "coins")
 COLORS = ("brown", "grey", "blue", "yellow", "red", "green", "purple")
-# Package 5-II implements these separately, with dedicated runtime regressions.
+# All target effects are active; retained as an explicit export boundary.
 DEFERRED = {}
 
 
@@ -34,6 +35,9 @@ def literal(value):
 def artifacts():
     source = SOURCE.read_bytes()
     target = json.loads(source)
+    contract = json.loads((ROOT / "engine-contract.json").read_text())
+    if contract["protocol_version"] != 3 or contract["players"] != 3:
+        raise ValueError("This generator requires the three-player protocol-3 contract")
     if target["format_version"] != 1:
         raise ValueError("Unsupported target schema")
     rows = target["cards"]
@@ -67,8 +71,8 @@ def artifacts():
                   [(by_key[k]["engine_id"], by_key[k]["age"]) for k in c["chain_from"]], effects]
         cpp.append("    " + literal(fields) + ",")
     cpp += ["};", "}", "#endif", ""]
-    export = dict(format_version=1, ruleset=target["ruleset"],
-                  second_edition_implemented=False,
+    export = dict(format_version=1, ruleset=contract["ruleset"],
+                  second_edition_implemented=contract["second_edition_implemented"],
                   source=dict(path="data/bga-second-edition/targets.json", sha256=digest, format_version=1),
                   runtime_scope=dict(players=3, wonders="bga-second-edition", card_tables=True,
                                      deferred_effects={str(k): v for k, v in DEFERRED.items()}),
@@ -85,12 +89,20 @@ def artifacts():
         wonder_cpp.append("    " + literal([w["engine_id"], w["key"], w["name"],
                                            RESOURCES.index(w["starting_resource"]), stages]) + ",")
     wonder_cpp += ["};", "}", "#endif", ""]
-    wonder_export = dict(format_version=1, ruleset=target["ruleset"], source=export["source"],
-                         second_edition_implemented=False, wonders=target["wonders"])
+    wonder_export = dict(format_version=1, ruleset=contract["ruleset"], source=export["source"],
+                         second_edition_implemented=contract["second_edition_implemented"], wonders=target["wonders"])
+    contract_cpp = "\n".join([
+        "// Generated from engine-contract.json; do not edit.",
+        "#ifndef ENGINE_CONTRACT_GENERATED_H", "#define ENGINE_CONTRACT_GENERATED_H", "namespace DMAG {",
+        "inline constexpr const char* ENGINE_RELEASE = " + literal(contract["release"]) + ";",
+        "inline constexpr const char* ENGINE_RULESET = " + literal(contract["ruleset"]) + ";",
+        "inline constexpr bool ENGINE_SECOND_EDITION_IMPLEMENTED = " + literal(contract["second_edition_implemented"]) + ";",
+        "}", "#endif", ""])
     return {CPP: "\n".join(cpp).encode(),
             EXPORT: (json.dumps(export, ensure_ascii=False, indent=2) + "\n").encode(),
             WONDER_CPP: "\n".join(wonder_cpp).encode(),
-            WONDER_EXPORT: (json.dumps(wonder_export, ensure_ascii=False, indent=2) + "\n").encode()}
+            WONDER_EXPORT: (json.dumps(wonder_export, ensure_ascii=False, indent=2) + "\n").encode(),
+            CONTRACT_CPP: contract_cpp.encode()}
 
 
 def main():

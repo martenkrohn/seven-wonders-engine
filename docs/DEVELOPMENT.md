@@ -20,39 +20,30 @@ updates its submodule to that exact commit, updates its engine lock, and tests
 the bridge plus any derived card/wonder databases before merging the update.
 Engine CI needs no Gymnasium, NumPy or PyTorch.
 
-## Next ruleset: BGA second edition
+## Accepted BGA second edition
 
-Use the previously collected BGA reference as the target source of truth.
-The complete card/wonder comparison remains in the RL project's
-`docs/reference/edition-comparison/`. Package 1 freezes its checked targets,
-source hashes and identity mapping in [data/bga-second-edition](../data/bga-second-edition/README.md).
-Package 3 starts runtime migration with optimal science joker scoring. The
-development contract is `v0.2.0-dev` / `bga-second-edition-development`, with
-`second_edition_implemented=false`. Card/wonder data remain unchanged.
-Package 4b-II implements protocol 3 (`decision-v1`) with simultaneous settlement
-and mandatory discard choices; this is not a released complete BGA version.
-The current GUI/RL integration still requires version 2 and is deliberately
-not adopted here. Use `scripts/smoke_protocol.py` for the new headless path.
-The legacy tags and RL consumer pin remain available unchanged. Details and
-remaining boundaries: [SCIENCE_SCORING.md](SCIENCE_SCORING.md).
-
-Audit the target data independently of the RL checkout:
+Current contract: `v0.2.0-bga` / `bga-second-edition`, protocol 3,
+`second_edition_implemented=true`, exactly three players. Both generated data
+and native runtime metadata come from the operational engine contract; frozen
+reference metadata remains historical. Run generator checks after any change:
 
 ```sh
 python3 scripts/audit_bga_targets.py --check
+python3 scripts/generate_card_data.py --check
 python3 -m unittest discover -s tests -p 'test_bga*.py' -v
+xvfb-run -a python3 -m unittest discover -s tests -p 'test_gui*.py' -v
 ```
 
-The normalized target JSON will feed generated C++ tables and the Python
-export artifact when those packages are implemented. The frozen raw BGA JSON
-is an audit input, not a second editable source or a runtime dependency.
+Engine CI runs CTest, target/generator/audit checks and actual Tk sessions.
+The RL consumer separately runs its full historical/BGA Python suite, package
+checks and a fresh protocol-3 PPO smoke. Old checkpoints are rejected by the
+new feature/data/rules contract. See [release acceptance](RELEASE_BGA.md).
 
-Implement independently reviewable changes with rule regressions: data and
-costs; wonder abilities; discard selection and simultaneity; science scoring.
-Settle the action/protocol changes for extra decisions before adapting agents.
-Give the migrated ruleset a new identifier and a new release. Keep
-`v0.1.0-legacy` available to reproduce older experiments. Do not silently
-reuse old checkpoints or exported data as evidence for the new ruleset.
+Prepare and validate both repositories locally before publication. Publish the
+engine commit/tag before the consumer commit/tag so its exact pin is fetchable.
+Remote publication requires the explicitly approved destinations. Do not force
+push or modify retained legacy tags. The locally prepared pin does not imply
+that its engine commit has already been published.
 
 `upstream` should refer to `https://github.com/dmag-ufsm/7Wonders.git`;
 `origin` is the maintained fork. The fork retains upstream ancestry, original

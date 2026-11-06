@@ -157,7 +157,7 @@ void Player::ApplyBuilding(DMAG::Card c, bool free_card) {
 }
 
 // Existing count effects use the same metadata for coins and end scoring.
-// New Ludus/Decorators algorithms remain disabled by runtime_complete.
+// Ludus and Decorators share the generated count/condition metadata.
 int Player::CountCardEffect(const CardEffects& effect) {
     auto count=[&](Player* p) {
         if(effect.count=="wonder_stages") return p->board->GetStage();
@@ -456,8 +456,10 @@ int Player::IncrementOnDemand(int resource, int needed, bool is_neighbor){
 // Buys x quantity of a certain resource from any neighbor.
 // - this function is a "step" in BuildStructure.
 bool Player::BuyResource(int resource, int quant){
-    Player* east = this->GetEastNeighbor();
-    Player* west = this->GetWestNeighbor();
+    // Historical pointer names use east=public left and west=public right.
+    // Card flags follow the printed East/right and West/left directions.
+    Player* east = this->GetWestNeighbor();
+    Player* west = this->GetEastNeighbor();
 
     std::map<int, int> resources_east_bckp = east->resources;
     std::map<int, int> resources_west_bckp = west->resources;

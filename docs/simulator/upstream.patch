@@ -1312,12 +1312,13 @@ index 1b4b3aaf79754b900cf62605d34244f8ddda11a4..3369f43d53a55e6aa2035d08d082c052
  }
 diff --git a/src/decision.cpp b/src/decision.cpp
 new file mode 100644
-index 0000000000000000000000000000000000000000..96fe5310d5cad9a3cdd17c1f36e56ca3edf4b203
+index 0000000000000000000000000000000000000000..c921e7aaf8f8e16e1884bfbcf4b0cff22363ff3e
 --- /dev/null
 +++ b/src/decision.cpp
-@@ -0,0 +1,590 @@
+@@ -0,0 +1,591 @@
 +// Downstream simultaneous settlement and decision transport; see ENG-014.
 +#include <decision.h>
++#include <engine_contract.generated.h>
 +#include <algorithm>
 +#include <functional>
 +#include <numeric>
@@ -1481,7 +1482,7 @@ index 0000000000000000000000000000000000000000..96fe5310d5cad9a3cdd17c1f36e56ca3
 +            auto price = [&](int resource) {
 +                if (self) return 0;
 +                if (resource >= RESOURCE::loom) return b.manuf_cheap ? 1 : 2;
-+                const bool cheap = owner==(buyer+2)%3 ? b.raw_cheap_east : b.raw_cheap_west;
++                const bool cheap = owner==(buyer+2)%3 ? b.raw_cheap_west : b.raw_cheap_east;
 +                return cheap || b.wonder_raw_cheap ? 1 : 2;
 +            };
 +            auto fixed = [&](const std::string& id,int resource,int quantity) {
@@ -1795,8 +1796,8 @@ index 0000000000000000000000000000000000000000..96fe5310d5cad9a3cdd17c1f36e56ca3
 +
 +    json Status() const {
 +        json out={{"protocol_version",3},{"contract_id","decision-v1"},{"game_id",game_id},{"revision",revision},
-+          {"engine",{{"release","v0.2.0-dev"},{"source_commit",ENGINE_SOURCE_COMMIT},{"source_dirty",ENGINE_SOURCE_DIRTY},
-+            {"ruleset","bga-second-edition-development"},{"second_edition_implemented",false},
++          {"engine",{{"release",ENGINE_RELEASE},{"source_commit",ENGINE_SOURCE_COMMIT},{"source_dirty",ENGINE_SOURCE_DIRTY},
++            {"ruleset",ENGINE_RULESET},{"second_edition_implemented",ENGINE_SECOND_EDITION_IMPLEMENTED},
 +            {"card_data",{{"format_version",CARD_DATA_FORMAT_VERSION},{"source_sha256",CardDataHash()},
 +              {"tables_complete",true},{"effects_complete",IncompleteCardEffects().empty()},{"deferred_effect_ids",IncompleteCardEffects()}}},
 +            {"wonder_data",{{"format_version",1},{"source_sha256",CardDataHash()},{"effects_complete",true}}},
@@ -1942,7 +1943,7 @@ index dd219de7df0af977f508326df94c0f86f49c69d5..f9c9874a27ddd2e53b48de9c8a3d6c3c
  }
  
 diff --git a/src/player.cpp b/src/player.cpp
-index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..a069befb8ebd10cbac478315548a3d785f4f2488 100644
+index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..cef3c7d5c122d94ef268bb6eebf078cc51973b6f 100644
 --- a/src/player.cpp
 +++ b/src/player.cpp
 @@ -1,12 +1,17 @@
@@ -1999,7 +2000,6 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..a069befb8ebd10cbac478315548a3d78
 -        std::cout << " -> FAILURE: Card not found in vector." << std::endl;
 +    if (std::none_of(cards.begin(), cards.end(), [&](Card supplied) { return supplied.Equal(c); }))
          return false;
--    }
 +    size_t i = cards_hand.size();
 +    for (size_t n = 0; n < cards_hand.size(); ++n) {
 +        const bool matches = c.GetInstanceId()
@@ -2008,7 +2008,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..a069befb8ebd10cbac478315548a3d78
 +        if (!matches) continue;
 +        if (i != cards_hand.size()) return false; // Ambiguous legacy definition.
 +        i = n;
-+    }
+     }
 +    if (i == cards_hand.size()) return false;
 +    c = cards_hand[i];
  
@@ -2143,13 +2143,6 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..a069befb8ebd10cbac478315548a3d78
 -// Checks if the player has a card that permits him to play card 'c' for free.
 -bool Player::CheckFreeCard(DMAG::Card c){
 -    int free_id = c.GetFreeWith();
--
--    if (free_id != CARD_ID::none) {
--        // Treating exception:
--        // Forum can be constructed for free if the player has either the East Trading Post
--        // or the West Trading Post (raw_cheap_east or raw_cheap_west).
--        if (free_id == -1 && (this->raw_cheap_east || this->raw_cheap_west))
--            return true;
 +void Player::ApplyBuilding(DMAG::Card c, bool free_card) {
 +    const auto& e=c.GetEffects();
 +    for(int r=0;r<7;++r) resources[r]+=e.production[r];
@@ -2161,9 +2154,15 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..a069befb8ebd10cbac478315548a3d78
 +    if (!defer_coin_effects) resources[RESOURCE::coins] += ImmediateCoins(c);
 +    if (!free_card) resources[RESOURCE::coins] -= c.GetCost().at(RESOURCE::coins);
 +}
-+
+ 
+-    if (free_id != CARD_ID::none) {
+-        // Treating exception:
+-        // Forum can be constructed for free if the player has either the East Trading Post
+-        // or the West Trading Post (raw_cheap_east or raw_cheap_west).
+-        if (free_id == -1 && (this->raw_cheap_east || this->raw_cheap_west))
+-            return true;
 +// Existing count effects use the same metadata for coins and end scoring.
-+// New Ludus/Decorators algorithms remain disabled by runtime_complete.
++// Ludus and Decorators share the generated count/condition metadata.
 +int Player::CountCardEffect(const CardEffects& effect) {
 +    auto count=[&](Player* p) {
 +        if(effect.count=="wonder_stages") return p->board->GetStage();
@@ -2257,7 +2256,20 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..a069befb8ebd10cbac478315548a3d78
      }
  
      curr_resource += cont;
-@@ -657,155 +582,34 @@ void Player::Battle(int age){
+@@ -531,8 +456,10 @@ int Player::IncrementOnDemand(int resource, int needed, bool is_neighbor){
+ // Buys x quantity of a certain resource from any neighbor.
+ // - this function is a "step" in BuildStructure.
+ bool Player::BuyResource(int resource, int quant){
+-    Player* east = this->GetEastNeighbor();
+-    Player* west = this->GetWestNeighbor();
++    // Historical pointer names use east=public left and west=public right.
++    // Card flags follow the printed East/right and West/left directions.
++    Player* east = this->GetWestNeighbor();
++    Player* west = this->GetEastNeighbor();
+ 
+     std::map<int, int> resources_east_bckp = east->resources;
+     std::map<int, int> resources_west_bckp = west->resources;
+@@ -657,155 +584,34 @@ void Player::Battle(int age){
  
  // Calculates the number of VPs the player gets from civilian structures.
  int Player::CalculateCivilianScore(){
@@ -2433,7 +2445,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..a069befb8ebd10cbac478315548a3d78
  }
  
  // Calculates the number of VPs the player gets from battles.
-@@ -817,84 +621,30 @@ int Player::CalculateMilitaryScore(){
+@@ -817,84 +623,30 @@ int Player::CalculateMilitaryScore(){
  int Player::CalculateScientificScore(){
      int gear = 0, tablet = 0, compass = 0, sci_extra = 0;
  
@@ -2473,8 +2485,14 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..a069befb8ebd10cbac478315548a3d78
 -    if ((id == WONDER_ID::babylon_a && stage >= 2) ||
 -            (id == WONDER_ID::babylon_b && stage >= 3)) {
 -        sci_extra++;
--    }
--
++    for (const auto& card : cards_played) {
++        const auto& symbol=card.GetEffects().science;
++        if(symbol=="gear") ++gear;
++        else if(symbol=="compass") ++compass;
++        else if(symbol=="tablet") ++tablet;
++        else if(symbol=="joker") ++sci_extra;
+     }
+ 
 -    // Choose the most advantageous scientific piece for extra piece:
 -    // First complete the set if possible. The pieces left over, add to what has more.
 -    int remaining_tablets = 0, remaining_compasses = 0, remaining_gears = 0, extra = sci_extra;
@@ -2494,23 +2512,6 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..a069befb8ebd10cbac478315548a3d78
 -            tablet += remaining_tablets;
 -            gear += remaining_gears;
 -            extra -= remaining_tablets + remaining_gears;
--        }
--        compass += extra;
--    } else if (gear >= tablet && gear >= compass) {
--        remaining_tablets = gear - tablet;
--        remaining_compasses = gear - compass;
--        if (remaining_compasses + remaining_tablets <= extra) {
--            compass += remaining_compasses;
--            tablet += remaining_tablets;
--            extra -= remaining_compasses + remaining_tablets;
-+    for (const auto& card : cards_played) {
-+        const auto& symbol=card.GetEffects().science;
-+        if(symbol=="gear") ++gear;
-+        else if(symbol=="compass") ++compass;
-+        else if(symbol=="tablet") ++tablet;
-+        else if(symbol=="joker") ++sci_extra;
-+    }
-+
 +    sci_extra+=board->EffectCount("add_science");
 +
 +    // Enumerate every allocation of all jokers without changing fixed symbols.
@@ -2525,6 +2526,15 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..a069befb8ebd10cbac478315548a3d78
 +            best_score = std::max(best_score, gears * gears + compasses * compasses
 +                                             + tablets * tablets + 7 * sets);
          }
+-        compass += extra;
+-    } else if (gear >= tablet && gear >= compass) {
+-        remaining_tablets = gear - tablet;
+-        remaining_compasses = gear - compass;
+-        if (remaining_compasses + remaining_tablets <= extra) {
+-            compass += remaining_compasses;
+-            tablet += remaining_tablets;
+-            extra -= remaining_compasses + remaining_tablets;
+-        }
 -        gear += extra;
      }
 -
@@ -2540,7 +2550,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..a069befb8ebd10cbac478315548a3d78
  }
  
  int Player::CalculateWonderScore(){
-@@ -905,6 +655,10 @@ int Player::CalculateWonderScore(){
+@@ -905,6 +657,10 @@ int Player::CalculateWonderScore(){
  
  // Calculates the player's TOTAL score using the methods defined above.
  int Player::CalculateScore(){
@@ -2551,7 +2561,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..a069befb8ebd10cbac478315548a3d78
      int civil_score = this->CalculateCivilianScore();
      int commercial_score = this->CalculateCommercialScore();
      int guild_score = this->CalculateGuildScore();
-@@ -917,7 +671,8 @@ int Player::CalculateScore(){
+@@ -917,7 +673,8 @@ int Player::CalculateScore(){
  
      this->victory_points = total_score;
  
@@ -2561,7 +2571,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..a069befb8ebd10cbac478315548a3d78
  }
  
  //////////////////////////////////
-@@ -994,9 +749,11 @@ int Player::CalculateAmountManufacturedGood(){
+@@ -994,9 +751,11 @@ int Player::CalculateAmountManufacturedGood(){
  // - called ONCE each turn; part of IncrementOnDemand().
  bool Player::ChooseExtraManuf(int resource){
      if (resource == RESOURCE::loom || resource == RESOURCE::glass || resource == RESOURCE::papyrus) {
@@ -2576,7 +2586,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..a069befb8ebd10cbac478315548a3d78
          }
      }
      return false;
-@@ -1008,11 +765,9 @@ bool Player::ChooseExtraManuf(int resource){
+@@ -1008,11 +767,9 @@ bool Player::ChooseExtraManuf(int resource){
  bool Player::ChooseExtraRaw(int resource){
      if (resource == RESOURCE::wood || resource == RESOURCE::ore ||
          resource == RESOURCE::clay || resource == RESOURCE::stone) {
@@ -2591,7 +2601,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..a069befb8ebd10cbac478315548a3d78
              return true;
          }
      }
-@@ -1036,9 +791,23 @@ void Player::FreeCardOnce(bool flag) {
+@@ -1036,9 +793,23 @@ void Player::FreeCardOnce(bool flag) {
      this->free_card_once = flag;
  }
  
@@ -2617,7 +2627,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..a069befb8ebd10cbac478315548a3d78
  }
  
  // The player can buy resources for 1 coin instead of 2 from neighbors.
-@@ -1047,21 +816,41 @@ void Player::CanBuyRawCheap(){
+@@ -1047,21 +818,41 @@ void Player::CanBuyRawCheap(){
      this->wonder_raw_cheap = true;
  }
  
@@ -2637,8 +2647,6 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..a069befb8ebd10cbac478315548a3d78
 -            this->discard_free = false;
 -            return this->BuildStructure(c, discard_pile, true);
 -        }
--    }
--    return false;
 +bool Player::CloseDiscardIfNoOptions(const std::vector<DMAG::Card>& pile) {
 +    if (!HasDiscardFree()) return false;
 +    for (const Card& card : pile)
@@ -2656,7 +2664,8 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..a069befb8ebd10cbac478315548a3d78
 +        if (pile[n].GetInstanceId() != c.GetInstanceId()) continue;
 +        if (index != pile.size()) return false; // Corrupt/ambiguous identity.
 +        index = n;
-+    }
+     }
+-    return false;
 +    if (index == pile.size() || HasPlayedCard(pile[index])) return false;
 +    // The central card is authoritative, including its age, costs and effects.
 +    Player staged = *this;
@@ -2673,7 +2682,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..a069befb8ebd10cbac478315548a3d78
  }
  
  // Builds a card from the hand for free, once per Age, if the player has the requirements.
-@@ -1077,6 +866,7 @@ bool Player::BuildHandFree(DMAG::Card c){
+@@ -1077,6 +868,7 @@ bool Player::BuildHandFree(DMAG::Card c){
  // - called at the END of the game, before scoring.
  // UNTESTED!
  bool Player::CopyGuild(){
@@ -2681,7 +2690,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..a069befb8ebd10cbac478315548a3d78
      Player* east = this->GetEastNeighbor();
      Player* west = this->GetWestNeighbor();
  
-@@ -1195,8 +985,12 @@ DMAG::Player* Player::GetWestNeighbor() {
+@@ -1195,8 +987,12 @@ DMAG::Player* Player::GetWestNeighbor() {
      return this->player_west;
  }
  
@@ -2696,7 +2705,7 @@ index 540dcf2dcc954ac75f317a5dc27397a5b06f4024..a069befb8ebd10cbac478315548a3d78
  }
  
  void Player::SetNeighbors(DMAG::Player* east, DMAG::Player* west){
-@@ -1205,6 +999,10 @@ void Player::SetNeighbors(DMAG::Player* east, DMAG::Player* west){
+@@ -1205,6 +1001,10 @@ void Player::SetNeighbors(DMAG::Player* east, DMAG::Player* west){
  }
  
  void Player::SetWonder(DMAG::Wonder *_board){
@@ -4776,12 +4785,51 @@ index 0000000000000000000000000000000000000000..9110edc2b6691ff08a391c787ef145e8
 +}
 diff --git a/tests/test_decision_resolution.cpp b/tests/test_decision_resolution.cpp
 new file mode 100644
-index 0000000000000000000000000000000000000000..28832718f1f744a494a19328494240abdc5fe0fa
+index 0000000000000000000000000000000000000000..f6faef6e1e206cd0b26f5f8ce01ed2edb41bfe74
 --- /dev/null
 +++ b/tests/test_decision_resolution.cpp
-@@ -0,0 +1,289 @@
+@@ -0,0 +1,328 @@
 +#include "decision_helpers.h"
 +#include <iostream>
++
++void directional_trade_discounts() {
++    // Target metadata says East=right, West=left; use published seat geometry,
++    // not the inherited internal east/west pointer names, as the oracle.
++    for(int buyer=0;buyer<3;++buyer) for(int type:{CARD_ID::east_trading_post,CARD_ID::west_trading_post})
++        for(int offset:{1,2}) {
++            DecisionFixture f;
++            const int seller=(buyer+offset)%3;
++            auto wood=test_card(CARD_ID::lumber_yard,CARD_TYPE::materials);
++            f.players[seller].ReceiveCards({wood});
++            expect(f.players[seller].BuildStructure(wood,{wood},true),"Producer setup failed");
++            auto post=test_card(type,CARD_TYPE::commercial);
++            f.players[buyer].ReceiveCards({post});
++            expect(f.players[buyer].BuildStructure(post,{post},true),"Trading post setup failed");
++            auto need=test_card(CARD_ID::baths,CARD_TYPE::civilian,1,{1,0,0,0,0,0,0,0});
++            f.players[buyer].ReceiveCards({need,test_card(CARD_ID::altar)});
++            for(int s=0;s<3;++s) if(s!=buyer)
++                f.players[s].ReceiveCards({test_card(CARD_ID::altar),test_card(CARD_ID::theater)});
++            const int expected=(type==CARD_ID::east_trading_post ? offset==1 : offset==2)?1:2;
++            auto e=f.Engine();const auto state=e->Status();
++            const auto key=std::to_string(buyer),seller_key=std::to_string(seller);
++            expect(state["players"][key]["neighbors"]["right"]==(buyer+1)%3,"Unexpected public right seat");
++            expect(state["players"][key]["neighbors"]["left"]==(buyer+2)%3,"Unexpected public left seat");
++            auto request=choose(*e,buyer,"build_structure",CARD_ID::baths);
++            for(const auto& d:state["decisions"]) for(const auto& o:d["options"])
++                if(o["option_id"]==request["action"]["option_id"])
++                    expect(o["payment"]["to_seats"][seller_key]==expected,
++                           "Trading Post discount applied to opposite public neighbor");
++            std::vector<json> requests={request};
++            for(int s=0;s<3;++s) if(s!=buyer) requests.push_back(choose(*e,s,"discard"));
++            finish_cohort(*e,requests);const auto after=e->Status();
++            expect(after["players"][key]["resources"]["coins"]==3-expected,"Wrong buyer settlement");
++            expect(after["players"][seller_key]["resources"]["coins"]==6+expected,"Wrong seller settlement");
++            // Direct Player callers must agree with the decision planner.
++            expect(f.players[buyer].BuildStructure(need,{need},false),"Direct purchase failed");
++            expect(f.players[buyer].GetResources()[RESOURCE::coins]==3-expected,"Direct purchase reversed discount");
++            expect(f.players[seller].GetResources()[RESOURCE::coins]==3+expected,"Direct seller payment differs");
++        }
++}
 +
 +void frozen_income_production() {
 +    DecisionFixture f;
@@ -4857,7 +4905,7 @@ index 0000000000000000000000000000000000000000..28832718f1f744a494a19328494240ab
 +    auto lumber=test_card(CARD_ID::lumber_yard,CARD_TYPE::materials);
 +    partial.players[1].ReceiveCards({saw});partial.players[1].BuildStructure(saw,{saw},true);
 +    partial.players[2].ReceiveCards({lumber});partial.players[2].BuildStructure(lumber,{lumber},true);
-+    auto discount=test_card(CARD_ID::east_trading_post,CARD_TYPE::commercial);
++    auto discount=test_card(CARD_ID::west_trading_post,CARD_TYPE::commercial);
 +    partial.players[0].ReceiveCards({discount});partial.players[0].BuildStructure(discount,{discount},true);
 +    partial.players[0].ReceiveCards({test_card(CARD_ID::baths,CARD_TYPE::civilian,1,{2,0,0,0,0,0,0,0}),test_card(CARD_ID::altar)});
 +    partial.players[1].ReceiveCards({test_card(CARD_ID::altar),test_card(CARD_ID::theater)});
@@ -5064,7 +5112,7 @@ index 0000000000000000000000000000000000000000..28832718f1f744a494a19328494240ab
 +int main() {
 +    try {
 +        std::cout.setstate(std::ios_base::failbit);
-+        frozen_income_production();simultaneous_counts();choice_and_payment_plans();free_modes_and_frozen_discount();
++        directional_trade_discounts();frozen_income_production();simultaneous_counts();choice_and_payment_plans();free_modes_and_frozen_discount();
 +        discard_barrier_and_replay();fresh_seventh_and_queue();no_options_late_coins_and_last_seventh();timeout_abort_rollback();
 +        return 0;
 +    } catch(const std::exception& e) {std::cerr<<e.what()<<'\n';return 1;}
@@ -5868,3 +5916,18 @@ index 0000000000000000000000000000000000000000..2f71fd9b02afd6c5603626fd68ed44e9
 +    applied(*e,request);expect(e->Status()==state,"Halikarnassos replay repeated effect");
 +}
 +int main(int argc,char** argv){try{if(argc>1 && std::string(argv[1])=="--dump")std::cout<<dump().dump()<<'\n';else if(argc>1 && std::string(argv[1])=="babylon")babylon();else if(argc>1 && std::string(argv[1])=="olympia")olympia();else if(argc>1 && std::string(argv[1])=="hali")hali();else{runtime();babylon();olympia();hali();}return 0;}catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}}
+diff --git a/include/engine_contract.generated.h b/include/engine_contract.generated.h
+new file mode 100644
+index 0000000000000000000000000000000000000000..22a77cd5488fe7e1554cfc2aaf0f6a962da37a7f
+--- /dev/null
++++ b/include/engine_contract.generated.h
+@@ -0,0 +1,9 @@
++// Generated from engine-contract.json; do not edit.
++#ifndef ENGINE_CONTRACT_GENERATED_H
++#define ENGINE_CONTRACT_GENERATED_H
++namespace DMAG {
++inline constexpr const char* ENGINE_RELEASE = "v0.2.0-bga";
++inline constexpr const char* ENGINE_RULESET = "bga-second-edition";
++inline constexpr bool ENGINE_SECOND_EDITION_IMPLEMENTED = true;
++}
++#endif

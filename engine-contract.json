@@ -1,10 +1,10 @@
 {
   "format_version": 1,
-  "release": "v0.2.0-dev",
-  "ruleset": "bga-second-edition-development",
+  "release": "v0.2.0-bga",
+  "ruleset": "bga-second-edition",
   "protocol_version": 3,
   "players": 3,
-  "second_edition_implemented": false,
+  "second_edition_implemented": true,
   "card_data": {
     "format_version": 1,
     "export": "data/generated/cards-v1.json",

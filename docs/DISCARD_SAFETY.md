@@ -1,5 +1,11 @@
 # Sichere interne Ablageentnahme – Paket 4b-I
 
+Aktueller Stand vom 6. November 2026: Karten, Wunder, GUI und RL sind migriert.
+Die aktuelle Abnahme und ihre Grenzen stehen in [RELEASE_BGA.md](RELEASE_BGA.md).
+Die folgenden Paketnachweise sind historisch und behalten ihre damaligen
+Regelnamen, Beispiele und offenen Folgearbeiten.
+
+
 Historischer Abnahmestand von Paket 4b-I. Paket 4b-II implementiert inzwischen
 die vollständige Pflichtauswahl und ersetzt den unten beschriebenen V2-Pfad;
 aktueller Stand: [SIMULTANEOUS_RESOLUTION.md](SIMULTANEOUS_RESOLUTION.md).

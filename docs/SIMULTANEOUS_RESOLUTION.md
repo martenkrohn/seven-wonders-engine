@@ -1,5 +1,11 @@
 # Simultane Auflösung und Pflichtentscheidungen – Paket 4b-II
 
+Aktueller Stand vom 6. November 2026: Karten, Wunder, GUI und RL sind migriert.
+Die aktuelle Abnahme und ihre Grenzen stehen in [RELEASE_BGA.md](RELEASE_BGA.md).
+Die folgenden Paketnachweise sind historisch und behalten ihre damaligen
+Regelnamen, Beispiele und offenen Folgearbeiten.
+
+
 Stand: 5. November 2026. Implementiert: `decision-v1`, Transportversion 3.
 Release/Regeln bleiben `v0.2.0-dev`, `bga-second-edition-development`,
 `second_edition_implemented=false`. Dies ist die fachliche Grundlage für

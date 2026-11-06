@@ -1,0 +1,50 @@
+{
+  "checked_on": "2026-11-06",
+  "package": 9,
+  "scope": "three-player second-edition base game against frozen definitions",
+  "release": "v0.2.0-bga",
+  "ruleset": "bga-second-edition",
+  "protocol_version": 3,
+  "second_edition_implemented": true,
+  "native_ctests": {
+    "passed": 15,
+    "failed": 0
+  },
+  "directional_trade": {
+    "red_before_fix": true,
+    "cases": 12,
+    "checks": [
+      "public neighbors",
+      "offered payments",
+      "settlement",
+      "direct Player purchase"
+    ]
+  },
+  "gui": {
+    "total": 17,
+    "passed": 12,
+    "historical_v2_skipped": 5,
+    "actual_tk_game_seeds": [
+      8,
+      19,
+      6,
+      9
+    ],
+    "all_olympia_modes": true,
+    "mandatory_discard": true,
+    "images_and_fallback": true
+  },
+  "headless_candidate": {
+    "games": 60,
+    "decisions": 3277,
+    "discard_decisions": 13,
+    "replay": true
+  },
+  "consumer_bga_tests": {
+    "passed": 8,
+    "failed": 0
+  },
+  "frozen_sources_byte_identical_to": "cd07eec7e01c30d62f437c08a29e37f8a870a0e0",
+  "simulator_manifest_sha256": "cdae955f0e91437d1144ac1547605b5a0c2f9b51390ca56ead19021d3e7fd017",
+  "publication": "pending explicit remote-target approval; final exact-commit evidence in consumer release report"
+}

@@ -67,7 +67,9 @@ class TkDecisionTests(unittest.TestCase):
 
     def test_complete_click_games_with_and_without_images(self):
         seen=set()
-        for seed,directory in ((8,ASSETS),(19,Path('/nonexistent')),(3,ASSETS),(9,Path('/nonexistent'))):
+        # Corrected directional trade changes affordable paths. Seed 6 reaches
+        # both night free modes; retain exact coverage assertions below.
+        for seed,directory in ((8,ASSETS),(19,Path('/nonexistent')),(6,ASSETS),(9,Path('/nonexistent'))):
             root,s,app=self.start(seed,2,directory)
             deadline=time.monotonic()+30;selections=0
             while not s.state or s.state['game']['phase']!='finished':

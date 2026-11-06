@@ -1,6 +1,45 @@
 #include "decision_helpers.h"
 #include <iostream>
 
+void directional_trade_discounts() {
+    // Target metadata says East=right, West=left; use published seat geometry,
+    // not the inherited internal east/west pointer names, as the oracle.
+    for(int buyer=0;buyer<3;++buyer) for(int type:{CARD_ID::east_trading_post,CARD_ID::west_trading_post})
+        for(int offset:{1,2}) {
+            DecisionFixture f;
+            const int seller=(buyer+offset)%3;
+            auto wood=test_card(CARD_ID::lumber_yard,CARD_TYPE::materials);
+            f.players[seller].ReceiveCards({wood});
+            expect(f.players[seller].BuildStructure(wood,{wood},true),"Producer setup failed");
+            auto post=test_card(type,CARD_TYPE::commercial);
+            f.players[buyer].ReceiveCards({post});
+            expect(f.players[buyer].BuildStructure(post,{post},true),"Trading post setup failed");
+            auto need=test_card(CARD_ID::baths,CARD_TYPE::civilian,1,{1,0,0,0,0,0,0,0});
+            f.players[buyer].ReceiveCards({need,test_card(CARD_ID::altar)});
+            for(int s=0;s<3;++s) if(s!=buyer)
+                f.players[s].ReceiveCards({test_card(CARD_ID::altar),test_card(CARD_ID::theater)});
+            const int expected=(type==CARD_ID::east_trading_post ? offset==1 : offset==2)?1:2;
+            auto e=f.Engine();const auto state=e->Status();
+            const auto key=std::to_string(buyer),seller_key=std::to_string(seller);
+            expect(state["players"][key]["neighbors"]["right"]==(buyer+1)%3,"Unexpected public right seat");
+            expect(state["players"][key]["neighbors"]["left"]==(buyer+2)%3,"Unexpected public left seat");
+            auto request=choose(*e,buyer,"build_structure",CARD_ID::baths);
+            for(const auto& d:state["decisions"]) for(const auto& o:d["options"])
+                if(o["option_id"]==request["action"]["option_id"])
+                    expect(o["payment"]["to_seats"][seller_key]==expected,
+                           "Trading Post discount applied to opposite public neighbor");
+            std::vector<json> requests={request};
+            for(int s=0;s<3;++s) if(s!=buyer) requests.push_back(choose(*e,s,"discard"));
+            finish_cohort(*e,requests);const auto after=e->Status();
+            expect(after["players"][key]["resources"]["coins"]==3-expected,"Wrong buyer settlement");
+            expect(after["players"][seller_key]["resources"]["coins"]==6+expected,"Wrong seller settlement");
+            // Direct Player callers must agree with the decision planner.
+            expect(f.players[buyer].BuildStructure(need,{need},false),"Direct purchase failed");
+            expect(f.players[buyer].GetResources()[RESOURCE::coins]==3-expected,"Direct purchase reversed discount");
+            expect(f.players[seller].GetResources()[RESOURCE::coins]==3+expected,"Direct seller payment differs");
+        }
+}
+
 void frozen_income_production() {
     DecisionFixture f;
     auto& p=f.players;
@@ -75,7 +114,7 @@ void choice_and_payment_plans() {
     auto lumber=test_card(CARD_ID::lumber_yard,CARD_TYPE::materials);
     partial.players[1].ReceiveCards({saw});partial.players[1].BuildStructure(saw,{saw},true);
     partial.players[2].ReceiveCards({lumber});partial.players[2].BuildStructure(lumber,{lumber},true);
-    auto discount=test_card(CARD_ID::east_trading_post,CARD_TYPE::commercial);
+    auto discount=test_card(CARD_ID::west_trading_post,CARD_TYPE::commercial);
     partial.players[0].ReceiveCards({discount});partial.players[0].BuildStructure(discount,{discount},true);
     partial.players[0].ReceiveCards({test_card(CARD_ID::baths,CARD_TYPE::civilian,1,{2,0,0,0,0,0,0,0}),test_card(CARD_ID::altar)});
     partial.players[1].ReceiveCards({test_card(CARD_ID::altar),test_card(CARD_ID::theater)});
@@ -282,7 +321,7 @@ void timeout_abort_rollback() {
 int main() {
     try {
         std::cout.setstate(std::ios_base::failbit);
-        frozen_income_production();simultaneous_counts();choice_and_payment_plans();free_modes_and_frozen_discount();
+        directional_trade_discounts();frozen_income_production();simultaneous_counts();choice_and_payment_plans();free_modes_and_frozen_discount();
         discard_barrier_and_replay();fresh_seventh_and_queue();no_options_late_coins_and_last_seventh();timeout_abort_rollback();
         return 0;
     } catch(const std::exception& e) {std::cerr<<e.what()<<'\n';return 1;}

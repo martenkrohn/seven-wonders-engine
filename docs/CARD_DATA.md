@@ -1,10 +1,9 @@
-# Erzeugte Kartentabellen – Paket 5-I
+# Generated cards, wonders and runtime contract
 
-`data/bga-second-edition/targets.json` ist die einzige gepflegte Quelle für
-die Kartenfelder. Der eingefrorene Zielaudit prüft sie unabhängig gegen die
-aufbewahrten BGA-Definitionen und die stabilen Engine-Enums. Historische
-Konstruktoren stehen weiterhin im alten Tag; ihre Eingabeprüfsummen in
-`provenance.json` werden nicht auf neue Quelldateien umgebogen.
+`data/bga-second-edition/targets.json` is the maintained source for card and
+wonder values. Its audit compares the frozen definitions and stable identities.
+Targets, raw references and `provenance.json` keep their historical hashes and
+development metadata. The current release metadata is `engine-contract.json`.
 
 ```sh
 python3 scripts/audit_bga_targets.py --check
@@ -12,58 +11,41 @@ python3 scripts/generate_card_data.py
 python3 scripts/generate_card_data.py --check
 ```
 
-Der Standardbibliotheksgenerator erzeugt bytegleich aus derselben Quelle:
+The standard-library generator emits five deterministic checked-in artifacts:
 
-- `include/card_data.generated.h`: C++17-Tabelle aller 80 Karten-/Zeitalterzeilen.
-- `data/generated/cards-v1.json`: sprachneutraler Export, `format_version=1`,
-  Entwicklungs-Regelname, Quellpfad/-format und SHA-256 der gesamten Zielquelle,
-  vollständige Kartenmetadaten einschließlich Ketten/Bildzuordnung sowie
-  ausdrücklich abgegrenzter Laufzeitumfang.
+- `include/card_data.generated.h`: 80 card/age rows, 77 types, 25 chain links.
+- `include/wonder_data.generated.h`: all 14 sides and actual stage counts.
+- `data/generated/cards-v1.json` and `wonders-v1.json`: neutral version-1
+  data with the frozen target hash and current runtime ruleset/acceptance flag.
+- `include/engine_contract.generated.h`: release, ruleset and acceptance flag
+  from the same operational contract used to produce the JSON exports.
 
-`--check` schreibt keine Dateien, auch bei Abweichungen. Alle Pfade sind an
-den Skriptort gebunden. Der Engine-Build verwendet eingecheckte Tabellen und
-benötigt keinen Generator, keine Python-Installation, keine RL-Dateien und
-keine Bilder. Das Binary benötigt zur Laufzeit keine Daten-JSON. Ein Consumer
-muss Format, Quellenhash und Laufzeitumfang prüfen; der neue Export ersetzt
-hier noch keine RL-Datenbank oder deren Legacy-Exporter.
+`--check` never writes, including on mismatch. Paths bind to the checkout,
+independent of cwd. C++ builds use the checked-in headers; neither generator,
+RL, Python, images nor runtime JSON files are required by the binary.
+Python consumers copy the neutral exports byte-for-byte as package resources.
 
-`Card::FromDefinition(id, age)` ist die strikte Deckfabrik. Kosten, Namen,
-Farbe, Mengen, feste Effekte und alternative Ketten stammen aus der Tabelle.
-Graue Altersvarianten bleiben getrennt. Die ältere Fixture-Namenssuche
-verweigert mehrdeutige Zeitalter; ein explizites Alter löst sie auf. Nur der
-alte synthetische Testkonstruktor erlaubt frei vorgegebene Kosten/Ketten und
-bei einem eindeutig einzeiligen Typ einen Effekt-Lookup trotz abweichendem
-Fixture-Alter. Reale Karten durchlaufen ausschließlich die strikte Fabrik.
+`Card::FromDefinition(id, age)` is the strict real-deck factory. Grey age
+variants stay separate. Only synthetic test construction permits custom costs
+and chains; one-row types may supply fixture effects at an artificial age.
 
-Der Deckaufbau verwendet für drei Spieler 21 Karten pro Ära. Ära III wählt
-fünf verschiedene Gilden aus zehn; Decorators 78 ersetzt im Pool Strategists
-73, ohne die reservierte Identität zu übernehmen. Ludus 76 und Castrum 77
-haben bei drei Spielern keine normale Kopie; ihre Definitionen und festen
-Felder sind dennoch vorhanden. Die Referenzmengen für vier bis sieben Spieler
-belegen keine Unterstützung dieser Spielerzahlen. Physische Kennungen werden
-weiterhin pro Kopie vergeben und bei Ortswechseln erhalten.
+Each three-player age has 21 cards. Age III samples five distinct guilds from
+ten; Decorators 78 replaces retired Strategists 73 without reusing its identity.
+Ludus 76 and Castrum 77 have no ordinary copy at three players; their definitions
+and effects are tested separately. Physical card IDs survive location changes.
 
-Produktionsplaner und Gebäudeanwendung lesen dieselben Produktionsmengen,
-Wahlalternativen und Handelbarkeiten. Bankkosten, Schilde, Rabatte, feste
-Münzen, blaue Punkte und Wissenschaftssymbole stammen ebenfalls aus dieser
-Tabelle. Vorhandene Zähleffekte verwenden ihre bisherigen Zählregeln mit
-Tabellenfaktoren/Zielen; simultane Erträge und RQ-1/RQ-2 bleiben erhalten.
-Die Wissenschaftsoptimierung und die alte Gildenkopie-Kandidatenwahl werden
-nicht geändert. Wunderdefinitionen bleiben Legacy.
+Production, choice, trade eligibility, costs, chains, science, shields,
+discounts, fixed and count effects all use these tables. Ludus pays three coins
+on construction and scores one point per own red card. Decorators scores seven
+only when the actual own wonder is complete, including later completion.
+All effects report complete, with an empty deferred-ID list.
 
-**Offen:** Ludus-Zählung und Decorators-Bedingung werden getrennt in 5-II
-implementiert. Ihre Zielmetadaten bleiben vollständig erhalten;
-`runtime_complete=false` sperrt ihre neuen Münz-/Punktebeiträge. Insbesondere
-liefert Decorators derzeit auch beim vollendeten Wunder null statt sieben
-Punkte. Ludus liefert derzeit null statt drei Münzen/einem Punkt je roter
-Karte. `engine.card_data` nennt die beiden fehlenden Effekte ausdrücklich;
-`second_edition_implemented=false`, Release `v0.2.0-dev` und Protokoll 3 bleiben.
+Each wonder stage uses its exact generated cost and effect. Babylon B has two
+stages and grants its seventh card at the first; Olympia exposes new explicit
+free modes; Halikarnassos produces mandatory discard decisions. New wonder
+sides grant no old guild-copy power.
 
-Die Regression `card_tables` prüft gezielte Vorher-Fehler, alle Zeilen im
-echten Angebots-/Baupfad, sämtliche Ketten, exakte und unzureichende Kosten,
-Produktionsmengen, einmalige Auswahlquellen und die Grenze zu 5-II.
-`compiled_card_data` vergleicht alle kompilierten Felder mit `targets.json`,
-prüft 40 reale Deckziehungen und den schreibfreien, deterministischen
-Generator in einem isolierten Verzeichnis. Die bestehenden Regeln- und
-Protokolltests bleiben erforderlich. Ergebnisse und Commit stehen in
-[card-data-validation.json](card-data-validation.json).
+Native/compiled-data tests compare every row and stage independently with
+frozen targets. Generator tests check two regenerations, read-only checking and
+failure on corrupted artifacts from an isolated directory. Additional native
+rule and protocol tests are required; data equality alone is not rule acceptance.

@@ -1,5 +1,11 @@
 # Audit der GUI-Wiedereinbindung
 
+Aktueller Stand vom 6. November 2026: Karten, Wunder, GUI und RL sind migriert.
+Die aktuelle Abnahme und ihre Grenzen stehen in [RELEASE_BGA.md](RELEASE_BGA.md).
+Die folgenden Paketnachweise sind historisch und behalten ihre damaligen
+Regelnamen, Beispiele und offenen Folgearbeiten.
+
+
 Stand: 5. November 2026. Umfang: alte Oberfläche wieder nutzbar machen,
 Kompatibilität mit dem ausgegliederten Simulator prüfen und Folgearbeit
 abgrenzen. Spielregeln, Kartendefinitionen und Wunder werden hier nicht geändert.

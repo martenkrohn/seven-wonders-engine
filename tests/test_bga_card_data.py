@@ -12,7 +12,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 ARTIFACTS = ("include/card_data.generated.h", "data/generated/cards-v1.json",
-             "include/wonder_data.generated.h", "data/generated/wonders-v1.json")
+             "include/wonder_data.generated.h", "data/generated/wonders-v1.json", "include/engine_contract.generated.h")
 SOURCE = "data/bga-second-edition/targets.json"
 
 
@@ -20,7 +20,7 @@ class GeneratedCardTests(unittest.TestCase):
     def test_check_is_read_only_and_generation_is_deterministic(self):
         with tempfile.TemporaryDirectory(prefix="card-data-check-") as tmp:
             checkout = Path(tmp) / "checkout"
-            for name in (*ARTIFACTS, SOURCE, "scripts/generate_card_data.py"):
+            for name in (*ARTIFACTS, SOURCE, "engine-contract.json", "scripts/generate_card_data.py"):
                 dest = checkout / name
                 dest.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(ROOT / name, dest)
@@ -56,7 +56,9 @@ class GeneratedCardTests(unittest.TestCase):
         self.assertEqual(export["cards"], target["cards"])
         self.assertEqual(export["runtime_scope"]["deferred_effects"],
                          {})
-        self.assertFalse(export["second_edition_implemented"])
+        contract = json.loads((ROOT / "engine-contract.json").read_text())
+        self.assertEqual(export["second_edition_implemented"], contract["second_edition_implemented"])
+        self.assertEqual(export["ruleset"], contract["ruleset"])
 
 
 class CompiledCardTests(unittest.TestCase):

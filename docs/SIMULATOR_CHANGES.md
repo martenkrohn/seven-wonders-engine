@@ -383,6 +383,25 @@ anschließend alle 15 CTests grün; sämtliche 14 Seiten werden unabhängig gege
 die eingefrorenen Ziele geprüft. Laufzeit meldet vollständige Wunderfähigkeiten
 und tatsächliche Stufenzahl/Vollendung. Noch keine GUI-/RL-Abnahme behauptet.
 
+## ENG-022 – Gemeinsame Abnahme und Handelsrichtung (Paket 9)
+
+6. November 2026. Ein unabhängiger roter Test wies nach, dass East/West Trading
+Post den entgegengesetzten öffentlichen Nachbarn rabattierten. Planung und
+direkter Kauf folgen jetzt East=rechts, West=links; zwölf Kombinationen aus
+Sitz, Karte und Verkäufer prüfen Angebot, Käuferausgabe und Verkäufereinnahme.
+Der bestehende Teilmengenfall verwendet nun West für seinen linken Billigbezug
+und behält die unabhängig erwartete minimale 2+1-Zahlung.
+
+Alle 80 Kartenzeilen und 14 Wunderseiten sind aktiv. Die gemeinsame Abnahme
+umfasst native Regeln, Target-/Generatorchecks, echte Tk-Partien, automatisierte
+Spiele und bewusste RL-Übernahme. Release `v0.2.0-bga`, Regeln
+`bga-second-edition`, Protokoll 3 / `decision-v1`, Akzeptanzflag true.
+Runtime-Metadaten und neutrale Exporte werden aus `engine-contract.json`
+generiert. Frozen Targets/Referenzen/Provenance bleiben unverändert.
+
 ## Abgrenzung
 
-Es findet keine pauschale Behauptung vollständiger Regelkorrektheit statt. Insbesondere werden die Wunder-Ausbauschritte nicht zur neuen Edition migriert. Die Kartentabellenmigration in ENG-015 bleibt von den noch offenen neuen Sondereffekten getrennt. Falls frühere Kartenänderungen nicht im exakten Unterschied zu diesem Upstream-Commit erscheinen, werden sie nicht ohne Nachweis als Änderungen dieser C++-Fassung behauptet. Für jede zukünftige Änderung ist ein neuer Eintrag mit Anlass, genauer Funktion, Wirkung, Test und Grenzen anzulegen und der exakte Nachweis neu zu erzeugen.
+Unterstützt ist ausschließlich das Drei-Spieler-Grundspiel gegen die gesammelten
+BGA-Definitionen und die dokumentierten Nutzerentscheidungen. Die Abnahme
+behauptet keine unabhängige Gleichheit mit BGA-Servercode. Historische Tags und
+Prüfsummen bleiben erhalten; siehe RELEASE_BGA.md und KNOWN_ISSUES.md.

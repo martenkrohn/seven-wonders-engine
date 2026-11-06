@@ -1,5 +1,6 @@
 // Downstream simultaneous settlement and decision transport; see ENG-014.
 #include <decision.h>
+#include <engine_contract.generated.h>
 #include <algorithm>
 #include <functional>
 #include <numeric>
@@ -163,7 +164,7 @@ class DecisionCore {
             auto price = [&](int resource) {
                 if (self) return 0;
                 if (resource >= RESOURCE::loom) return b.manuf_cheap ? 1 : 2;
-                const bool cheap = owner==(buyer+2)%3 ? b.raw_cheap_east : b.raw_cheap_west;
+                const bool cheap = owner==(buyer+2)%3 ? b.raw_cheap_west : b.raw_cheap_east;
                 return cheap || b.wonder_raw_cheap ? 1 : 2;
             };
             auto fixed = [&](const std::string& id,int resource,int quantity) {
@@ -477,8 +478,8 @@ public:
 
     json Status() const {
         json out={{"protocol_version",3},{"contract_id","decision-v1"},{"game_id",game_id},{"revision",revision},
-          {"engine",{{"release","v0.2.0-dev"},{"source_commit",ENGINE_SOURCE_COMMIT},{"source_dirty",ENGINE_SOURCE_DIRTY},
-            {"ruleset","bga-second-edition-development"},{"second_edition_implemented",false},
+          {"engine",{{"release",ENGINE_RELEASE},{"source_commit",ENGINE_SOURCE_COMMIT},{"source_dirty",ENGINE_SOURCE_DIRTY},
+            {"ruleset",ENGINE_RULESET},{"second_edition_implemented",ENGINE_SECOND_EDITION_IMPLEMENTED},
             {"card_data",{{"format_version",CARD_DATA_FORMAT_VERSION},{"source_sha256",CardDataHash()},
               {"tables_complete",true},{"effects_complete",IncompleteCardEffects().empty()},{"deferred_effect_ids",IncompleteCardEffects()}}},
             {"wonder_data",{{"format_version",1},{"source_sha256",CardDataHash()},{"effects_complete",true}}},

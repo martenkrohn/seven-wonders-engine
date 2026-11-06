@@ -1,15 +1,14 @@
-# Dateiprotokoll 3 – implementierter Entwicklungsstand
+# Dateiprotokoll 3 – BGA-Grundspiel
 
-Stand: 5. November 2026, Paket 5-I. Vertragskennung **`decision-v1`**.
-`engine-contract.json`: Transportversion **3**, Release `v0.2.0-dev`,
-Regeln `bga-second-edition-development`, `second_edition_implemented=false`.
-Die Transportversion bezeichnet keine fertige BGA-Edition. Kartentabellen
-entsprechen den geprüften Zielen; Ludus-/Decorators-Effekte sind noch offen,
-Wunderfähigkeiten verwenden weiterhin die alten Definitionen.
-`engine.card_data` nennt Formatversion, SHA-256 der Zielquelle,
-`tables_complete=true`, `effects_complete=false` und `deferred_effect_ids=[76,78]`.
-Die zusätzliche Capability heißt `card_tables_v1`; sie bestätigt keine
-vollständigen Kartenregeln. Einzelheiten: [CARD_DATA.md](CARD_DATA.md).
+Stand: 6. November 2026. Vertragskennung **`decision-v1`**, Release
+**`v0.2.0-bga`**, Regeln **`bga-second-edition`**, drei Spieler,
+`second_edition_implemented=true`. Transportversion und Regeledition sind
+getrennte Verträge. Laufzeit und Exporte beziehen die Release-Metadaten aus
+`engine-contract.json`. Karten- und Wundertabellen sowie Effekte sind vollständig;
+`engine.card_data` meldet `effects_complete=true`, `deferred_effect_ids=[]` und
+den SHA-256 der eingefrorenen Zielquelle. Capabilities umfassen
+`card_tables_v1` und `wonder_abilities_v1`. Siehe [CARD_DATA.md](CARD_DATA.md)
+und [Abnahme](RELEASE_BGA.md).
 
 Der vollständige Fachvertrag steht in [DECISION_PROTOCOL_DRAFT.md](DECISION_PROTOCOL_DRAFT.md),
 die Ausführung und Grenzen in [SIMULTANEOUS_RESOLUTION.md](SIMULTANEOUS_RESOLUTION.md).
@@ -17,7 +16,8 @@ Die dortigen alten `decision-v1-draft`-Beispiele bleiben als Spezifikationsnachw
 markiert; das Binary meldet **`decision-v1`** und ergänzt die unten beschriebenen
 Produktions-/Transportnachweise. [Protokoll 2](PROTOCOL_V2.md) ist archiviert.
 Es gibt keinen V2-Modus; `ready.txt` und `player_1.json` bis `player_3.json`
-werden nicht gelesen. Die alte GUI/RL-Anbindung benötigt ihre späteren Pakete.
+werden nicht gelesen. GUI und RL verwenden den geteilten `DecisionClient` und
+die tatsächlich angebotenen Optionen.
 
 ## Start und nutzbarer Client
 
@@ -128,8 +128,8 @@ Bei legaler Option muss gebaut werden. Eigene Gebäudeduplikate bleiben sichtbar
 aber unselektierbar. Ohne legale Option erledigt die Engine den Grant automatisch
 mit `skipped_no_options`. Noch nicht aufgelöste reguläre Wahlen bleiben verdeckt;
 die Ablage ist nur im Angebot des berechtigten Sitzes vollständig sichtbar.
-Der vertrauenswürdige Koordinator erhält alle Hände; spätere Policy-/GUI-/RL-
-Adapter müssen die vertraglich beschriebenen Sitzansichten daraus bilden.
+Der vertrauenswürdige Koordinator erhält alle Hände. Die GUI verdeckt den
+Handwechsel; RL bildet ausschließlich eigene und öffentliche Merkmale.
 
 Deadlines beginnen erst mit der ersten Veröffentlichung des jeweiligen
 Angebots und werden durch falsche oder wiederholte Nachrichten nicht verlängert.
@@ -147,8 +147,8 @@ Ein Timeout erzeugt `decision_timeout`, ein interner Transaktionsfehler
 
 Nur `finished` veröffentlicht `age=4`, `turn=21`, `scores_final=true` und
 `result.totals`. Die Summen stimmen mit den Punktekategorien der Spieler überein.
-`results.txt` wird anschließend genau einmal atomar geschrieben. Militär,
-Gildenkopie und Endwertung erfolgen erst nach allen Pflichtentscheidungen.
+`results.txt` wird anschließend genau einmal atomar geschrieben. Militär und Endwertung erfolgen erst nach allen Pflichtentscheidungen.
 `copied_guilds` sind abgeleitete Effektreferenzen auf eine fremde physische Karte;
 sie werden nicht als zweite physische Karte in `built_cards` ausgegeben.
-Der bisherige Gildenkopie-Algorithmus und seine bekannten Grenzen bleiben erhalten.
+Alle migrierten Wunder deaktivieren die historische Gildenkopie; das Feld bleibt
+als leere Kompatibilitätsreferenz erhalten.

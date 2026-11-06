@@ -132,6 +132,22 @@ class DecisionProtocolTests(unittest.TestCase):
         self.abort(a)
         self.abort(b)
 
+    def test_runtime_and_exports_match_release_contract(self):
+        c = self.client()
+        contract = json.loads((ROOT / 'engine-contract.json').read_text())
+        for key in ('release', 'ruleset', 'second_edition_implemented'):
+            self.assertEqual(c.state['engine'][key], contract[key])
+        self.assertEqual(c.state['protocol_version'], contract['protocol_version'])
+        for kind in ('cards', 'wonders'):
+            export = json.loads((ROOT / f'data/generated/{kind}-v1.json').read_text())
+            for key in ('ruleset', 'second_edition_implemented'):
+                self.assertEqual(export[key], contract[key])
+        self.assertTrue(c.state['engine']['card_data']['effects_complete'])
+        self.assertTrue(c.state['engine']['wonder_data']['effects_complete'])
+        self.assertEqual(c.state['engine']['card_data']['deferred_effect_ids'], [])
+        self.assertIn('wonder_abilities_v1', c.state['engine']['capabilities'])
+        self.abort(c)
+
     def test_full_games_with_real_wonder_and_discard_choices(self):
         results = [play(ENGINE, seed) for seed in (0, 7, 8, 19, 42)]
         self.assertTrue(any(r['discard_decisions'] for r in results), results)

@@ -47,8 +47,8 @@ Prüfung:
 xvfb-run -a python3 -m unittest discover -s tests -p 'test_gui*.py' -v
 ```
 
-Paket 7: zwölf aktive Prüfungen bestanden, fünf historische V2-Prozesstests
-abgegrenzt. Vier echte Klickpartien mit Seeds 8/19/3/9 decken Bilder/Fallback,
+Aktuelle Prüfung: zwölf aktive Prüfungen bestanden, fünf historische V2-Prozesstests
+abgegrenzt. Vier echte Klickpartien mit Seeds 8/19/6/9 decken Bilder/Fallback,
 Halikarnassos und alle neuen Olympia-Freibaumodi ab. Weitere Sessiontests
 spielen mit 0/2/3 Bots und prüfen Isolation, falsche Auswahl, Abbruch und
 Prozessende. Der Hotseat-Test prüft die verdeckte nächste Hand. Alle 80 Karten-

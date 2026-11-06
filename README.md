@@ -1,90 +1,74 @@
 # Seven Wonders Engine
 
-A standalone C++17 simulator for three-player **7 Wonders**, forked from
-[DMAG/UFSM's 7Wonders](https://github.com/dmag-ufsm/7Wonders). It exposes a
-JSON file protocol for bots and other clients. No RL framework is required.
+Standalone C++17 simulator for the three-player **7 Wonders second-edition
+base game**, forked from [DMAG/UFSM](https://github.com/dmag-ufsm/7Wonders).
+No RL framework is required. Release contract: **`v0.2.0-bga`**, ruleset
+**`bga-second-edition`**, protocol **3**, **`decision-v1`**.
 
-**Development tree: `v0.2.0-dev`, ruleset `bga-second-edition-development`.**
-Science jokers are scored optimally. Package 4b-II implements simultaneous
-settlement and mandatory discard decisions with stable physical card identities,
-request deduplication and end-of-age barriers. The active [protocol is 3](docs/PROTOCOL.md),
-contract `decision-v1`; the [engine contract](engine-contract.json) distinguishes
-transport from rules. Package 5-I now compiles the checked card tables, including
-costs, points, chains, quantities and fixed effects. Ludus and Decorators Guild
-effects remain pending; wonder definitions and activation stages remain legacy.
-`second_edition_implemented=false`. See the [card data pipeline](docs/CARD_DATA.md) and
-[resolution validation](docs/SIMULTANEOUS_RESOLUTION.md) for scope and evidence.
+All 80 card/age rows, 25 chain links and 14 wonder sides use the frozen BGA
+definitions. Ludus, Decorators Guild, optimal science jokers, new Olympia
+free-build modes, Babylon's seventh card and mandatory Halikarnassos choices
+are implemented. Regular choices settle from a frozen round-start economy;
+extra decisions finish before military resolution and final scoring.
 
-The tagged `v0.1.1-legacy` release preserves the restored original Tk GUI and
-the simulator used by [Seven Wonders RL](https://github.com/martenkrohn/seven-wonders-rl).
-Its exact RL pin remains unchanged; this development tree has not been released
-or adopted by the RL project.
+`second_edition_implemented=true` records acceptance of this defined scope.
+This is an unofficial implementation against collected definitions, not a copy
+of BGA server rules. See [limitations](docs/KNOWN_ISSUES.md) and
+[release acceptance](docs/RELEASE_BGA.md) for evidence and remaining boundaries.
+The legacy tags preserve protocol-2 experiments; old checkpoints are incompatible.
 
 ## Build and check
 
 Linux/Ubuntu (including WSL), CMake and a C++17 compiler are supported.
-Python 3.10+ is optional and enables the standalone protocol smoke test.
+Python 3.10+ enables standalone protocol checks.
 
 ```sh
-git clone https://github.com/martenkrohn/seven-wonders-engine.git
-cd seven-wonders-engine
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel 2
 ctest --test-dir build --output-on-failure
 python3 scripts/audit_simulator.py --check
-python3 scripts/smoke_protocol.py --engine build/7Wonders
+python3 scripts/audit_bga_targets.py --check
+python3 scripts/generate_card_data.py --check
+python3 scripts/smoke_protocol.py --engine build/7Wonders --seed 8
 ```
 
-The smoke client plays a complete match in a temporary directory using only
-Python's standard library. To connect your own client, create `io/` and `logs/`
-in its working directory, then start the executable there:
-
-```sh
-/absolute/path/to/build/7Wonders --seed 42 --poll-us 1000 --quiet
-```
-
-See the [protocol](docs/PROTOCOL.md) for the handshake, action schema, final
-status and isolation requirements. Independent matches need separate working
-directories. Identical seeds are reproducible within the same toolchain;
+The binary needs no source-tree JSON files or artwork at runtime. Matches use
+separate working directories. Identical seeds reproduce within one toolchain;
 cross-platform shuffle equivalence is not guaranteed.
 
-## Optional graphical client
+[Protocol 3](docs/PROTOCOL.md) documents versioned offers, physical card IDs,
+request receipts, isolated file exchange, final status and abort handling.
+The shared standard-library client is `sevenwonders_engine.DecisionClient`:
 
-The original Tk interface remains in this repository for the retained legacy
-release. It requires protocol 2 and explicitly rejects the current development
-binary. Its migration follows in package 7; use the standalone headless client
-above for protocol 3. For the restored legacy GUI, use a separate checkout of
-`v0.1.1-legacy`; the current RL pin also remains on that release.
+```sh
+python3 -m pip install -e .
+```
 
-Python 3.10+, Tkinter and a display are required for that old GUI. Artwork is
-external; missing images use labeled placeholders. See [GUI.md](docs/GUI.md).
+## Graphical client
 
-## Development
+Python 3.10+, Tk and a display are required. Pillow enables optional artwork.
 
-The [migration work plan](docs/MIGRATION_PLAN.md) separates the remaining work
-into bounded packages. Its [next-agent task](docs/NEXT_AGENT_TASK.md) covers
-only the next package. The [GUI audit](docs/GUI_AUDIT.md) records the restored
-baseline and the remaining interface/artwork work.
+```sh
+python3 -m pip install -e '.[gui]'
+python3 Game.py 2 --seed 8
+```
 
-The [BGA target contract](data/bga-second-edition/README.md) now preserves all
-80 checked card/age rows, 14 wonder sides, source checksums and the complete ID
-mapping in this repository. The executable uses generated card tables;
-new Ludus/Decorators effects and wonder migration are still pending.
+Zero bots means three local humans, two bots one human, three bots an observed
+match. Offers explicitly include free modes and mandatory discard selections.
+Hotseat handover hides the next hand until revealed. Current names, costs and
+effects remain readable without images. Externally supplied BGA artwork is
+checked against the frozen manifest; it is not included in the repository.
+See [GUI instructions](docs/GUI.md).
 
-Keep engine changes and C++ regressions here. The RL repository consumes an
-exact engine commit as a Git submodule. Follow [DEVELOPMENT.md](docs/DEVELOPMENT.md)
-for releases and the planned BGA migration. Known rule gaps are recorded in
-[KNOWN_ISSUES.md](docs/KNOWN_ISSUES.md).
+## Development and provenance
 
-The inherited implementation and downstream changes are documented in
-[ORIGIN.md](docs/ORIGIN.md) and [SIMULATOR_CHANGES.md](docs/SIMULATOR_CHANGES.md),
-including a checked patch against upstream. No RL code, training results or
-downloaded BGA artwork is included in the current source tree. Historical
-upstream commits remain in the fork's history.
+[Development](docs/DEVELOPMENT.md), [generated data](docs/CARD_DATA.md),
+[migration history](docs/MIGRATION_PLAN.md) and
+[simulator changes](docs/SIMULATOR_CHANGES.md) describe the implementation.
+Frozen references and historical validation files retain their original hashes
+and development metadata. Current runtime/export metadata comes from
+`engine-contract.json`. [Seven Wonders RL](https://github.com/martenkrohn/seven-wonders-rl)
+consumes an exact commit, neutral data exports and the shared process client.
 
-## License and attribution
-
-GPL-3.0-only; the original [LICENSE](LICENSE) is retained. See [NOTICE](NOTICE)
-for upstream attribution and the historical upstream README/license discrepancy.
-Vendored nlohmann/json headers retain their original MIT notices. This is an
-unofficial project, with no publisher or Board Game Arena affiliation.
+GPL-3.0-only; see [LICENSE](LICENSE), [NOTICE](NOTICE) and [origin](docs/ORIGIN.md).
+Vendored nlohmann/json retains its MIT notices. No publisher or BGA affiliation.
