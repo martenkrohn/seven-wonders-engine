@@ -1,0 +1,48 @@
+{
+  "checked_on": "2026-11-06",
+  "base_engine_commit": "e59a3eb88da7f113fb8da64c498a42795030567e",
+  "scope": "Local GUI redesign; engine rules and protocol unchanged",
+  "display_language": "English, including card details, wonder side names, hints and errors",
+  "gui_tests": {"total": 21, "passed": 16, "historical_v2_skipped": 5},
+  "without_external_artwork": {"total": 21, "passed": 15, "historical_v2_skipped": 5, "artwork_only_skipped": 1},
+  "real_tk_click_games": {
+    "seeds": [8, 19, 6, 9, 39],
+    "all_finished": true,
+    "images_and_text_fallback": true,
+    "card_then_action_then_confirmation": true,
+    "all_three_olympia_modes": true,
+    "mandatory_discard": true,
+    "human_babylon_seventh_card": true,
+    "finished_hand_collapses": true
+  },
+  "layout_and_privacy": {
+    "default_window": [1320, 940],
+    "minimum_window": [1120, 800],
+    "seven_complete_hand_cards_fit_minimum_width": true,
+    "resize_preserves_unsubmitted_choice": true,
+    "hand_frames_centered_with_constant_10_pixel_gaps_as_hand_shrinks": true,
+    "human_centered_with_engine_left_and_right_neighbors": true,
+    "hotseat_perspective_follows_active_human": true,
+    "six_fixed_color_columns_with_brown_then_grey_production": true,
+    "color_column_layout_checked_with_all_80_card_definitions": true,
+    "built_artwork_shown_without_names_or_column_and_group_headings": true,
+    "seven_production_counters_removed_money_shields_and_scores_retained": true,
+    "wonder_starting_resource_first_in_production_column_with_small_pyramid_marker": true,
+    "wonder_production_resource_icon_checked_for_all_14_wonder_sides": true,
+    "hotseat_hides_next_hand_and_closes_private_details": true,
+    "scrollable_discard_layout_fixture_cards": 24,
+    "fixture_duplicate_cannot_be_confirmed": true
+  },
+  "artwork": {
+    "cards": 80,
+    "wonders": 14,
+    "effect_crop_in_card_pixels": [0, 26, 255, 110],
+    "both_effect_edges_pixel_checked_for_all_cards": true,
+    "stage_counts_match_all_wonder_definitions": true,
+    "stage_positions_checked_against_local_reference_geometry": true,
+    "external_artwork_not_bundled": true
+  },
+  "local_preview_directory": "python/runs/gui-redesign-20261106/ (consumer workspace, ignored)",
+  "test_environment": "Python workspace venv, Tk 8.6, local Xvfb with isolated virtual display; no system installation changes",
+  "limits": "Geometry reviewed on Linux/Xvfb at standard Tk scaling; no cross-platform or high-DPI visual acceptance. Large discard is a UI-only fixture, not an engine rule test."
+}

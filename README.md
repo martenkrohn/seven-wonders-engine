@@ -55,6 +55,9 @@ python3 Game.py 2 --seed 8
 
 Zero bots means three local humans, two bots one human, three bots an observed
 match. Offers explicitly include free modes and mandatory discard selections.
+The graphical table shows wonder stages, coins, shields, score symbols and compact
+effect strips for built buildings, with full portrait hand cards below.
+Select a card and action, then confirm; building clicks open full card details.
 Hotseat handover hides the next hand until revealed. Current names, costs and
 effects remain readable without images. Externally supplied BGA artwork is
 checked against the frozen manifest; it is not included in the repository.

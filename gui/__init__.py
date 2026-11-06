@@ -1,1 +1,1 @@
-"""Optional legacy Tk client; the C++ simulator does not depend on this package."""
+"""Optional Tk frontends; the C++ simulator does not depend on this package."""
